@@ -4,6 +4,7 @@ import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import NotFound from "@/pages/not-found";
 import AuthPage from "@/pages/auth-page";
+import LandingPage from "@/pages/landing-page";
 import DashboardPage from "@/pages/dashboard-page";
 import ProgramsPage from "@/pages/programs-page";
 import SubmitBugPage from "@/pages/submit-bug-page";
@@ -13,7 +14,8 @@ import { AuthProvider } from "@/hooks/use-auth";
 function Router() {
   return (
     <Switch>
-      <ProtectedRoute path="/" component={DashboardPage} />
+      <Route path="/" component={LandingPage} />
+      <ProtectedRoute path="/dashboard" component={DashboardPage} />
       <ProtectedRoute path="/programs" component={ProgramsPage} />
       <ProtectedRoute path="/submit" component={SubmitBugPage} />
       <Route path="/auth" component={AuthPage} />

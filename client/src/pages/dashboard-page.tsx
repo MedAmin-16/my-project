@@ -31,7 +31,7 @@ export default function DashboardPage() {
     queryKey: ["/api/activities"],
   });
 
-  if (!user) return null; // Should be handled by ProtectedRoute
+  // Authentication is now handled by ProtectedRoute component
 
   return (
     <div className="min-h-screen bg-deep-black relative">
@@ -44,32 +44,32 @@ export default function DashboardPage() {
         <div className="terminal-card p-6 rounded-lg mb-8 relative overflow-hidden">
           <div className="z-10 relative">
             <h1 className="text-2xl font-mono font-bold text-light-gray mb-2">
-              Welcome back, <span className="text-matrix">{user.username}</span>
+              Welcome back, <span className="text-matrix">{user?.username || "Hacker"}</span>
             </h1>
             <p className="text-dim-gray font-mono mb-4">
-              Current rank: <span className="text-warning-yellow">{user.rank}</span> | 
-              Reputation: <span className="text-matrix">{user.reputation}</span>
+              Current rank: <span className="text-warning-yellow">{user?.rank || "Beginner"}</span> | 
+              Reputation: <span className="text-matrix">{user?.reputation || 0}</span>
             </p>
             <div className="flex flex-wrap gap-4 mt-4">
               <div className="bg-surface/50 p-3 rounded-md border border-matrix/20">
                 <p className="text-xs text-dim-gray font-mono mb-1">Valid Submissions</p>
                 <p className="text-2xl text-light-gray font-mono">
                   {/* Replace with actual data from API when available */}
-                  {Math.floor(user.reputation / 50) || 0}
+                  {Math.floor((user?.reputation || 0) / 50)}
                 </p>
               </div>
               <div className="bg-surface/50 p-3 rounded-md border border-matrix/20">
                 <p className="text-xs text-dim-gray font-mono mb-1">Pending Review</p>
                 <p className="text-2xl text-light-gray font-mono">
                   {/* Replace with actual data from API when available */}
-                  {Math.floor(user.reputation / 300) || 0}
+                  {Math.floor((user?.reputation || 0) / 300)}
                 </p>
               </div>
               <div className="bg-surface/50 p-3 rounded-md border border-matrix/20">
                 <p className="text-xs text-dim-gray font-mono mb-1">Total Earnings</p>
                 <p className="text-2xl text-light-gray font-mono">
                   {/* Replace with actual data from API when available */}
-                  ${user.reputation * 4 || 0}
+                  ${(user?.reputation || 0) * 4}
                 </p>
               </div>
             </div>

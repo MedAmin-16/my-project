@@ -17,7 +17,7 @@ export default function Navbar() {
 
   // Navigation links
   const navLinks = [
-    { name: "Dashboard", path: "/" },
+    { name: "Dashboard", path: "/dashboard" },
     { name: "Programs", path: "/programs" },
     { name: "Submissions", path: "/submissions" },
     { name: "Leaderboard", path: "/leaderboard" },
@@ -25,7 +25,7 @@ export default function Navbar() {
 
   // Function to check if the link is active
   const isActive = (path: string) => {
-    return path === "/" ? location === path : location.startsWith(path);
+    return location.startsWith(path);
   };
 
   // Handle logout
