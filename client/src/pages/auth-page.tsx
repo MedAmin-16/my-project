@@ -4,7 +4,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { insertUserSchema } from "@shared/schema";
 import { z } from "zod";
-import { Redirect } from "wouter";
+import { Redirect, useLocation } from "wouter";
 import { Loader2 } from "lucide-react";
 import MatrixBackground from "@/components/matrix-background";
 import {
@@ -42,7 +42,12 @@ type LoginFormValues = z.infer<typeof loginSchema>;
 type RegisterFormValues = z.infer<typeof registerSchema>;
 
 export default function AuthPage() {
-  const [isLogin, setIsLogin] = useState(true);
+  // Check if we should show register form based on URL
+  const [location] = useLocation();
+  const showRegisterForm = location.includes('mode=register');
+  const initialMode = !showRegisterForm; // true = login, false = register
+  
+  const [isLogin, setIsLogin] = useState(initialMode);
   const { user, loginMutation, registerMutation } = useAuth();
   
   // If user is already logged in, redirect to dashboard

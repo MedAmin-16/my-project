@@ -270,7 +270,7 @@ export default function LandingPage() {
           </div>
           
           <div className="text-center mt-8">
-            <Link href="/auth">
+            <Link href="/auth?mode=register">
               <span className="text-matrix hover:text-matrix-dark text-sm font-mono cursor-pointer">
                 View All Programs →
               </span>
@@ -290,7 +290,7 @@ export default function LandingPage() {
             Create your account today and start finding vulnerabilities that others miss. 
             Join thousands of ethical hackers making the digital world safer.
           </p>
-          <Link href="/auth">
+          <Link href="/auth?mode=register">
             <Button className="glow-button text-base font-mono py-6 px-8">
               Create Account <ArrowRight className="ml-2 h-5 w-5" />
             </Button>
