@@ -132,10 +132,11 @@ export default function AuthPage() {
                   <FormItem className="space-y-1">
                     <FormLabel className="block text-xs font-mono text-dim-gray">&gt; Username:</FormLabel>
                     <FormControl>
-                      <Input
+                      <input
                         {...field}
-                        className="terminal-input w-full"
+                        className="terminal-input w-full text-foreground"
                         autoComplete="username"
+                        style={{ color: 'white', caretColor: '#00ff00' }}
                       />
                     </FormControl>
                     <FormMessage className="text-alert-red text-xs" />
@@ -150,11 +151,12 @@ export default function AuthPage() {
                   <FormItem className="space-y-1">
                     <FormLabel className="block text-xs font-mono text-dim-gray">&gt; Password:</FormLabel>
                     <FormControl>
-                      <Input
+                      <input
                         {...field}
                         type="password"
-                        className="terminal-input w-full"
+                        className="terminal-input w-full text-foreground"
                         autoComplete="current-password"
+                        style={{ color: 'white', caretColor: '#00ff00' }}
                       />
                     </FormControl>
                     <FormMessage className="text-alert-red text-xs" />
@@ -228,10 +230,11 @@ export default function AuthPage() {
                   <FormItem className="space-y-1">
                     <FormLabel className="block text-xs font-mono text-dim-gray">&gt; Username:</FormLabel>
                     <FormControl>
-                      <Input
+                      <input
                         {...field}
-                        className="terminal-input w-full"
+                        className="terminal-input w-full text-foreground"
                         autoComplete="username"
+                        style={{ color: 'white', caretColor: '#00ff00' }}
                       />
                     </FormControl>
                     <FormMessage className="text-alert-red text-xs" />
@@ -246,11 +249,12 @@ export default function AuthPage() {
                   <FormItem className="space-y-1">
                     <FormLabel className="block text-xs font-mono text-dim-gray">&gt; Email:</FormLabel>
                     <FormControl>
-                      <Input
+                      <input
                         {...field}
                         type="email"
-                        className="terminal-input w-full"
+                        className="terminal-input w-full text-foreground"
                         autoComplete="email"
+                        style={{ color: 'white', caretColor: '#00ff00' }}
                       />
                     </FormControl>
                     <FormMessage className="text-alert-red text-xs" />
@@ -265,11 +269,12 @@ export default function AuthPage() {
                   <FormItem className="space-y-1">
                     <FormLabel className="block text-xs font-mono text-dim-gray">&gt; Password:</FormLabel>
                     <FormControl>
-                      <Input
+                      <input
                         {...field}
                         type="password"
-                        className="terminal-input w-full"
+                        className="terminal-input w-full text-foreground"
                         autoComplete="new-password"
+                        style={{ color: 'white', caretColor: '#00ff00' }}
                       />
                     </FormControl>
                     <FormMessage className="text-alert-red text-xs" />
@@ -284,11 +289,12 @@ export default function AuthPage() {
                   <FormItem className="space-y-1">
                     <FormLabel className="block text-xs font-mono text-dim-gray">&gt; Confirm Password:</FormLabel>
                     <FormControl>
-                      <Input
+                      <input
                         {...field}
                         type="password"
-                        className="terminal-input w-full"
+                        className="terminal-input w-full text-foreground"
                         autoComplete="new-password"
+                        style={{ color: 'white', caretColor: '#00ff00' }}
                       />
                     </FormControl>
                     <FormMessage className="text-alert-red text-xs" />
