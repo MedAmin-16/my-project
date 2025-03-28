@@ -52,7 +52,7 @@ export default function AuthPage() {
   
   // If user is already logged in, redirect to dashboard
   if (user) {
-    return <Redirect to="/dashboard" />;
+    return <Redirect to="/" />;
   }
 
   // Form for login
@@ -87,6 +87,12 @@ export default function AuthPage() {
 
   // Handle registration form submission
   const onRegisterSubmit = (data: RegisterFormValues) => {
+    console.log("Registering with data:", {
+      username: data.username,
+      password: data.password,
+      email: data.email,
+    });
+    
     registerMutation.mutate({
       username: data.username,
       password: data.password,
