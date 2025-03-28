@@ -242,25 +242,21 @@ export default function AuthPage() {
                 )}
               />
               
-              <FormField
-                control={registerForm.control}
-                name="email"
-                render={({ field }) => (
-                  <FormItem className="space-y-1">
-                    <FormLabel className="block text-xs font-mono text-dim-gray">&gt; Email:</FormLabel>
-                    <FormControl>
-                      <input
-                        {...field}
-                        type="email"
-                        className="terminal-input w-full text-foreground"
-                        autoComplete="email"
-                        style={{ color: 'white', caretColor: '#00ff00' }}
-                      />
-                    </FormControl>
-                    <FormMessage className="text-alert-red text-xs" />
-                  </FormItem>
+              <div className="space-y-1">
+                <label className="block text-xs font-mono text-dim-gray">&gt; Email:</label>
+                <input
+                  type="email"
+                  className="w-full bg-black/50 border border-primary/30 rounded px-3 py-2 font-mono focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary"
+                  style={{ color: 'white', caretColor: '#00ff00' }}
+                  onChange={(e) => registerForm.setValue('email', e.target.value)}
+                  autoComplete="email"
+                />
+                {registerForm.formState.errors.email && (
+                  <div className="text-alert-red text-xs">
+                    {registerForm.formState.errors.email.message}
+                  </div>
                 )}
-              />
+              </div>
               
               <FormField
                 control={registerForm.control}
