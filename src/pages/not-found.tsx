@@ -1,46 +1,98 @@
-import React from "react";
-import { Link } from "wouter";
-import { Button } from "../components/ui/button";
-import { Shield, AlertTriangle } from "lucide-react";
-import MatrixBackground from "../components/matrix-background";
+import React from 'react';
+import { useLocation, Link } from 'wouter';
+import { Home, Terminal, RefreshCw } from 'lucide-react';
+import MatrixBackground from '../components/matrix-background';
 
 export default function NotFound() {
+  const [location] = useLocation();
+
   return (
-    <div className="relative min-h-screen flex flex-col items-center justify-center py-12 px-4 sm:px-6 lg:px-8 bg-background text-foreground">
+    <div className="min-h-screen flex flex-col relative">
       <MatrixBackground />
       
-      <div className="z-10 max-w-md w-full space-y-8 p-8 bg-card/80 backdrop-blur-md rounded-lg border border-primary/30 shadow-lg neon-border">
-        <div className="text-center">
-          <div className="flex justify-center mb-4">
-            <Shield className="h-20 w-20 text-destructive" />
-            <AlertTriangle className="h-20 w-20 text-destructive animate-pulse" />
-          </div>
-          
-          <h2 className="mt-6 text-3xl font-bold tracking-tight text-primary neon-text">
-            <span className="glitch" data-text="404 Access Denied">404 Access Denied</span>
-          </h2>
-          
-          <p className="mt-4 text-lg text-foreground">
-            Unauthorized access detected. The target page does not exist or requires higher security clearance.
-          </p>
-          
-          <div className="mt-4">
-            <div className="inline-block terminal-text border border-primary/50 bg-muted p-3 text-sm rounded">
-              <span className="text-primary">$</span> <span className="typing-effect">access --route="/404" --status="failed"</span>
+      {/* Header */}
+      <header className="relative z-10 border-b border-gray-800 bg-black/50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex h-16 items-center justify-between">
+            <div className="flex-shrink-0 flex items-center">
+              <Terminal className="h-6 w-6 text-primary mr-2" />
+              <span className="text-xl font-bold neon-text">CyberHunt</span>
             </div>
           </div>
         </div>
-        
-        <div className="mt-8 flex justify-center">
-          <Button asChild variant="outline" className="mr-4 border-primary text-primary hover:bg-primary/10">
-            <Link to="/">Return to Home</Link>
-          </Button>
-          
-          <Button asChild variant="outline" className="border-secondary text-secondary hover:bg-secondary/10">
-            <Link to="/auth">Login</Link>
-          </Button>
+      </header>
+      
+      {/* Main content */}
+      <main className="flex-1 flex items-center justify-center relative z-10 p-4">
+        <div className="max-w-md w-full">
+          <div className="cyber-card p-8 scanner text-center">
+            <h1 className="glitch text-6xl font-bold mb-4" data-text="404">
+              404
+            </h1>
+            <div className="mb-8">
+              <p className="text-xl font-bold mb-2 terminal-text">
+                // SYSTEM BREACH DETECTED
+              </p>
+              <p className="text-gray-300 mb-4">
+                The resource at <span className="text-primary font-mono">{location}</span> could not be found.
+              </p>
+              <div className="cyber-terminal text-sm text-left mb-4 py-2 px-3">
+                <p className="typing-text-1">
+                  <span className="text-primary">$</span> scan_directory -r {location}
+                </p>
+                <p className="typing-text-2 text-red-500">
+                  Error: Path not found in the system.
+                </p>
+                <p className="typing-text-3">
+                  <span className="text-primary">$</span> suggest_alternatives
+                </p>
+                <p className="typing-text-4">
+                  Recommended paths:
+                </p>
+                <p className="typing-text-5">
+                  <span className="text-green-400">- /</span> (home)
+                </p>
+                <p className="typing-text-6">
+                  <span className="text-green-400">- /dashboard</span> (secure area)
+                </p>
+              </div>
+            </div>
+            
+            <div className="flex flex-col md:flex-row space-y-3 md:space-y-0 md:space-x-3">
+              <Link href="/">
+                <a className="cyber-button py-2 flex items-center justify-center">
+                  <Home className="h-4 w-4 mr-2" />
+                  Return Home
+                </a>
+              </Link>
+              <button 
+                onClick={() => window.history.back()}
+                className="cyber-button-outline py-2 flex items-center justify-center"
+              >
+                <RefreshCw className="h-4 w-4 mr-2" />
+                Go Back
+              </button>
+            </div>
+            
+            <div className="mt-8 text-xs text-gray-400">
+              Error Code: 0x8007001F • Timestamp: {new Date().toISOString()}
+            </div>
+          </div>
         </div>
-      </div>
+      </main>
+      
+      {/* Footer */}
+      <footer className="relative z-10 border-t border-gray-800 bg-black/50 py-4 px-4">
+        <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center">
+          <div className="flex items-center mb-4 md:mb-0">
+            <Terminal className="h-5 w-5 text-primary mr-2" />
+            <span className="text-lg font-bold terminal-text">CyberHunt</span>
+          </div>
+          <div className="text-sm text-gray-400">
+            &copy; {new Date().getFullYear()} CyberHunt. All rights reserved.
+          </div>
+        </div>
+      </footer>
     </div>
   );
 }

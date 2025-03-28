@@ -3,13 +3,15 @@ import {
   useQuery,
   useMutation,
   UseMutationResult,
-  QueryClient,
+  QueryFunction,
+  QueryKey,
 } from "@tanstack/react-query";
-import { insertUserSchema, User as SelectUser } from "../shared/schema";
 import { z } from "zod";
-import { useToast } from "./use-toast";
+import { insertUserSchema, User as SelectUser } from "../shared/schema";
 import { getQueryFn, apiRequest, queryClient } from "../lib/queryClient";
+import { useToast } from "./use-toast";
 
+// Define the types for our authentication context
 type AuthContextType = {
   user: SelectUser | null;
   isLoading: boolean;
@@ -19,23 +21,28 @@ type AuthContextType = {
   registerMutation: UseMutationResult<SelectUser, Error, RegisterData>;
 };
 
+// Define the data shapes for login and registration
 type LoginData = Pick<z.infer<typeof insertUserSchema>, "username" | "password">;
 type RegisterData = z.infer<typeof insertUserSchema>;
 
+// Create the authentication context
 export const AuthContext = createContext<AuthContextType | null>(null);
 
+// Auth provider component
 export function AuthProvider({ children }: { children: ReactNode }) {
   const { toast } = useToast();
   
+  // Query to fetch the current authenticated user
   const {
     data: user,
     error,
     isLoading,
-  } = useQuery({
+  } = useQuery<SelectUser | null, Error>({
     queryKey: ["/api/user"],
-    queryFn: getQueryFn<SelectUser>({ on401: "returnNull" }),
+    queryFn: getQueryFn({ on401: "returnNull" }) as QueryFunction<SelectUser | null, QueryKey>,
   });
 
+  // Mutation for user login
   const loginMutation = useMutation({
     mutationFn: async (credentials: LoginData) => {
       const res = await apiRequest("POST", "/api/login", credentials);
@@ -44,19 +51,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     onSuccess: (user: SelectUser) => {
       queryClient.setQueryData(["/api/user"], user);
       toast({
-        title: "Login successful",
+        title: "Logged in successfully",
         description: `Welcome back, ${user.username}!`,
+        variant: "default",
       });
     },
     onError: (error: Error) => {
       toast({
         title: "Login failed",
-        description: error.message || "Invalid username or password",
+        description: error.message,
         variant: "destructive",
       });
     },
   });
 
+  // Mutation for user registration
   const registerMutation = useMutation({
     mutationFn: async (credentials: RegisterData) => {
       const res = await apiRequest("POST", "/api/register", credentials);
@@ -65,19 +74,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     onSuccess: (user: SelectUser) => {
       queryClient.setQueryData(["/api/user"], user);
       toast({
-        title: "Registration successful",
+        title: "Account created",
         description: `Welcome to CyberHunt, ${user.username}!`,
+        variant: "default",
       });
     },
     onError: (error: Error) => {
       toast({
         title: "Registration failed",
-        description: error.message || "Could not create account",
+        description: error.message,
         variant: "destructive",
       });
     },
   });
 
+  // Mutation for user logout
   const logoutMutation = useMutation({
     mutationFn: async () => {
       await apiRequest("POST", "/api/logout");
@@ -87,6 +98,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       toast({
         title: "Logged out",
         description: "You have been successfully logged out.",
+        variant: "default",
       });
     },
     onError: (error: Error) => {
@@ -101,7 +113,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   return (
     <AuthContext.Provider
       value={{
-        user: user ?? null,
+        user,
         isLoading,
         error,
         loginMutation,
@@ -114,6 +126,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   );
 }
 
+// Hook to use the auth context
 export function useAuth() {
   const context = useContext(AuthContext);
   if (!context) {
