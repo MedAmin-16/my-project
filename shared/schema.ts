@@ -97,3 +97,26 @@ export const insertActivitySchema = createInsertSchema(activities).pick({
 
 export type InsertActivity = z.infer<typeof insertActivitySchema>;
 export type Activity = typeof activities.$inferSelect;
+
+// Notifications Schema
+export const notifications = pgTable("notifications", {
+  id: serial("id").primaryKey(),
+  type: text("type").notNull(), // new_submission, status_change, achievement, system
+  message: text("message").notNull(),
+  link: text("link"), // Optional link to direct the user (e.g., /submissions/123)
+  isRead: boolean("is_read").default(false),
+  userId: integer("user_id").notNull().references(() => users.id),
+  relatedId: integer("related_id"), // Could be submission ID or program ID
+  createdAt: timestamp("created_at").defaultNow()
+});
+
+export const insertNotificationSchema = createInsertSchema(notifications).pick({
+  type: true,
+  message: true,
+  link: true,
+  userId: true,
+  relatedId: true
+});
+
+export type InsertNotification = z.infer<typeof insertNotificationSchema>;
+export type Notification = typeof notifications.$inferSelect;

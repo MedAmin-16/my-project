@@ -8,6 +8,16 @@ import { insertSubmissionSchema, insertProgramSchema } from "@shared/schema";
 export async function registerRoutes(app: Express): Promise<Server> {
   // Setup authentication routes (/api/login, /api/register, etc.)
   setupAuth(app);
+  
+  // Get leaderboard (top users by reputation)
+  app.get("/api/leaderboard", async (req, res) => {
+    try {
+      const users = await storage.getLeaderboard();
+      res.json(users);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch leaderboard" });
+    }
+  });
 
   // Get all public programs
   app.get("/api/programs", async (req, res) => {
@@ -106,6 +116,38 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json(activities);
     } catch (error) {
       res.status(500).json({ message: "Failed to fetch activities" });
+    }
+  });
+  
+  // Get user's notifications
+  app.get("/api/notifications", async (req, res) => {
+    if (!req.isAuthenticated()) return res.status(401).json({ message: "Unauthorized" });
+    
+    try {
+      const userId = req.user.id;
+      const limit = req.query.limit ? parseInt(req.query.limit as string) : 20;
+      const notifications = await storage.getUserNotifications(userId, limit);
+      res.json(notifications);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch notifications" });
+    }
+  });
+  
+  // Mark notification as read
+  app.post("/api/notifications/:id/read", async (req, res) => {
+    if (!req.isAuthenticated()) return res.status(401).json({ message: "Unauthorized" });
+    
+    try {
+      const notificationId = parseInt(req.params.id);
+      const updatedNotification = await storage.markNotificationAsRead(notificationId);
+      
+      if (!updatedNotification) {
+        return res.status(404).json({ message: "Notification not found" });
+      }
+      
+      res.json(updatedNotification);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to update notification" });
     }
   });
 

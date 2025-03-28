@@ -1,6 +1,11 @@
 import { useEffect, useRef } from 'react';
+import { cn } from '@/lib/utils';
 
-export default function MatrixBackground() {
+interface MatrixBackgroundProps {
+  className?: string;
+}
+
+export default function MatrixBackground({ className }: MatrixBackgroundProps) {
   const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -60,7 +65,7 @@ export default function MatrixBackground() {
   return (
     <div 
       ref={containerRef} 
-      className="fixed top-0 left-0 w-full h-full z-0"
+      className={cn("fixed top-0 left-0 w-full h-full z-0", className)}
       aria-hidden="true"
     />
   );

@@ -11,6 +11,7 @@ import { apiRequest, queryClient } from "@/lib/queryClient";
 import MatrixBackground from "@/components/matrix-background";
 import Navbar from "@/components/layout/navbar";
 import { useToast } from "@/hooks/use-toast";
+import { BugReportTemplates } from "@/components/bug-report-templates";
 import {
   Form,
   FormControl,
@@ -91,6 +92,11 @@ export default function SubmitBugPage() {
       });
     },
   });
+
+  // Handle applying a template to the description field
+  const handleTemplateSelect = (template: string) => {
+    form.setValue("description", template);
+  };
 
   // Handle form submission
   const onSubmit = (data: SubmitBugFormValues) => {
@@ -257,6 +263,10 @@ export default function SubmitBugPage() {
                       </FormItem>
                     )}
                   />
+                </div>
+
+                <div className="mb-4">
+                  <BugReportTemplates onSelectTemplate={handleTemplateSelect} />
                 </div>
 
                 <FormField

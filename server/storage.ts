@@ -13,6 +13,7 @@ export interface IStorage {
   getUserByUsername(username: string): Promise<User | undefined>;
   createUser(user: InsertUser): Promise<User>;
   updateUserReputation(id: number, reputation: number): Promise<User | undefined>;
+  getLeaderboard(limit?: number): Promise<User[]>;
   
   // Program CRUD
   getProgram(id: number): Promise<Program | undefined>;
@@ -31,6 +32,11 @@ export interface IStorage {
   getUserActivities(userId: number, limit?: number): Promise<Activity[]>;
   createActivity(activity: InsertActivity): Promise<Activity>;
   
+  // Notification CRUD
+  getUserNotifications(userId: number, limit?: number): Promise<Notification[]>;
+  createNotification(notification: InsertNotification): Promise<Notification>;
+  markNotificationAsRead(id: number): Promise<Notification | undefined>;
+  
   // Session storage
   sessionStore: session.SessionStore;
 }
@@ -40,11 +46,13 @@ export class MemStorage implements IStorage {
   private programs: Map<number, Program>;
   private submissions: Map<number, Submission>;
   private activities: Map<number, Activity>;
+  private notifications: Map<number, Notification>;
   
   currentUserId: number;
   currentProgramId: number;
   currentSubmissionId: number;
   currentActivityId: number;
+  currentNotificationId: number;
   sessionStore: session.SessionStore;
 
   constructor() {
@@ -52,11 +60,13 @@ export class MemStorage implements IStorage {
     this.programs = new Map();
     this.submissions = new Map();
     this.activities = new Map();
+    this.notifications = new Map();
     
     this.currentUserId = 1;
     this.currentProgramId = 1;
     this.currentSubmissionId = 1;
     this.currentActivityId = 1;
+    this.currentNotificationId = 1;
     
     this.sessionStore = new MemoryStore({
       checkPeriod: 86400000 // 24 hours
@@ -274,6 +284,51 @@ export class MemStorage implements IStorage {
     };
     this.activities.set(id, activity);
     return activity;
+  }
+  
+  // Leaderboard
+  async getLeaderboard(limit = 10): Promise<User[]> {
+    return Array.from(this.users.values())
+      .sort((a, b) => {
+        // Safely handle null reputation values by defaulting to 0
+        const repA = a.reputation ?? 0;
+        const repB = b.reputation ?? 0;
+        return repB - repA; // Sort in descending order
+      })
+      .slice(0, limit);
+  }
+  
+  // Notification CRUD
+  async getUserNotifications(userId: number, limit = 10): Promise<Notification[]> {
+    return Array.from(this.notifications.values())
+      .filter(notification => notification.userId === userId)
+      .sort((a, b) => {
+        const dateA = a.createdAt?.getTime() ?? 0;
+        const dateB = b.createdAt?.getTime() ?? 0;
+        return dateB - dateA; // Sort newest first
+      })
+      .slice(0, limit);
+  }
+  
+  async createNotification(notification: InsertNotification): Promise<Notification> {
+    const id = this.currentNotificationId++;
+    const newNotification: Notification = {
+      ...notification,
+      id,
+      isRead: false,
+      createdAt: new Date()
+    };
+    this.notifications.set(id, newNotification);
+    return newNotification;
+  }
+  
+  async markNotificationAsRead(id: number): Promise<Notification | undefined> {
+    const notification = this.notifications.get(id);
+    if (!notification) return undefined;
+    
+    notification.isRead = true;
+    this.notifications.set(id, notification);
+    return notification;
   }
 }
 
