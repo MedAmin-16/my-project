@@ -103,12 +103,16 @@ export default function Navbar() {
                 <ChevronDown className="h-4 w-4 text-dim-gray" />
               </DropdownMenuTrigger>
               <DropdownMenuContent className="bg-terminal border border-matrix/30 mt-1">
-                <DropdownMenuItem className="text-light-gray hover:bg-matrix/10 cursor-pointer font-mono text-sm">
-                  <Link href="/profile">Profile</Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem className="text-light-gray hover:bg-matrix/10 cursor-pointer font-mono text-sm">
-                  <Link href="/settings">Settings</Link>
-                </DropdownMenuItem>
+                <Link href="/profile">
+                  <DropdownMenuItem className="text-light-gray hover:bg-matrix/10 cursor-pointer font-mono text-sm">
+                    Profile
+                  </DropdownMenuItem>
+                </Link>
+                <Link href="/settings">
+                  <DropdownMenuItem className="text-light-gray hover:bg-matrix/10 cursor-pointer font-mono text-sm">
+                    Settings
+                  </DropdownMenuItem>
+                </Link>
                 <DropdownMenuSeparator className="bg-matrix/20" />
                 
                 {/* Resources dropdown */}
@@ -121,9 +125,11 @@ export default function Navbar() {
                   </DropdownMenuTrigger>
                   <DropdownMenuContent className="bg-terminal border border-matrix/30 ml-1">
                     {resourceLinks.map((link) => (
-                      <DropdownMenuItem key={link.path} className="text-light-gray hover:bg-matrix/10 cursor-pointer font-mono text-sm">
-                        <Link href={link.path}>{link.name}</Link>
-                      </DropdownMenuItem>
+                      <Link key={link.path} href={link.path}>
+                        <DropdownMenuItem className="text-light-gray hover:bg-matrix/10 cursor-pointer font-mono text-sm">
+                          {link.name}
+                        </DropdownMenuItem>
+                      </Link>
                     ))}
                   </DropdownMenuContent>
                 </DropdownMenu>
@@ -138,9 +144,11 @@ export default function Navbar() {
                   </DropdownMenuTrigger>
                   <DropdownMenuContent className="bg-terminal border border-matrix/30 ml-1">
                     {legalLinks.map((link) => (
-                      <DropdownMenuItem key={link.path} className="text-light-gray hover:bg-matrix/10 cursor-pointer font-mono text-sm">
-                        <Link href={link.path}>{link.name}</Link>
-                      </DropdownMenuItem>
+                      <Link key={link.path} href={link.path}>
+                        <DropdownMenuItem className="text-light-gray hover:bg-matrix/10 cursor-pointer font-mono text-sm">
+                          {link.name}
+                        </DropdownMenuItem>
+                      </Link>
                     ))}
                   </DropdownMenuContent>
                 </DropdownMenu>
@@ -173,8 +181,8 @@ export default function Navbar() {
           <div className="px-2 pt-2 pb-3 space-y-1">
             {navLinks.map((link) => (
               <Link key={link.path} href={link.path}>
-                <a
-                  className={`block px-3 py-2 rounded-md text-base font-mono ${
+                <div
+                  className={`block px-3 py-2 rounded-md text-base font-mono cursor-pointer ${
                     isActive(link.path)
                       ? "text-light-gray bg-matrix/10 border-l-2 border-matrix"
                       : "text-dim-gray hover:bg-matrix/10 hover:text-light-gray"
@@ -182,35 +190,35 @@ export default function Navbar() {
                   onClick={() => setMobileMenuOpen(false)}
                 >
                   {link.name}
-                </a>
+                </div>
               </Link>
             ))}
             <Link href="/profile">
-              <a
-                className="block px-3 py-2 rounded-md text-base font-mono text-dim-gray hover:bg-matrix/10 hover:text-light-gray"
+              <div
+                className="block px-3 py-2 rounded-md text-base font-mono text-dim-gray hover:bg-matrix/10 hover:text-light-gray cursor-pointer"
                 onClick={() => setMobileMenuOpen(false)}
               >
                 Profile
-              </a>
+              </div>
             </Link>
             <Link href="/settings">
-              <a
-                className="block px-3 py-2 rounded-md text-base font-mono text-dim-gray hover:bg-matrix/10 hover:text-light-gray"
+              <div
+                className="block px-3 py-2 rounded-md text-base font-mono text-dim-gray hover:bg-matrix/10 hover:text-light-gray cursor-pointer"
                 onClick={() => setMobileMenuOpen(false)}
               >
                 Settings
-              </a>
+              </div>
             </Link>
             {/* Footer links */}
             <div className="mt-4 pt-2 border-t border-matrix/20">
               {footerLinks.map((link) => (
                 <Link key={link.path} href={link.path}>
-                  <a
-                    className="block px-3 py-2 rounded-md text-sm font-mono text-dim-gray hover:bg-matrix/10 hover:text-light-gray"
+                  <div
+                    className="block px-3 py-2 rounded-md text-sm font-mono text-dim-gray hover:bg-matrix/10 hover:text-light-gray cursor-pointer"
                     onClick={() => setMobileMenuOpen(false)}
                   >
                     {link.name}
-                  </a>
+                  </div>
                 </Link>
               ))}
             </div>

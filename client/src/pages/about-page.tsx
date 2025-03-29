@@ -21,9 +21,9 @@ export default function AboutPage() {
                 collaborative security exploration.
               </p>
               <Link href="/programs">
-                <a className="inline-flex items-center px-4 py-2 border border-matrix bg-terminal rounded-md text-matrix hover:bg-matrix/10 transition duration-200 font-mono text-sm">
+                <div className="inline-flex items-center px-4 py-2 border border-matrix bg-terminal rounded-md text-matrix hover:bg-matrix/10 transition duration-200 font-mono text-sm cursor-pointer">
                   Explore Programs <ChevronRight className="ml-2 h-4 w-4" />
-                </a>
+                </div>
               </Link>
             </div>
             <div className="flex justify-center">
@@ -240,14 +240,14 @@ export default function AboutPage() {
           </p>
           <div className="flex flex-col sm:flex-row justify-center space-y-4 sm:space-y-0 sm:space-x-4">
             <Link href="/auth?mode=register">
-              <a className="px-6 py-3 bg-matrix text-black rounded-md font-mono hover:bg-matrix/80 transition duration-200">
+              <div className="px-6 py-3 bg-matrix text-black rounded-md font-mono hover:bg-matrix/80 transition duration-200 cursor-pointer">
                 Create an Account
-              </a>
+              </div>
             </Link>
             <Link href="/programs">
-              <a className="px-6 py-3 border border-matrix text-matrix rounded-md font-mono hover:bg-matrix/10 transition duration-200">
+              <div className="px-6 py-3 border border-matrix text-matrix rounded-md font-mono hover:bg-matrix/10 transition duration-200 cursor-pointer">
                 Browse Programs
-              </a>
+              </div>
             </Link>
           </div>
         </div>
