@@ -72,7 +72,7 @@ export function setupAuth(app: Express) {
 
   app.post("/api/register", async (req, res, next) => {
     try {
-      const { username, password, email } = req.body;
+      const { username, password, email, userType, companyName, companyWebsite, companySize, companyIndustry } = req.body;
       
       if (!username || !password || !email) {
         return res.status(400).json({ message: "Username, password, and email are required" });
@@ -92,12 +92,25 @@ export function setupAuth(app: Express) {
       
       const hashedPassword = await hashPassword(password);
       
-      // Create the user
-      const user = await storage.createUser({
+      // Create the user with appropriate user type
+      const userData = {
         username,
         password: hashedPassword,
-        email
-      });
+        email,
+        userType: userType || "hacker",
+      };
+      
+      // Add company information if this is a company account
+      if (userType === "company") {
+        Object.assign(userData, {
+          companyName,
+          companyWebsite,
+          companySize,
+          companyIndustry
+        });
+      }
+      
+      const user = await storage.createUser(userData);
 
       // Send verification email
       try {

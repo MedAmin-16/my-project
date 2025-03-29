@@ -17,7 +17,9 @@ type AuthContextType = {
   registerMutation: UseMutationResult<SelectUser, Error, RegisterData>;
 };
 
-type LoginData = Pick<InsertUser, "username" | "password">;
+type LoginData = Pick<InsertUser, "username" | "password"> & {
+  userType?: "hacker" | "company";
+};
 
 type RegisterData = InsertUser;
 

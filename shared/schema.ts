@@ -8,6 +8,11 @@ export const users = pgTable("users", {
   username: text("username").notNull().unique(),
   password: text("password").notNull(),
   email: text("email"),
+  userType: text("user_type").default("hacker"), // "hacker" or "company"
+  companyName: text("company_name"), // Only for company users
+  companyWebsite: text("company_website"), // Only for company users
+  companySize: text("company_size"), // Only for company users
+  companyIndustry: text("company_industry"), // Only for company users
   isEmailVerified: boolean("is_email_verified").default(false),
   verificationToken: text("verification_token"),
   verificationTokenExpiry: timestamp("verification_token_expiry"),
@@ -20,6 +25,11 @@ export const insertUserSchema = createInsertSchema(users).pick({
   username: true,
   password: true,
   email: true,
+  userType: true,
+  companyName: true,
+  companyWebsite: true,
+  companySize: true,
+  companyIndustry: true,
 });
 
 export type InsertUser = z.infer<typeof insertUserSchema>;
