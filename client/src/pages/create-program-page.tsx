@@ -1,11 +1,11 @@
+
 import { useState } from "react";
-import { useLocation } from "wouter";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { useToast } from "@/hooks/use-toast";
-import { apiRequest } from "@/lib/queryClient";
+import { useLocation } from "wouter";
 import { useAuth } from "@/hooks/use-auth";
+import { useToast } from "@/hooks/use-toast";
 import MatrixBackground from "@/components/matrix-background";
 import {
   Form,
@@ -16,33 +16,20 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { Shield, DollarSign, TargetIcon, Lock } from "lucide-react";
+import { apiRequest } from "@/lib/api";
 
 const programSchema = z.object({
-  name: z.string().min(5, "Program name must be at least 5 characters"),
-  description: z.string().min(20, "Description must be at least 20 characters"),
-  rewardsRange: z.string().min(1, "Reward range is required"),
-  status: z.string().default("active"),
-  logo: z.string().optional(),
-  isPrivate: z.boolean().default(false),
-  scope: z.string().min(1, "Program scope is required")
+  name: z.string().min(3, "Program name must be at least 3 characters"),
+  description: z.string().min(10, "Description must be at least 10 characters"),
+  rewardsRange: z.string(),
+  status: z.enum(["active", "inactive"]),
+  isPrivate: z.boolean(),
+  scope: z.string(),
 });
 
 type ProgramFormValues = z.infer<typeof programSchema>;
@@ -146,12 +133,12 @@ export default function CreateProgramPage() {
                   name="description"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Description</FormLabel>
+                      <FormLabel>Program Description</FormLabel>
                       <FormControl>
                         <Textarea 
-                          placeholder="Describe your program's goals and guidelines..."
-                          className="min-h-[100px]" 
-                          {...field} 
+                          placeholder="Describe your program's goals, focus areas, and any special requirements..."
+                          className="min-h-[100px]"
+                          {...field}
                         />
                       </FormControl>
                       <FormMessage />
@@ -168,6 +155,9 @@ export default function CreateProgramPage() {
                       <FormControl>
                         <Input placeholder="e.g. $100 - $5,000" {...field} />
                       </FormControl>
+                      <FormDescription>
+                        Specify the minimum and maximum bounty amounts
+                      </FormDescription>
                       <FormMessage />
                     </FormItem>
                   )}
@@ -178,20 +168,16 @@ export default function CreateProgramPage() {
                   name="scope"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Program Scope (JSON)</FormLabel>
+                      <FormLabel>Program Scope</FormLabel>
                       <FormControl>
                         <Textarea 
-                          placeholder={`{
-  "domains": ["*.example.com"],
-  "assets": ["Web Application", "Mobile Apps"],
-  "exclusions": ["*.test.example.com"]
-}`}
-                          className="min-h-[200px] font-mono text-sm"
+                          placeholder='{"domains": ["example.com"], "assets": ["web"], "exclusions": []}'
+                          className="min-h-[150px] font-mono"
                           {...field}
                         />
                       </FormControl>
                       <FormDescription>
-                        Define the scope of your program in JSON format
+                        Define the scope in JSON format including domains, assets, and exclusions
                       </FormDescription>
                       <FormMessage />
                     </FormItem>
@@ -222,7 +208,7 @@ export default function CreateProgramPage() {
                 <div className="pt-4">
                   <Button 
                     type="submit" 
-                    className="w-full"
+                    className="w-full bg-matrix hover:bg-matrix/90"
                     disabled={submitting}
                   >
                     {submitting ? "Creating Program..." : "Create Program"}
