@@ -21,7 +21,7 @@ export default function Navbar() {
     { name: "Programs", path: "/programs" },
     { name: "Leaderboard", path: "/leaderboard" },
   ];
-  
+
   // Resource links for dropdown
   const resourceLinks = [
     { name: "Resources", path: "/resources" },
@@ -29,7 +29,7 @@ export default function Navbar() {
     { name: "Blog", path: "/blog" },
     { name: "Documentation", path: "/documentation" },
   ];
-  
+
   // Legal links for dropdown
   const legalLinks = [
     { name: "About", path: "/about" },
@@ -38,7 +38,7 @@ export default function Navbar() {
     { name: "Privacy", path: "/privacy-policy" },
     { name: "Security", path: "/security" },
   ];
-  
+
   // Footer links (not visible in the top nav)
   const footerLinks = [
     { name: "Resources", path: "/resources" },
@@ -90,7 +90,7 @@ export default function Navbar() {
               ))}
             </div>
           </div>
-          
+
           <div className="flex items-center">
             <DropdownMenu>
               <DropdownMenuTrigger className="flex items-center space-x-2 text-light-gray hover:text-matrix focus:outline-none">
@@ -114,7 +114,7 @@ export default function Navbar() {
                   </DropdownMenuItem>
                 </Link>
                 <DropdownMenuSeparator className="bg-matrix/20" />
-                
+
                 {/* Resources dropdown */}
                 <DropdownMenu>
                   <DropdownMenuTrigger className="w-full text-left px-3 py-2 text-light-gray hover:bg-matrix/10 cursor-pointer font-mono text-sm">
@@ -133,7 +133,7 @@ export default function Navbar() {
                     ))}
                   </DropdownMenuContent>
                 </DropdownMenu>
-                
+
                 {/* Legal dropdown */}
                 <DropdownMenu>
                   <DropdownMenuTrigger className="w-full text-left px-3 py-2 text-light-gray hover:bg-matrix/10 cursor-pointer font-mono text-sm">
@@ -152,7 +152,7 @@ export default function Navbar() {
                     ))}
                   </DropdownMenuContent>
                 </DropdownMenu>
-                
+
                 <DropdownMenuSeparator className="bg-matrix/20" />
                 <DropdownMenuItem 
                   className="text-alert-red hover:bg-matrix/10 cursor-pointer font-mono text-sm"
@@ -162,7 +162,7 @@ export default function Navbar() {
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
-            
+
             <div className="flex items-center sm:hidden ml-4">
               <button
                 onClick={toggleMobileMenu}
@@ -174,7 +174,7 @@ export default function Navbar() {
           </div>
         </div>
       </div>
-      
+
       {/* Mobile menu */}
       {mobileMenuOpen && (
         <div className="sm:hidden border-t border-matrix/30">
@@ -222,7 +222,7 @@ export default function Navbar() {
                 </Link>
               ))}
             </div>
-            
+
             <button
               className="block w-full text-left px-3 py-2 rounded-md text-base font-mono text-alert-red hover:bg-matrix/10 mt-2"
               onClick={() => {
