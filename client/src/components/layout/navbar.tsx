@@ -19,8 +19,15 @@ export default function Navbar() {
   const navLinks = [
     { name: "Dashboard", path: "/dashboard" },
     { name: "Programs", path: "/programs" },
-    { name: "Submissions", path: "/submit" },
     { name: "Leaderboard", path: "/leaderboard" },
+  ];
+  
+  // Footer links (not visible in the top nav)
+  const footerLinks = [
+    { name: "Resources", path: "/resources" },
+    { name: "Legal", path: "/legal" },
+    { name: "Terms", path: "/terms-of-service" },
+    { name: "Privacy", path: "/privacy-policy" },
   ];
 
   // Function to check if the link is active
@@ -84,6 +91,13 @@ export default function Navbar() {
                   <Link href="/settings">Settings</Link>
                 </DropdownMenuItem>
                 <DropdownMenuSeparator className="bg-matrix/20" />
+                <DropdownMenuItem className="text-light-gray hover:bg-matrix/10 cursor-pointer font-mono text-sm">
+                  <Link href="/resources">Resources</Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem className="text-light-gray hover:bg-matrix/10 cursor-pointer font-mono text-sm">
+                  <Link href="/legal">Legal</Link>
+                </DropdownMenuItem>
+                <DropdownMenuSeparator className="bg-matrix/20" />
                 <DropdownMenuItem 
                   className="text-alert-red hover:bg-matrix/10 cursor-pointer font-mono text-sm"
                   onClick={handleLogout}
@@ -139,8 +153,22 @@ export default function Navbar() {
                 Settings
               </a>
             </Link>
+            {/* Footer links */}
+            <div className="mt-4 pt-2 border-t border-matrix/20">
+              {footerLinks.map((link) => (
+                <Link key={link.path} href={link.path}>
+                  <a
+                    className="block px-3 py-2 rounded-md text-sm font-mono text-dim-gray hover:bg-matrix/10 hover:text-light-gray"
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    {link.name}
+                  </a>
+                </Link>
+              ))}
+            </div>
+            
             <button
-              className="block w-full text-left px-3 py-2 rounded-md text-base font-mono text-alert-red hover:bg-matrix/10"
+              className="block w-full text-left px-3 py-2 rounded-md text-base font-mono text-alert-red hover:bg-matrix/10 mt-2"
               onClick={() => {
                 handleLogout();
                 setMobileMenuOpen(false);

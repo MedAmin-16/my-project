@@ -291,24 +291,26 @@ export default function AuthPage() {
                   className="mt-1 bg-terminal border border-matrix/50 rounded text-matrix focus:ring-matrix focus:ring-offset-0"
                   onChange={(e) => registerForm.setValue('termsAccepted', e.target.checked)}
                 />
-                <label
-                  htmlFor="terms"
-                  className="text-xs font-mono text-dim-gray"
-                >
-                  I agree to the{" "}
-                  <a href="#" className="text-matrix hover:text-matrix-dark">
-                    Terms of Service
-                  </a>{" "}
-                  and{" "}
-                  <a href="#" className="text-matrix hover:text-matrix-dark">
-                    Privacy Policy
-                  </a>
-                </label>
-                {registerForm.formState.errors.termsAccepted && (
-                  <div className="text-alert-red text-xs">
-                    {registerForm.formState.errors.termsAccepted.message}
-                  </div>
-                )}
+                <div>
+                  <label
+                    htmlFor="terms"
+                    className="text-xs font-mono text-dim-gray"
+                  >
+                    I agree to the{" "}
+                    <a href="/terms-of-service" target="_blank" rel="noopener noreferrer" className="text-matrix hover:text-matrix-dark">
+                      Terms of Service
+                    </a>{" "}
+                    and{" "}
+                    <a href="/privacy-policy" target="_blank" rel="noopener noreferrer" className="text-matrix hover:text-matrix-dark">
+                      Privacy Policy
+                    </a>
+                  </label>
+                  {registerForm.formState.errors.termsAccepted && (
+                    <div className="text-alert-red text-xs mt-1">
+                      {registerForm.formState.errors.termsAccepted.message}
+                    </div>
+                  )}
+                </div>
               </div>
               
               <Button
