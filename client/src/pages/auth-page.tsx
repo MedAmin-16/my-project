@@ -125,68 +125,53 @@ export default function AuthPage() {
           // Login Form
           <Form {...loginForm}>
             <form onSubmit={loginForm.handleSubmit(onLoginSubmit)} className="space-y-6">
-              <FormField
-                control={loginForm.control}
-                name="username"
-                render={({ field }) => (
-                  <FormItem className="space-y-1">
-                    <FormLabel className="block text-xs font-mono text-dim-gray">&gt; Username:</FormLabel>
-                    <FormControl>
-                      <input
-                        {...field}
-                        className="terminal-input w-full text-foreground"
-                        autoComplete="username"
-                        style={{ color: 'white', caretColor: '#00ff00' }}
-                      />
-                    </FormControl>
-                    <FormMessage className="text-alert-red text-xs" />
-                  </FormItem>
+              <div className="space-y-1">
+                <label className="block text-xs font-mono text-dim-gray">&gt; Username:</label>
+                <input
+                  type="text"
+                  className="w-full bg-black/50 border border-primary/30 rounded px-3 py-2 font-mono focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary"
+                  style={{ color: 'white', caretColor: '#00ff00' }}
+                  onChange={(e) => loginForm.setValue('username', e.target.value)}
+                  autoComplete="username"
+                />
+                {loginForm.formState.errors.username && (
+                  <div className="text-alert-red text-xs">
+                    {loginForm.formState.errors.username.message}
+                  </div>
                 )}
-              />
+              </div>
               
-              <FormField
-                control={loginForm.control}
-                name="password"
-                render={({ field }) => (
-                  <FormItem className="space-y-1">
-                    <FormLabel className="block text-xs font-mono text-dim-gray">&gt; Password:</FormLabel>
-                    <FormControl>
-                      <input
-                        {...field}
-                        type="password"
-                        className="terminal-input w-full text-foreground"
-                        autoComplete="current-password"
-                        style={{ color: 'white', caretColor: '#00ff00' }}
-                      />
-                    </FormControl>
-                    <FormMessage className="text-alert-red text-xs" />
-                  </FormItem>
+              <div className="space-y-1">
+                <label className="block text-xs font-mono text-dim-gray">&gt; Password:</label>
+                <input
+                  type="password"
+                  className="w-full bg-black/50 border border-primary/30 rounded px-3 py-2 font-mono focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary"
+                  style={{ color: 'white', caretColor: '#00ff00' }}
+                  onChange={(e) => loginForm.setValue('password', e.target.value)}
+                  autoComplete="current-password"
+                />
+                {loginForm.formState.errors.password && (
+                  <div className="text-alert-red text-xs">
+                    {loginForm.formState.errors.password.message}
+                  </div>
                 )}
-              />
+              </div>
               
               <div className="flex justify-between items-center">
-                <FormField
-                  control={loginForm.control}
-                  name="rememberMe"
-                  render={({ field }) => (
-                    <FormItem className="flex items-center space-x-2">
-                      <FormControl>
-                        <Checkbox
-                          checked={field.value}
-                          onCheckedChange={field.onChange}
-                          id="remember"
-                          className="bg-terminal border border-matrix/50 rounded text-matrix focus:ring-matrix focus:ring-offset-0"
-                        />
-                      </FormControl>
-                      <label
-                        htmlFor="remember"
-                        className="text-xs font-mono text-dim-gray"
-                      >
-                        Remember me
-                      </label>
-                    </FormItem>
-                  )}
-                />
+                <div className="flex items-center space-x-2">
+                  <input
+                    type="checkbox"
+                    id="remember"
+                    className="bg-terminal border border-matrix/50 rounded text-matrix focus:ring-matrix focus:ring-offset-0"
+                    onChange={(e) => loginForm.setValue('rememberMe', e.target.checked)}
+                  />
+                  <label
+                    htmlFor="remember"
+                    className="text-xs font-mono text-dim-gray"
+                  >
+                    Remember me
+                  </label>
+                </div>
                 <a href="#" className="text-xs font-mono text-matrix hover:text-matrix-dark">
                   Forgot password?
                 </a>
@@ -223,24 +208,21 @@ export default function AuthPage() {
           // Registration Form
           <Form {...registerForm}>
             <form onSubmit={registerForm.handleSubmit(onRegisterSubmit)} className="space-y-6">
-              <FormField
-                control={registerForm.control}
-                name="username"
-                render={({ field }) => (
-                  <FormItem className="space-y-1">
-                    <FormLabel className="block text-xs font-mono text-dim-gray">&gt; Username:</FormLabel>
-                    <FormControl>
-                      <input
-                        {...field}
-                        className="terminal-input w-full text-foreground"
-                        autoComplete="username"
-                        style={{ color: 'white', caretColor: '#00ff00' }}
-                      />
-                    </FormControl>
-                    <FormMessage className="text-alert-red text-xs" />
-                  </FormItem>
+              <div className="space-y-1">
+                <label className="block text-xs font-mono text-dim-gray">&gt; Username:</label>
+                <input
+                  type="text"
+                  className="w-full bg-black/50 border border-primary/30 rounded px-3 py-2 font-mono focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary"
+                  style={{ color: 'white', caretColor: '#00ff00' }}
+                  onChange={(e) => registerForm.setValue('username', e.target.value)}
+                  autoComplete="username"
+                />
+                {registerForm.formState.errors.username && (
+                  <div className="text-alert-red text-xs">
+                    {registerForm.formState.errors.username.message}
+                  </div>
                 )}
-              />
+              </div>
               
               <div className="space-y-1">
                 <label className="block text-xs font-mono text-dim-gray">&gt; Email:</label>
@@ -258,76 +240,64 @@ export default function AuthPage() {
                 )}
               </div>
               
-              <FormField
-                control={registerForm.control}
-                name="password"
-                render={({ field }) => (
-                  <FormItem className="space-y-1">
-                    <FormLabel className="block text-xs font-mono text-dim-gray">&gt; Password:</FormLabel>
-                    <FormControl>
-                      <input
-                        {...field}
-                        type="password"
-                        className="terminal-input w-full text-foreground"
-                        autoComplete="new-password"
-                        style={{ color: 'white', caretColor: '#00ff00' }}
-                      />
-                    </FormControl>
-                    <FormMessage className="text-alert-red text-xs" />
-                  </FormItem>
+              <div className="space-y-1">
+                <label className="block text-xs font-mono text-dim-gray">&gt; Password:</label>
+                <input
+                  type="password"
+                  className="w-full bg-black/50 border border-primary/30 rounded px-3 py-2 font-mono focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary"
+                  style={{ color: 'white', caretColor: '#00ff00' }}
+                  onChange={(e) => registerForm.setValue('password', e.target.value)}
+                  autoComplete="new-password"
+                />
+                {registerForm.formState.errors.password && (
+                  <div className="text-alert-red text-xs">
+                    {registerForm.formState.errors.password.message}
+                  </div>
                 )}
-              />
+              </div>
               
-              <FormField
-                control={registerForm.control}
-                name="confirmPassword"
-                render={({ field }) => (
-                  <FormItem className="space-y-1">
-                    <FormLabel className="block text-xs font-mono text-dim-gray">&gt; Confirm Password:</FormLabel>
-                    <FormControl>
-                      <input
-                        {...field}
-                        type="password"
-                        className="terminal-input w-full text-foreground"
-                        autoComplete="new-password"
-                        style={{ color: 'white', caretColor: '#00ff00' }}
-                      />
-                    </FormControl>
-                    <FormMessage className="text-alert-red text-xs" />
-                  </FormItem>
+              <div className="space-y-1">
+                <label className="block text-xs font-mono text-dim-gray">&gt; Confirm Password:</label>
+                <input
+                  type="password"
+                  className="w-full bg-black/50 border border-primary/30 rounded px-3 py-2 font-mono focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary"
+                  style={{ color: 'white', caretColor: '#00ff00' }}
+                  onChange={(e) => registerForm.setValue('confirmPassword', e.target.value)}
+                  autoComplete="new-password"
+                />
+                {registerForm.formState.errors.confirmPassword && (
+                  <div className="text-alert-red text-xs">
+                    {registerForm.formState.errors.confirmPassword.message}
+                  </div>
                 )}
-              />
+              </div>
               
-              <FormField
-                control={registerForm.control}
-                name="termsAccepted"
-                render={({ field }) => (
-                  <FormItem className="flex items-start space-x-2">
-                    <FormControl>
-                      <Checkbox
-                        checked={field.value}
-                        onCheckedChange={field.onChange}
-                        id="terms"
-                        className="mt-1 bg-terminal border border-matrix/50 rounded text-matrix focus:ring-matrix focus:ring-offset-0"
-                      />
-                    </FormControl>
-                    <label
-                      htmlFor="terms"
-                      className="text-xs font-mono text-dim-gray"
-                    >
-                      I agree to the{" "}
-                      <a href="#" className="text-matrix hover:text-matrix-dark">
-                        Terms of Service
-                      </a>{" "}
-                      and{" "}
-                      <a href="#" className="text-matrix hover:text-matrix-dark">
-                        Privacy Policy
-                      </a>
-                    </label>
-                    <FormMessage className="text-alert-red text-xs" />
-                  </FormItem>
+              <div className="flex items-start space-x-2">
+                <input
+                  type="checkbox"
+                  id="terms"
+                  className="mt-1 bg-terminal border border-matrix/50 rounded text-matrix focus:ring-matrix focus:ring-offset-0"
+                  onChange={(e) => registerForm.setValue('termsAccepted', e.target.checked)}
+                />
+                <label
+                  htmlFor="terms"
+                  className="text-xs font-mono text-dim-gray"
+                >
+                  I agree to the{" "}
+                  <a href="#" className="text-matrix hover:text-matrix-dark">
+                    Terms of Service
+                  </a>{" "}
+                  and{" "}
+                  <a href="#" className="text-matrix hover:text-matrix-dark">
+                    Privacy Policy
+                  </a>
+                </label>
+                {registerForm.formState.errors.termsAccepted && (
+                  <div className="text-alert-red text-xs">
+                    {registerForm.formState.errors.termsAccepted.message}
+                  </div>
                 )}
-              />
+              </div>
               
               <Button
                 type="submit"
