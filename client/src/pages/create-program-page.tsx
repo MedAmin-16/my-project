@@ -26,10 +26,11 @@ import { apiRequest } from "@/lib/api";
 const programSchema = z.object({
   name: z.string().min(3, "Program name must be at least 3 characters"),
   description: z.string().min(10, "Description must be at least 10 characters"),
-  rewardsRange: z.string(),
-  status: z.enum(["active", "inactive"]),
+  rewardsRange: z.string().min(1, "Reward range is required"),
+  logo: z.string().optional(),
+  scope: z.string().min(2, "Program scope is required"),
   isPrivate: z.boolean(),
-  scope: z.string(),
+  status: z.enum(["active", "inactive"]).default("active"),
 });
 
 type ProgramFormValues = z.infer<typeof programSchema>;
@@ -40,6 +41,7 @@ export default function CreateProgramPage() {
   const { user } = useAuth();
   const [_, setLocation] = useLocation();
 
+  // Redirect non-company users
   if (user && user.userType !== "company") {
     setLocation("/dashboard");
     return null;
@@ -51,6 +53,7 @@ export default function CreateProgramPage() {
       name: "",
       description: "",
       rewardsRange: "$100 - $5,000",
+      logo: "",
       status: "active",
       isPrivate: false,
       scope: JSON.stringify({
@@ -133,10 +136,10 @@ export default function CreateProgramPage() {
                   name="description"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Program Description</FormLabel>
+                      <FormLabel>Description</FormLabel>
                       <FormControl>
                         <Textarea 
-                          placeholder="Describe your program's goals, focus areas, and any special requirements..."
+                          placeholder="Describe your program, objectives, and what you're looking to protect"
                           className="min-h-[100px]"
                           {...field}
                         />
@@ -156,8 +159,22 @@ export default function CreateProgramPage() {
                         <Input placeholder="e.g. $100 - $5,000" {...field} />
                       </FormControl>
                       <FormDescription>
-                        Specify the minimum and maximum bounty amounts
+                        Specify the range of rewards for different severity levels
                       </FormDescription>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="logo"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Program Logo URL (Optional)</FormLabel>
+                      <FormControl>
+                        <Input placeholder="https://example.com/logo.png" {...field} />
+                      </FormControl>
                       <FormMessage />
                     </FormItem>
                   )}
@@ -171,13 +188,13 @@ export default function CreateProgramPage() {
                       <FormLabel>Program Scope</FormLabel>
                       <FormControl>
                         <Textarea 
-                          placeholder='{"domains": ["example.com"], "assets": ["web"], "exclusions": []}'
+                          placeholder='{"domains":["*.example.com"],"assets":["Web Application","Mobile App"],"exclusions":["*.test.example.com"]}'
                           className="min-h-[150px] font-mono"
                           {...field}
                         />
                       </FormControl>
                       <FormDescription>
-                        Define the scope in JSON format including domains, assets, and exclusions
+                        Enter the scope as JSON with domains, assets, and exclusions
                       </FormDescription>
                       <FormMessage />
                     </FormItem>
