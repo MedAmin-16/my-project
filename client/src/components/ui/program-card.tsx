@@ -41,9 +41,12 @@ export default function ProgramCard({ program }: ProgramCardProps) {
               <span className="text-xs text-dim-gray font-mono">Rewards: </span>
               <span className="text-xs text-warning-yellow font-mono">{program.rewardsRange}</span>
             </div>
-            <Link href={`/programs/${program.id}`}>
-              <a className="text-xs text-matrix hover:text-matrix-dark font-mono">View Details</a>
-            </Link>
+            <button 
+              onClick={() => window.location.href = `/programs/${program.id}`} 
+              className="text-xs text-matrix hover:text-matrix-dark font-mono cursor-pointer"
+            >
+              View Details
+            </button>
           </div>
         </div>
       </div>

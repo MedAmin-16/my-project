@@ -76,8 +76,8 @@ export default function ProgramsPage() {
             </div>
             <div className="w-full md:w-60">
               <Select
-                value={scopeFilter || ""}
-                onValueChange={(value) => setScopeFilter(value || null)}
+                value={scopeFilter || "all"}
+                onValueChange={(value) => setScopeFilter(value === "all" ? null : value)}
               >
                 <SelectTrigger className="terminal-input">
                   <div className="flex items-center">
@@ -86,7 +86,7 @@ export default function ProgramsPage() {
                   </div>
                 </SelectTrigger>
                 <SelectContent className="bg-terminal border border-primary/30">
-                  <SelectItem value="">All scopes</SelectItem>
+                  <SelectItem value="all">All scopes</SelectItem>
                   {scopeTypes.map(scope => (
                     <SelectItem key={scope} value={scope}>{scope}</SelectItem>
                   ))}
