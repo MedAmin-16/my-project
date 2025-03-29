@@ -7,8 +7,12 @@ import AuthPage from "@/pages/auth-page";
 import LandingPage from "@/pages/landing-page";
 import DashboardPage from "@/pages/dashboard-page";
 import ProgramsPage from "@/pages/programs-page";
+import ProgramDetailPage from "@/pages/program-detail-page";
 import SubmitBugPage from "@/pages/submit-bug-page";
 import VerifyEmailPage from "@/pages/verify-email-page";
+import ProfilePage from "@/pages/profile-page";
+import SettingsPage from "@/pages/settings-page";
+import LeaderboardPage from "@/pages/leaderboard-page";
 import { ProtectedRoute } from "./lib/protected-route";
 import { AuthProvider } from "@/hooks/use-auth";
 
@@ -18,7 +22,12 @@ function Router() {
       <Route path="/" component={LandingPage} />
       <ProtectedRoute path="/dashboard" component={DashboardPage} />
       <ProtectedRoute path="/programs" component={ProgramsPage} />
-      <ProtectedRoute path="/submit" component={SubmitBugPage} />
+      <ProtectedRoute path="/programs/:id" component={ProgramDetailPage} />
+      <ProtectedRoute path="/submit-bug" component={SubmitBugPage} />
+      <ProtectedRoute path="/profile" component={ProfilePage} />
+      <ProtectedRoute path="/profile/:id" component={ProfilePage} />
+      <ProtectedRoute path="/settings" component={SettingsPage} />
+      <ProtectedRoute path="/leaderboard" component={LeaderboardPage} />
       <Route path="/auth" component={AuthPage} />
       <Route path="/verify-email" component={VerifyEmailPage} />
       <Route component={NotFound} />
