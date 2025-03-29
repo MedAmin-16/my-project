@@ -33,6 +33,14 @@ export default function VerifyEmailPage() {
         const response = await apiRequest("GET", `/api/verify-email?token=${token}`);
         
         if (response.ok) {
+          // If verification successful, send welcome email
+          try {
+            await apiRequest("POST", "/api/send-welcome-email");
+          } catch (welcomeError) {
+            console.error("Error sending welcome email:", welcomeError);
+            // Continue with success flow even if welcome email fails
+          }
+          
           setStatus(VerificationStatus.SUCCESS);
         } else {
           const data = await response.json();
@@ -65,14 +73,32 @@ export default function VerifyEmailPage() {
       case VerificationStatus.SUCCESS:
         return (
           <div className="flex flex-col items-center justify-center space-y-6">
-            <CheckCircle className="h-16 w-16 text-green-500" />
+            <div className="relative">
+              <CheckCircle className="h-16 w-16 text-green-500" />
+              <div className="absolute -top-2 -right-2 w-6 h-6 bg-yellow-400 rounded-full flex items-center justify-center animate-pulse">
+                <span className="text-black font-bold text-xs">+10</span>
+              </div>
+            </div>
             <h2 className="text-2xl font-mono text-matrix">Email Verified!</h2>
-            <p className="text-dim-gray text-center">
-              Your email has been successfully verified. Your account is now fully activated.
-            </p>
-            <Button className="glow-button w-full" onClick={() => setLocation("/dashboard")}>
-              Continue to Dashboard
-            </Button>
+            <div className="text-dim-gray text-center space-y-3">
+              <p>
+                <span className="text-green-400">Success!</span> Your email has been verified and your account is now fully activated.
+              </p>
+              <p>
+                You've received <span className="text-yellow-400">10 reputation points</span> for completing this important security step.
+              </p>
+              <p className="text-blue-400">
+                Check your inbox for a welcome email with helpful tips to get started.
+              </p>
+            </div>
+            <div className="w-full space-y-3">
+              <Button className="glow-button w-full" onClick={() => setLocation("/dashboard")}>
+                Continue to Dashboard
+              </Button>
+              <p className="text-xs text-dim-gray text-center mt-2">
+                You can now access all features of the platform
+              </p>
+            </div>
           </div>
         );
 

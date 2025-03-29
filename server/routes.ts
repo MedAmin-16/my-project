@@ -4,6 +4,7 @@ import { storage } from "./storage";
 import { setupAuth } from "./auth";
 import { z } from "zod";
 import { insertSubmissionSchema, insertProgramSchema } from "@shared/schema";
+import { sendWelcomeEmail, sendAchievementEmail, sendSubmissionStatusEmail } from "./email-service";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Setup authentication routes (/api/login, /api/register, etc.)
@@ -148,6 +149,70 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json(updatedNotification);
     } catch (error) {
       res.status(500).json({ message: "Failed to update notification" });
+    }
+  });
+  
+  // Send welcome email after verification
+  app.post("/api/send-welcome-email", async (req, res) => {
+    if (!req.isAuthenticated()) return res.status(401).json({ message: "Unauthorized" });
+    
+    try {
+      const success = await sendWelcomeEmail(req.user.id);
+      
+      if (success) {
+        // Create welcome notification
+        await storage.createNotification({
+          type: 'system',
+          message: 'Welcome to CyberHunt! Your account has been verified.',
+          link: '/dashboard',
+          userId: req.user.id,
+          relatedId: null
+        });
+        
+        res.status(200).json({ message: "Welcome email sent successfully" });
+      } else {
+        res.status(400).json({ message: "Failed to send welcome email. Please verify your email first." });
+      }
+    } catch (error) {
+      console.error('Error sending welcome email:', error);
+      res.status(500).json({ message: "An error occurred while sending welcome email" });
+    }
+  });
+  
+  // Award an achievement to user (could be triggered by various milestones)
+  app.post("/api/award-achievement", async (req, res) => {
+    if (!req.isAuthenticated()) return res.status(401).json({ message: "Unauthorized" });
+    
+    try {
+      const { title, description, reputationPoints } = req.body;
+      
+      if (!title || !description) {
+        return res.status(400).json({ message: "Title and description are required" });
+      }
+      
+      // Update user reputation if points provided
+      if (reputationPoints && typeof reputationPoints === 'number') {
+        // Get current reputation
+        const user = await storage.getUser(req.user.id);
+        if (user) {
+          // Use current reputation or default to 0 if null
+          const currentReputation = user.reputation || 0;
+          const newReputation = currentReputation + reputationPoints;
+          await storage.updateUserReputation(req.user.id, newReputation);
+        }
+      }
+      
+      // Send achievement email
+      const success = await sendAchievementEmail(req.user.id, title, description);
+      
+      if (success) {
+        res.status(200).json({ message: "Achievement awarded successfully" });
+      } else {
+        res.status(400).json({ message: "Failed to award achievement" });
+      }
+    } catch (error) {
+      console.error('Error awarding achievement:', error);
+      res.status(500).json({ message: "An error occurred while awarding achievement" });
     }
   });
 

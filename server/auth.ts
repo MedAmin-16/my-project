@@ -6,7 +6,7 @@ import { scrypt, randomBytes, timingSafeEqual } from "crypto";
 import { promisify } from "util";
 import { storage } from "./storage";
 import { User as SelectUser } from "@shared/schema";
-import { sendVerificationEmail, verifyEmailWithToken } from "./email-service";
+import { sendVerificationEmail, verifyEmailWithToken, sendWelcomeEmail } from "./email-service";
 
 declare global {
   namespace Express {
@@ -109,7 +109,7 @@ export function setupAuth(app: Express) {
       }
       
       // Remove password from response
-      const userResponse = { ...user };
+      const userResponse = { ...user } as any;
       delete userResponse.password;
 
       // Log the user in
@@ -136,6 +136,13 @@ export function setupAuth(app: Express) {
     }
     
     try {
+      // First, get the user by the verification token to know their ID
+      const userByToken = await storage.getUserByVerificationToken(token);
+      if (!userByToken) {
+        return res.status(400).json({ message: "Invalid or expired verification token" });
+      }
+      
+      // Then verify the email
       const success = await verifyEmailWithToken(token);
       
       if (success) {
@@ -145,6 +152,35 @@ export function setupAuth(app: Express) {
           if (freshUser) {
             req.login(freshUser, () => {});
           }
+        }
+        
+        // Send welcome email
+        try {
+          await sendWelcomeEmail(userByToken.id);
+          
+          // Create welcome notification
+          await storage.createNotification({
+            type: 'system',
+            message: 'Welcome to CyberHunt! Your account has been verified.',
+            link: '/dashboard',
+            userId: userByToken.id,
+            relatedId: null
+          });
+          
+          // Create an activity record for the user
+          await storage.createActivity({
+            userId: userByToken.id,
+            type: 'account_verified',
+            message: 'Email verified successfully',
+            details: 'Account verification completed',
+            relatedId: userByToken.id
+          });
+          
+          // Award initial reputation points for verifying email
+          await storage.updateUserReputation(userByToken.id, 10);
+        } catch (emailError) {
+          console.error('Failed to send welcome email:', emailError);
+          // Continue verification process even if email sending fails
         }
         
         return res.status(200).json({ message: "Email verified successfully" });
@@ -158,7 +194,7 @@ export function setupAuth(app: Express) {
   });
 
   app.post("/api/login", (req, res, next) => {
-    passport.authenticate("local", (err, user, info) => {
+    passport.authenticate("local", (err: any, user: SelectUser | false, info: any) => {
       if (err) return next(err);
       if (!user) return res.status(401).json({ message: "Invalid username or password" });
       
@@ -166,7 +202,7 @@ export function setupAuth(app: Express) {
         if (err) return next(err);
         
         // Remove password from response
-        const userResponse = { ...user };
+        const userResponse = { ...user } as any;
         delete userResponse.password;
         
         res.status(200).json(userResponse);
@@ -187,7 +223,7 @@ export function setupAuth(app: Express) {
     }
     
     // Remove password from response
-    const user = { ...req.user };
+    const user = { ...req.user } as any;
     delete user.password;
     
     res.json(user);
