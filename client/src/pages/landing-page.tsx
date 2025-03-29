@@ -1,9 +1,16 @@
-import { Link } from "wouter";
+import { Link, Redirect } from "wouter";
 import { ArrowRight, Shield, Bug, Trophy, Lock } from "lucide-react";
 import MatrixBackground from "@/components/matrix-background";
 import { Button } from "@/components/ui/button";
+import { useAuth } from "@/hooks/use-auth";
 
 export default function LandingPage() {
+  const { user } = useAuth();
+  
+  // If user is logged in, redirect to dashboard
+  if (user) {
+    return <Redirect to="/dashboard" />;
+  }
   return (
     <div className="min-h-screen bg-deep-black relative">
       <MatrixBackground />

@@ -19,7 +19,7 @@ export default function Navbar() {
   const navLinks = [
     { name: "Dashboard", path: "/dashboard" },
     { name: "Programs", path: "/programs" },
-    { name: "Submissions", path: "/submissions" },
+    { name: "Submissions", path: "/submit" },
     { name: "Leaderboard", path: "/leaderboard" },
   ];
 
@@ -44,7 +44,7 @@ export default function Navbar() {
         <div className="flex justify-between h-16">
           <div className="flex items-center">
             <div className="flex-shrink-0 flex items-center">
-              <Link href="/">
+              <Link href="/dashboard">
                 <a className="text-matrix text-xl font-mono font-bold">CyberHunt_</a>
               </Link>
             </div>
