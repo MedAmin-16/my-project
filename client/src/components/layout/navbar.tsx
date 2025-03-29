@@ -71,21 +71,21 @@ export default function Navbar() {
           <div className="flex items-center">
             <div className="flex-shrink-0 flex items-center">
               <Link href="/dashboard">
-                <a className="text-matrix text-xl font-mono font-bold">CyberHunt_</a>
+                <div className="text-matrix text-xl font-mono font-bold cursor-pointer">CyberHunt_</div>
               </Link>
             </div>
             <div className="hidden sm:ml-6 sm:flex sm:space-x-6">
               {navLinks.map((link) => (
                 <Link key={link.path} href={link.path}>
-                  <a
+                  <div
                     className={`${
                       isActive(link.path)
                         ? "text-light-gray border-matrix"
                         : "text-dim-gray border-transparent hover:text-matrix"
-                    } border-b-2 px-3 pt-5 pb-3 text-sm font-mono`}
+                    } border-b-2 px-3 pt-5 pb-3 text-sm font-mono cursor-pointer`}
                   >
                     {link.name}
-                  </a>
+                  </div>
                 </Link>
               ))}
             </div>

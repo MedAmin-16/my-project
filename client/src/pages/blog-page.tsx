@@ -266,7 +266,7 @@ export default function BlogPage() {
                 
                 <h3 className="text-xl font-mono font-bold text-light-gray hover:text-matrix mb-3">
                   <Link href={`/blog/${post.id}`}>
-                    <a>{post.title}</a>
+                    <div className="cursor-pointer">{post.title}</div>
                   </Link>
                 </h3>
                 
@@ -295,9 +295,9 @@ export default function BlogPage() {
               
               <div className="px-6 pb-6">
                 <Link href={`/blog/${post.id}`}>
-                  <a className="text-matrix hover:text-matrix-dark text-sm font-mono flex items-center">
+                  <div className="text-matrix hover:text-matrix-dark text-sm font-mono flex items-center cursor-pointer">
                     Read More <ChevronRight className="ml-1 h-4 w-4" />
-                  </a>
+                  </div>
                 </Link>
               </div>
             </div>
@@ -333,9 +333,9 @@ export default function BlogPage() {
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-2xl font-mono font-bold text-matrix">Recent Articles</h2>
             <Link href="/blog/archive">
-              <a className="text-matrix hover:text-matrix-dark text-sm font-mono flex items-center">
+              <div className="text-matrix hover:text-matrix-dark text-sm font-mono flex items-center cursor-pointer">
                 View All <ChevronRight className="ml-1 h-4 w-4" />
-              </a>
+              </div>
             </Link>
           </div>
           
@@ -357,9 +357,9 @@ export default function BlogPage() {
                     </div>
                     
                     <Link href={`/blog/${post.id}`}>
-                      <a className="text-light-gray hover:text-matrix font-mono text-lg mb-1 block">
+                      <div className="text-light-gray hover:text-matrix font-mono text-lg mb-1 block cursor-pointer">
                         {post.title}
-                      </a>
+                      </div>
                     </Link>
                     
                     <p className="text-dim-gray text-sm line-clamp-1">
