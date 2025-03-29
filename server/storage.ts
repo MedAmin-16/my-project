@@ -231,11 +231,23 @@ export class MemStorage implements IStorage {
 
   async createProgram(insertProgram: InsertProgram): Promise<Program> {
     const id = this.currentProgramId++;
+    
+    // Ensure that required fields are present
+    const sanitizedProgram = {
+      ...insertProgram,
+      company: insertProgram.company || "Unknown Company",
+      name: insertProgram.name || `Program ${id}`,
+      description: insertProgram.description || "No description provided",
+      rewardsRange: insertProgram.rewardsRange || "$0-$0",
+      status: insertProgram.status || "active"
+    };
+    
     const program: Program = { 
-      ...insertProgram, 
+      ...sanitizedProgram, 
       id,
       createdAt: new Date()
     };
+    
     this.programs.set(id, program);
     return program;
   }

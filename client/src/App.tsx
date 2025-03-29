@@ -6,6 +6,8 @@ import NotFound from "@/pages/not-found";
 import AuthPage from "@/pages/auth-page";
 import LandingPage from "@/pages/landing-page";
 import DashboardPage from "@/pages/dashboard-page";
+import CompanyDashboardPage from "@/pages/company-dashboard-page";
+import CreateProgramPage from "@/pages/create-program-page";
 import ProgramsPage from "@/pages/programs-page";
 import ProgramDetailPage from "@/pages/program-detail-page";
 import SubmitBugPage from "@/pages/submit-bug-page";
@@ -23,13 +25,24 @@ import BlogPage from "@/pages/blog-page";
 import DocumentationPage from "@/pages/documentation-page";
 import SecurityPage from "@/pages/security-page";
 import { ProtectedRoute } from "./lib/protected-route";
-import { AuthProvider } from "@/hooks/use-auth";
+import { AuthProvider, useAuth } from "@/hooks/use-auth";
 
 function Router() {
+  const { user } = useAuth();
+  
+  // Determine the component for the dashboard based on userType
+  const DashboardComponent = () => {
+    if (user?.userType === 'company') {
+      return <CompanyDashboardPage />;
+    }
+    return <DashboardPage />;
+  };
+  
   return (
     <Switch>
       <Route path="/" component={LandingPage} />
-      <ProtectedRoute path="/dashboard" component={DashboardPage} />
+      <ProtectedRoute path="/dashboard" component={DashboardComponent} />
+      <ProtectedRoute path="/company-dashboard" component={CompanyDashboardPage} />
       <ProtectedRoute path="/programs" component={ProgramsPage} />
       <ProtectedRoute path="/programs/:id" component={ProgramDetailPage} />
       <ProtectedRoute path="/submit-bug" component={SubmitBugPage} />
