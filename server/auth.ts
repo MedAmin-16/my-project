@@ -1,11 +1,12 @@
 import passport from "passport";
 import { Strategy as LocalStrategy } from "passport-local";
-import { Express } from "express";
+import { Express, Request, Response, NextFunction } from "express";
 import session from "express-session";
 import { scrypt, randomBytes, timingSafeEqual } from "crypto";
 import { promisify } from "util";
 import { storage } from "./storage";
 import { User as SelectUser } from "@shared/schema";
+import { sendVerificationEmail, verifyEmailWithToken } from "./email-service";
 
 declare global {
   namespace Express {
@@ -73,33 +74,86 @@ export function setupAuth(app: Express) {
     try {
       const { username, password, email } = req.body;
       
-      if (!username || !password) {
-        return res.status(400).json({ message: "Username and password are required" });
+      if (!username || !password || !email) {
+        return res.status(400).json({ message: "Username, password, and email are required" });
       }
       
+      // Check if username is taken
       const existingUser = await storage.getUserByUsername(username);
       if (existingUser) {
         return res.status(400).json({ message: "Username already exists" });
       }
       
+      // Check if email is taken
+      const existingEmail = await storage.getUserByEmail(email);
+      if (existingEmail) {
+        return res.status(400).json({ message: "Email already in use" });
+      }
+      
       const hashedPassword = await hashPassword(password);
       
+      // Create the user
       const user = await storage.createUser({
         username,
         password: hashedPassword,
         email
       });
+
+      // Send verification email
+      try {
+        await sendVerificationEmail(user.id, email, username);
+        console.log(`Verification email sent to ${email} for user ${username}`);
+      } catch (emailError) {
+        console.error('Failed to send verification email:', emailError);
+        // Continue registration process even if email sending fails
+      }
       
       // Remove password from response
       const userResponse = { ...user };
       delete userResponse.password;
 
+      // Log the user in
       req.login(user, (err) => {
         if (err) return next(err);
-        res.status(201).json(userResponse);
+        
+        // Return success response
+        res.status(201).json({
+          ...userResponse,
+          message: "Registration successful! Please check your email to verify your account."
+        });
       });
     } catch (error) {
       next(error);
+    }
+  });
+  
+  // Email verification endpoint
+  app.get("/api/verify-email", async (req, res) => {
+    const { token } = req.query;
+    
+    if (!token || typeof token !== 'string') {
+      return res.status(400).json({ message: "Invalid verification token" });
+    }
+    
+    try {
+      const success = await verifyEmailWithToken(token);
+      
+      if (success) {
+        // If the user is logged in, update their session
+        if (req.isAuthenticated() && req.user) {
+          const freshUser = await storage.getUser(req.user.id);
+          if (freshUser) {
+            req.login(freshUser, () => {});
+          }
+        }
+        
+        return res.status(200).json({ message: "Email verified successfully" });
+      } else {
+        return res.status(400).json({ message: "Invalid or expired verification token" });
+      }
+    } catch (error) {
+      console.error('Error verifying email:', error);
+      return res.status(500).json({ message: "Failed to verify email" });
     }
   });
 

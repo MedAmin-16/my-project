@@ -11,9 +11,15 @@ export interface IStorage {
   // User CRUD
   getUser(id: number): Promise<User | undefined>;
   getUserByUsername(username: string): Promise<User | undefined>;
+  getUserByEmail(email: string): Promise<User | undefined>;
   createUser(user: InsertUser): Promise<User>;
   updateUserReputation(id: number, reputation: number): Promise<User | undefined>;
   getLeaderboard(limit?: number): Promise<User[]>;
+  
+  // Email verification
+  setVerificationToken(userId: number, token: string, expiryHours?: number): Promise<User | undefined>;
+  verifyEmail(token: string): Promise<User | undefined>;
+  getUserByVerificationToken(token: string): Promise<User | undefined>;
   
   // Program CRUD
   getProgram(id: number): Promise<Program | undefined>;
@@ -123,17 +129,69 @@ export class MemStorage implements IStorage {
       (user) => user.username === username,
     );
   }
+  
+  async getUserByEmail(email: string): Promise<User | undefined> {
+    return Array.from(this.users.values()).find(
+      (user) => user.email === email,
+    );
+  }
+  
+  async getUserByVerificationToken(token: string): Promise<User | undefined> {
+    return Array.from(this.users.values()).find(
+      (user) => user.verificationToken === token && 
+                user.verificationTokenExpiry && 
+                user.verificationTokenExpiry > new Date(),
+    );
+  }
 
   async createUser(insertUser: InsertUser): Promise<User> {
     const id = this.currentUserId++;
     const user: User = { 
       ...insertUser, 
       id, 
+      isEmailVerified: false,
       reputation: 0, 
       rank: "Newbie",
       createdAt: new Date()
     };
     this.users.set(id, user);
+    return user;
+  }
+  
+  async setVerificationToken(userId: number, token: string, expiryHours = 24): Promise<User | undefined> {
+    const user = await this.getUser(userId);
+    if (!user) return undefined;
+    
+    // Set token expiry time
+    const expiryDate = new Date();
+    expiryDate.setHours(expiryDate.getHours() + expiryHours);
+    
+    user.verificationToken = token;
+    user.verificationTokenExpiry = expiryDate;
+    
+    this.users.set(userId, user);
+    return user;
+  }
+  
+  async verifyEmail(token: string): Promise<User | undefined> {
+    const user = await this.getUserByVerificationToken(token);
+    if (!user) return undefined;
+    
+    user.isEmailVerified = true;
+    user.verificationToken = null;
+    user.verificationTokenExpiry = null;
+    
+    this.users.set(user.id, user);
+    
+    // Create an activity for email verification
+    await this.createActivity({
+      type: "account_update",
+      message: "Email verified successfully",
+      details: "Your email has been verified",
+      userId: user.id,
+      relatedId: null
+    });
+    
     return user;
   }
   

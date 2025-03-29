@@ -7,6 +7,7 @@ import { z } from "zod";
 import { Redirect, useLocation } from "wouter";
 import { Loader2 } from "lucide-react";
 import MatrixBackground from "@/components/matrix-background";
+import { useToast } from "@/hooks/use-toast";
 import {
   Form,
   FormControl,
@@ -49,12 +50,8 @@ export default function AuthPage() {
   
   const [isLogin, setIsLogin] = useState(initialMode);
   const { user, loginMutation, registerMutation } = useAuth();
+  const { toast } = useToast();
   
-  // If user is already logged in, redirect to dashboard
-  if (user) {
-    return <Redirect to="/" />;
-  }
-
   // Form for login
   const loginForm = useForm<LoginFormValues>({
     resolver: zodResolver(loginSchema),
@@ -76,6 +73,12 @@ export default function AuthPage() {
       termsAccepted: false,
     },
   });
+  
+  // If user is already logged in, redirect to dashboard
+  // This must be AFTER all hooks are called
+  if (user) {
+    return <Redirect to="/" />;
+  }
 
   // Handle login form submission
   const onLoginSubmit = (data: LoginFormValues) => {
@@ -97,6 +100,15 @@ export default function AuthPage() {
       username: data.username,
       password: data.password,
       email: data.email,
+    }, {
+      onSuccess: () => {
+        // Show a toast notification about email verification
+        toast({
+          title: "Registration successful!",
+          description: "Please check your email to verify your account.",
+          variant: "default",
+        });
+      }
     });
   };
 

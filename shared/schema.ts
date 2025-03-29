@@ -8,6 +8,9 @@ export const users = pgTable("users", {
   username: text("username").notNull().unique(),
   password: text("password").notNull(),
   email: text("email"),
+  isEmailVerified: boolean("is_email_verified").default(false),
+  verificationToken: text("verification_token"),
+  verificationTokenExpiry: timestamp("verification_token_expiry"),
   reputation: integer("reputation").default(0),
   rank: text("rank").default("Newbie"),
   createdAt: timestamp("created_at").defaultNow()

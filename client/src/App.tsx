@@ -8,6 +8,7 @@ import LandingPage from "@/pages/landing-page";
 import DashboardPage from "@/pages/dashboard-page";
 import ProgramsPage from "@/pages/programs-page";
 import SubmitBugPage from "@/pages/submit-bug-page";
+import VerifyEmailPage from "@/pages/verify-email-page";
 import { ProtectedRoute } from "./lib/protected-route";
 import { AuthProvider } from "@/hooks/use-auth";
 
@@ -19,6 +20,7 @@ function Router() {
       <ProtectedRoute path="/programs" component={ProgramsPage} />
       <ProtectedRoute path="/submit" component={SubmitBugPage} />
       <Route path="/auth" component={AuthPage} />
+      <Route path="/verify-email" component={VerifyEmailPage} />
       <Route component={NotFound} />
     </Switch>
   );
