@@ -22,12 +22,31 @@ export default function Navbar() {
     { name: "Leaderboard", path: "/leaderboard" },
   ];
   
+  // Resource links for dropdown
+  const resourceLinks = [
+    { name: "Resources", path: "/resources" },
+    { name: "Help Center", path: "/help-center" },
+    { name: "Blog", path: "/blog" },
+    { name: "Documentation", path: "/documentation" },
+  ];
+  
+  // Legal links for dropdown
+  const legalLinks = [
+    { name: "About", path: "/about" },
+    { name: "Legal", path: "/legal" },
+    { name: "Terms", path: "/terms-of-service" },
+    { name: "Privacy", path: "/privacy-policy" },
+    { name: "Security", path: "/security" },
+  ];
+  
   // Footer links (not visible in the top nav)
   const footerLinks = [
     { name: "Resources", path: "/resources" },
     { name: "Legal", path: "/legal" },
     { name: "Terms", path: "/terms-of-service" },
     { name: "Privacy", path: "/privacy-policy" },
+    { name: "Security", path: "/security" },
+    { name: "About", path: "/about" },
   ];
 
   // Function to check if the link is active
@@ -91,12 +110,41 @@ export default function Navbar() {
                   <Link href="/settings">Settings</Link>
                 </DropdownMenuItem>
                 <DropdownMenuSeparator className="bg-matrix/20" />
-                <DropdownMenuItem className="text-light-gray hover:bg-matrix/10 cursor-pointer font-mono text-sm">
-                  <Link href="/resources">Resources</Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem className="text-light-gray hover:bg-matrix/10 cursor-pointer font-mono text-sm">
-                  <Link href="/legal">Legal</Link>
-                </DropdownMenuItem>
+                
+                {/* Resources dropdown */}
+                <DropdownMenu>
+                  <DropdownMenuTrigger className="w-full text-left px-3 py-2 text-light-gray hover:bg-matrix/10 cursor-pointer font-mono text-sm">
+                    <div className="flex items-center justify-between">
+                      <span>Resources</span>
+                      <ChevronDown className="h-4 w-4 text-dim-gray" />
+                    </div>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent className="bg-terminal border border-matrix/30 ml-1">
+                    {resourceLinks.map((link) => (
+                      <DropdownMenuItem key={link.path} className="text-light-gray hover:bg-matrix/10 cursor-pointer font-mono text-sm">
+                        <Link href={link.path}>{link.name}</Link>
+                      </DropdownMenuItem>
+                    ))}
+                  </DropdownMenuContent>
+                </DropdownMenu>
+                
+                {/* Legal dropdown */}
+                <DropdownMenu>
+                  <DropdownMenuTrigger className="w-full text-left px-3 py-2 text-light-gray hover:bg-matrix/10 cursor-pointer font-mono text-sm">
+                    <div className="flex items-center justify-between">
+                      <span>Legal & About</span>
+                      <ChevronDown className="h-4 w-4 text-dim-gray" />
+                    </div>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent className="bg-terminal border border-matrix/30 ml-1">
+                    {legalLinks.map((link) => (
+                      <DropdownMenuItem key={link.path} className="text-light-gray hover:bg-matrix/10 cursor-pointer font-mono text-sm">
+                        <Link href={link.path}>{link.name}</Link>
+                      </DropdownMenuItem>
+                    ))}
+                  </DropdownMenuContent>
+                </DropdownMenu>
+                
                 <DropdownMenuSeparator className="bg-matrix/20" />
                 <DropdownMenuItem 
                   className="text-alert-red hover:bg-matrix/10 cursor-pointer font-mono text-sm"
