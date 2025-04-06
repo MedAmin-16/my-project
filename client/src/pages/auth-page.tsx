@@ -217,10 +217,15 @@ export default function AuthPage() {
       <MatrixBackground />
       <Link 
         to="/" 
-        className="absolute top-4 left-4 text-matrix hover:text-matrix-dark flex items-center gap-2 z-20"
+        className="absolute top-4 left-4 flex items-center gap-2 z-20 group"
       >
-        <ArrowLeft className="h-5 w-5" />
-        <span className="text-sm">Back to Home</span>
+        <div className="relative">
+          <ArrowLeft className="h-5 w-5 text-matrix transition-all duration-300 group-hover:text-matrix-dark group-hover:-translate-x-1" />
+          <div className="absolute inset-0 bg-matrix/20 blur-lg rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+        </div>
+        <span className="text-sm font-mono text-matrix group-hover:text-matrix-dark transition-colors duration-300">
+          {'< Back to Home />'}
+        </span>
       </Link>
 
       <div className="terminal-card w-full max-w-md p-6 rounded-lg relative overflow-hidden z-10">
