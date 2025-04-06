@@ -58,7 +58,6 @@ function Router() {
       <Route path="/find-programs" component={FindProgramsPage} />
       <ProtectedRoute path="/submit" component={SubmitBugPage} />
       <ProtectedRoute path="/submit-bug" component={SubmitBugPage} />
-      <ProtectedRoute path="/programs" component={ProgramsPage} />
       <ProtectedRoute path="/profile" component={ProfilePage} />
       <ProtectedRoute path="/profile/:id" component={ProfilePage} />
       <ProtectedRoute path="/settings" component={SettingsPage} />
