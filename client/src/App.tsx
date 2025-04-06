@@ -26,7 +26,7 @@ import DocumentationPage from "@/pages/documentation-page";
 import SecurityPage from "@/pages/security-page";
 import { ProtectedRoute } from "./lib/protected-route";
 import { AuthProvider, useAuth } from "@/hooks/use-auth";
-import { ThemeProvider } from "./components/theme-provider";
+import { ThemeProvider } from "@/components/theme-provider";
 
 function Router() {
   const { user } = useAuth();
