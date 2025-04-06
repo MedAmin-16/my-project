@@ -79,15 +79,16 @@ type RegisterHackerFormValues = z.infer<typeof registerHackerSchema>;
 type RegisterCompanyFormValues = z.infer<typeof registerCompanySchema>;
 
 export default function AuthPage() {
-  // Check if we should show register form based on URL
   const [location] = useLocation();
-  const showRegisterForm = location.includes('mode=register');
-  const initialMode = !showRegisterForm; // true = login, false = register
-
-  const [isLogin, setIsLogin] = useState(initialMode);
-  const [activeTab, setActiveTab] = useState<"hacker" | "company">("hacker");
   const { user, loginMutation, registerMutation } = useAuth();
   const { toast } = useToast();
+  const [showPassword, setShowPassword] = useState(false);
+  
+  // Initialize state after hooks
+  const showRegisterForm = location.includes('mode=register');
+  const initialMode = !showRegisterForm;
+  const [isLogin, setIsLogin] = useState(initialMode);
+  const [activeTab, setActiveTab] = useState<"hacker" | "company">("hacker");
 
   // Form for login
   const loginForm = useForm<LoginFormValues>({
