@@ -211,8 +211,6 @@ export default function AuthPage() {
     }
   };
 
-  const [showPassword, setShowPassword] = useState(false);
-
   return (
     <div className="min-h-screen flex items-center justify-center p-4 relative">
       <MatrixBackground />
