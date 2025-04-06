@@ -214,6 +214,13 @@ export default function AuthPage() {
   return (
     <div className="min-h-screen flex items-center justify-center p-4 relative">
       <MatrixBackground />
+      <Link 
+        to="/" 
+        className="absolute top-4 left-4 text-matrix hover:text-matrix-dark flex items-center gap-2 z-20"
+      >
+        <ArrowLeft className="h-5 w-5" />
+        <span className="text-sm">Back to Home</span>
+      </Link>
 
       <div className="terminal-card w-full max-w-md p-6 rounded-lg relative overflow-hidden z-10">
         <div className="terminal-header mb-6"></div>
