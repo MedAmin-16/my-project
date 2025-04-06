@@ -1,11 +1,12 @@
 import { useState } from "react";
 import { useAuth } from "@/hooks/use-auth";
 import { useForm } from "react-hook-form";
+import { Link } from "wouter";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { insertUserSchema } from "@shared/schema";
 import { z } from "zod";
 import { Redirect, useLocation } from "wouter";
-import { Loader2, Monitor, User, Eye, EyeOff } from "lucide-react";
+import { Loader2, Monitor, User, Eye, EyeOff, ArrowLeft } from "lucide-react";
 import MatrixBackground from "@/components/matrix-background";
 import { useToast } from "@/hooks/use-toast";
 import {
