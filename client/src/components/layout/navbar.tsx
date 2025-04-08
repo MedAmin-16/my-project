@@ -114,46 +114,6 @@ export default function Navbar() {
                   </DropdownMenuItem>
                 </Link>
                 <DropdownMenuSeparator className="bg-matrix/20" />
-
-                {/* Resources dropdown */}
-                <DropdownMenu>
-                  <DropdownMenuTrigger className="w-full text-left px-3 py-2 text-light-gray hover:bg-matrix/10 cursor-pointer font-mono text-sm">
-                    <div className="flex items-center justify-between">
-                      <span>Resources</span>
-                      <ChevronDown className="h-4 w-4 text-dim-gray" />
-                    </div>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent className="bg-terminal border border-matrix/30 ml-1">
-                    {resourceLinks.map((link) => (
-                      <Link key={link.path} href={link.path}>
-                        <DropdownMenuItem className="text-light-gray hover:bg-matrix/10 cursor-pointer font-mono text-sm">
-                          {link.name}
-                        </DropdownMenuItem>
-                      </Link>
-                    ))}
-                  </DropdownMenuContent>
-                </DropdownMenu>
-
-                {/* Legal dropdown */}
-                <DropdownMenu>
-                  <DropdownMenuTrigger className="w-full text-left px-3 py-2 text-light-gray hover:bg-matrix/10 cursor-pointer font-mono text-sm">
-                    <div className="flex items-center justify-between">
-                      <span>Legal & About</span>
-                      <ChevronDown className="h-4 w-4 text-dim-gray" />
-                    </div>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent className="bg-terminal border border-matrix/30 ml-1">
-                    {legalLinks.map((link) => (
-                      <Link key={link.path} href={link.path}>
-                        <DropdownMenuItem className="text-light-gray hover:bg-matrix/10 cursor-pointer font-mono text-sm">
-                          {link.name}
-                        </DropdownMenuItem>
-                      </Link>
-                    ))}
-                  </DropdownMenuContent>
-                </DropdownMenu>
-
-                <DropdownMenuSeparator className="bg-matrix/20" />
                 <DropdownMenuItem 
                   className="text-alert-red hover:bg-matrix/10 cursor-pointer font-mono text-sm"
                   onClick={handleLogout}

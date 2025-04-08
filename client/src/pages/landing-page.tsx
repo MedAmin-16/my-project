@@ -22,10 +22,53 @@ export default function LandingPage() {
             <div className="flex items-center">
               <span className="text-matrix text-xl font-mono font-bold">CyberHunt_</span>
             </div>
-            <nav className="hidden md:flex space-x-8">
+            <nav className="hidden md:flex space-x-8 items-center">
               <a href="#features" className="text-dim-gray hover:text-matrix font-mono text-sm">Features</a>
               <a href="#how-it-works" className="text-dim-gray hover:text-matrix font-mono text-sm">How It Works</a>
               <a href="#programs" className="text-dim-gray hover:text-matrix font-mono text-sm">Programs</a>
+              
+              <DropdownMenu>
+                <DropdownMenuTrigger className="text-dim-gray hover:text-matrix font-mono text-sm">
+                  <div className="flex items-center">
+                    Resources
+                    <ChevronDown className="h-4 w-4 ml-1" />
+                  </div>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent className="bg-terminal border border-matrix/30">
+                  <Link href="/resources">
+                    <DropdownMenuItem className="text-light-gray hover:bg-matrix/10 font-mono text-sm">Resources</DropdownMenuItem>
+                  </Link>
+                  <Link href="/help-center">
+                    <DropdownMenuItem className="text-light-gray hover:bg-matrix/10 font-mono text-sm">Help Center</DropdownMenuItem>
+                  </Link>
+                  <Link href="/documentation">
+                    <DropdownMenuItem className="text-light-gray hover:bg-matrix/10 font-mono text-sm">Documentation</DropdownMenuItem>
+                  </Link>
+                </DropdownMenuContent>
+              </DropdownMenu>
+
+              <DropdownMenu>
+                <DropdownMenuTrigger className="text-dim-gray hover:text-matrix font-mono text-sm">
+                  <div className="flex items-center">
+                    Legal & About
+                    <ChevronDown className="h-4 w-4 ml-1" />
+                  </div>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent className="bg-terminal border border-matrix/30">
+                  <Link href="/about">
+                    <DropdownMenuItem className="text-light-gray hover:bg-matrix/10 font-mono text-sm">About</DropdownMenuItem>
+                  </Link>
+                  <Link href="/legal">
+                    <DropdownMenuItem className="text-light-gray hover:bg-matrix/10 font-mono text-sm">Legal</DropdownMenuItem>
+                  </Link>
+                  <Link href="/terms-of-service">
+                    <DropdownMenuItem className="text-light-gray hover:bg-matrix/10 font-mono text-sm">Terms</DropdownMenuItem>
+                  </Link>
+                  <Link href="/privacy-policy">
+                    <DropdownMenuItem className="text-light-gray hover:bg-matrix/10 font-mono text-sm">Privacy</DropdownMenuItem>
+                  </Link>
+                </DropdownMenuContent>
+              </DropdownMenu>
             </nav>
             <div className="flex items-center space-x-4">
               <Link href="/auth">
