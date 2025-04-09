@@ -1,7 +1,7 @@
 
 import { useState } from "react";
 import { useForm } from "react-hook-form";
-import { Link } from "wouter";
+import { useLocation } from "wouter";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { ArrowLeft, Loader2, Mail, Terminal, ShieldAlert } from "lucide-react";
@@ -21,6 +21,7 @@ export default function ForgotPasswordPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [emailSent, setEmailSent] = useState(false);
   const { toast } = useToast();
+  const [, setLocation] = useLocation();
 
   const form = useForm<ForgotPasswordFormValues>({
     resolver: zodResolver(forgotPasswordSchema),
@@ -63,12 +64,10 @@ export default function ForgotPasswordPage() {
       <MatrixBackground />
       
       <div className="absolute top-4 left-4 z-20">
-        <Link href="/auth">
-          <a className="flex items-center gap-2 text-matrix hover:text-matrix-dark transition-colors">
-            <ArrowLeft className="h-5 w-5" />
-            <span className="text-sm font-mono">Back to Login</span>
-          </a>
-        </Link>
+        <button onClick={() => setLocation("/auth")} className="flex items-center gap-2 text-matrix hover:text-matrix-dark transition-colors">
+          <ArrowLeft className="h-5 w-5" />
+          <span className="text-sm font-mono">Back to Login</span>
+        </button>
       </div>
 
       <div className="min-h-screen flex items-center justify-center p-4 relative z-10">
