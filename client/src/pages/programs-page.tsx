@@ -77,11 +77,11 @@ export default function ProgramsPage() {
                   <span className="text-dim-gray">Reward Range: </span>
                   <span className="text-matrix">{program.rewardRange}</span>
                 </div>
-                <Link href={`/program/${program.id}`}>
-                  <a className="block w-full text-center py-2 bg-matrix/20 hover:bg-matrix/30 text-matrix rounded">
-                    View Details
-                  </a>
-                </Link>
+                <Link href={`/programs/${program.id}`}>
+                <button className="block w-full text-center py-2 bg-matrix/20 hover:bg-matrix/30 text-matrix rounded">
+                  View Details
+                </button>
+              </Link>
               </div>
             ))}
           </div>
