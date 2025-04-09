@@ -671,10 +671,8 @@ export default function CompanyDashboardPage() {
             </CardContent>
           </Card>
         </TabsContent>
-                </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
+      </Tabs>
+    </div>
       </Tabs>
     </div>
   );
