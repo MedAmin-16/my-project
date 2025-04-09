@@ -26,7 +26,6 @@ import SecurityPage from "@/pages/security-page";
 import BadgesPage from "@/pages/badges-page";
 import ActivitiesPage from "@/pages/activities-page";
 import AboutPage from "@/pages/about-page";
-import CreateProgramPage from "@/pages/create-program-page";
 import { ProtectedRoute } from "./lib/protected-route";
 import { AuthProvider, useAuth } from "@/hooks/use-auth";
 import { ThemeProvider } from "@/components/theme-provider";
