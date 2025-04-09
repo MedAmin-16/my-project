@@ -6,16 +6,16 @@ import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { ArrowLeft, Loader2, Mail, Terminal, ShieldAlert } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { Form, FormControl, FormField, FormItem, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import MatrixBackground from "@/components/matrix-background";
 
-const forgotPasswordSchema = z.object({
+const forgotSchema = z.object({
   email: z.string().email("Please enter a valid email address"),
 });
 
-type ForgotPasswordFormValues = z.infer<typeof forgotPasswordSchema>;
+type ForgotPasswordFormValues = z.infer<typeof forgotSchema>;
 
 export default function ForgotPasswordPage() {
   const [isLoading, setIsLoading] = useState(false);
@@ -24,34 +24,31 @@ export default function ForgotPasswordPage() {
   const [, setLocation] = useLocation();
 
   const form = useForm<ForgotPasswordFormValues>({
-    resolver: zodResolver(forgotPasswordSchema),
-    defaultValues: {
-      email: "",
-    },
+    resolver: zodResolver(forgotSchema),
+    defaultValues: { email: "" },
   });
 
   const onSubmit = async (data: ForgotPasswordFormValues) => {
     setIsLoading(true);
     try {
+      // Replace with your actual API endpoint
       const response = await fetch("/api/forgot-password", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(data),
       });
 
-      if (response.ok) {
-        setEmailSent(true);
-        toast({
-          title: "Reset link sent",
-          description: "Please check your email for password reset instructions.",
-        });
-      } else {
-        throw new Error("Failed to send reset link");
-      }
+      if (!response.ok) throw new Error();
+      
+      setEmailSent(true);
+      toast({
+        title: "Reset Link Sent",
+        description: "Check your email for password reset instructions.",
+      });
     } catch (error) {
       toast({
         title: "Error",
-        description: "Failed to send password reset link. Please try again.",
+        description: "Failed to send reset link. Please try again.",
         variant: "destructive",
       });
     } finally {
@@ -60,19 +57,22 @@ export default function ForgotPasswordPage() {
   };
 
   return (
-    <div className="min-h-screen bg-deep-black relative">
+    <div className="min-h-screen bg-deep-black text-light-gray relative">
       <MatrixBackground />
-      
-      <button 
-        onClick={() => setLocation("/auth")} 
-        className="absolute top-4 left-4 z-20 flex items-center gap-2 text-matrix hover:text-matrix-dark transition-colors"
-      >
-        <ArrowLeft className="h-5 w-5" />
-        <span className="text-sm font-mono">Back to Login</span>
-      </button>
+
+      <div className="absolute top-4 left-4 z-20">
+        <button 
+          onClick={() => setLocation("/auth")} 
+          className="flex items-center gap-2 text-matrix hover:text-matrix-dark transition-colors"
+        >
+          <ArrowLeft className="h-5 w-5" />
+          <span className="text-sm font-mono">Back to Login</span>
+        </button>
+      </div>
 
       <div className="min-h-screen flex items-center justify-center p-4 relative z-10">
-        <div className="w-full max-w-md p-8 rounded-lg relative overflow-hidden border border-matrix/30 bg-black/80 backdrop-blur-sm">
+        <div className="w-full max-w-md bg-black/80 backdrop-blur-sm p-8 rounded-lg border border-matrix/30 relative overflow-hidden">
+          {/* Top gradient line */}
           <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-matrix/0 via-matrix/50 to-matrix/0" />
           
           <div className="text-center mb-8">
@@ -81,7 +81,7 @@ export default function ForgotPasswordPage() {
                 <ShieldAlert className="h-6 w-6 text-matrix" />
               </div>
             </div>
-            <h1 className="text-matrix text-3xl font-mono font-bold mb-2">Password Reset_</h1>
+            <h1 className="text-3xl font-mono font-bold text-matrix mb-2">Password Reset_</h1>
             <p className="text-dim-gray text-sm">
               Enter your email address and we'll send you instructions to reset your password.
             </p>
@@ -91,7 +91,7 @@ export default function ForgotPasswordPage() {
             <div className="space-y-6 text-center">
               <div className="p-6 rounded-lg bg-matrix/5 border border-matrix/30">
                 <Mail className="h-8 w-8 text-matrix mx-auto mb-4" />
-                <h2 className="text-matrix text-xl font-mono mb-2">Check Your Inbox</h2>
+                <h2 className="text-xl font-mono text-matrix mb-2">Check Your Inbox</h2>
                 <p className="text-dim-gray text-sm">
                   If an account exists with this email, you'll receive password reset instructions shortly.
                 </p>
@@ -111,7 +111,6 @@ export default function ForgotPasswordPage() {
                   name="email"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel className="text-light-gray font-mono">Email Address</FormLabel>
                       <FormControl>
                         <div className="relative">
                           <Input
@@ -146,6 +145,10 @@ export default function ForgotPasswordPage() {
               </form>
             </Form>
           )}
+
+          {/* Decorative elements */}
+          <div className="absolute -bottom-10 -right-10 w-32 h-32 bg-matrix/5 rounded-full blur-3xl"></div>
+          <div className="absolute -top-10 -left-10 w-32 h-32 bg-electric-blue/5 rounded-full blur-3xl"></div>
         </div>
       </div>
     </div>
