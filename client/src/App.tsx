@@ -25,6 +25,7 @@ import DocumentationPage from "@/pages/documentation-page";
 import SecurityPage from "@/pages/security-page";
 import BadgesPage from "@/pages/badges-page";
 import ActivitiesPage from "@/pages/activities-page";
+import AboutPage from "@/pages/about-page";
 import { ProtectedRoute } from "./lib/protected-route";
 import { AuthProvider, useAuth } from "@/hooks/use-auth";
 import { ThemeProvider } from "@/components/theme-provider";
@@ -75,6 +76,7 @@ function Router() {
       <Route path="/security" component={SecurityPage} />
       <Route path="/badges" component={BadgesPage} />
       <Route path="/activities" component={ActivitiesPage} />
+      <Route path="/about" component={AboutPage} />
       <Route path="/*" component={NotFound} /> {/* Added catch-all route */}
     </Switch>
   );
