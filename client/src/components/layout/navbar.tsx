@@ -20,7 +20,6 @@ export default function Navbar() {
     { name: "Dashboard", path: "/dashboard" },
     { name: "Programs", path: "/programs" },
     { name: "Leaderboard", path: "/leaderboard" },
-    { name: "About", path: "/about" },
   ];
 
   // Resource links for dropdown

@@ -19,7 +19,6 @@ import TermsOfServicePage from "@/pages/terms-of-service";
 import PrivacyPolicyPage from "@/pages/privacy-policy";
 import ResourcesPage from "@/pages/resources-page";
 import LegalPage from "@/pages/legal-page";
-import AboutPage from "@/pages/about-page";
 import HelpCenterPage from "@/pages/help-center-page";
 import BlogPage from "@/pages/blog-page";
 import DocumentationPage from "@/pages/documentation-page";
@@ -70,7 +69,6 @@ function Router() {
       <Route path="/privacy-policy" component={PrivacyPolicyPage} />
       <Route path="/resources" component={ResourcesPage} />
       <Route path="/legal" component={LegalPage} />
-      <Route path="/about" component={AboutPage} />
       <Route path="/help-center" component={HelpCenterPage} />
       <Route path="/blog" component={BlogPage} />
       <Route path="/documentation" component={DocumentationPage} />
