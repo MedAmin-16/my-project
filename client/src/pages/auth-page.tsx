@@ -84,7 +84,7 @@ export default function AuthPage() {
   const { user, loginMutation, registerMutation } = useAuth();
   const { toast } = useToast();
   const [showPassword, setShowPassword] = useState(false);
-  
+
   // Initialize state after hooks
   const showRegisterForm = location.includes('mode=register');
   const initialMode = !showRegisterForm;
@@ -320,9 +320,9 @@ export default function AuthPage() {
                           Remember me
                         </label>
                       </div>
-                      <a href="#" className="text-xs font-mono text-matrix hover:text-matrix-dark">
+                      <Link href="/forgot-password" className="text-xs font-mono text-matrix hover:text-matrix-dark">
                         Forgot password?
-                      </a>
+                      </Link>
                     </div>
 
                     <Button
@@ -402,9 +402,9 @@ export default function AuthPage() {
                           Remember me
                         </label>
                       </div>
-                      <a href="#" className="text-xs font-mono text-matrix hover:text-matrix-dark">
+                      <Link href="/forgot-password" className="text-xs font-mono text-matrix hover:text-matrix-dark">
                         Forgot password?
-                      </a>
+                      </Link>
                     </div>
 
                     <Button
