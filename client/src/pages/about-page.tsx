@@ -103,34 +103,9 @@ export default function AboutPage() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {[
               {
-                name: "Alexandra Chen",
-                role: "Chief Executive Officer",
-                bio: "Former security researcher with over 15 years of experience in cybersecurity leadership.",
-              },
-              {
-                name: "Marcus Washington",
-                role: "Chief Technology Officer",
-                bio: "Security architect and engineer with extensive experience in building secure systems.",
-              },
-              {
-                name: "Sophia Rodriguez",
-                role: "Chief Security Officer",
-                bio: "Renowned ethical hacker and security researcher with numerous CVEs to her name.",
-              },
-              {
-                name: "David Kim",
-                role: "VP of Engineering",
-                bio: "Software engineering leader specializing in secure development practices.",
-              },
-              {
-                name: "Priya Patel",
-                role: "Head of Community",
-                bio: "Community builder passionate about fostering inclusive security communities.",
-              },
-              {
-                name: "James Wilson",
-                role: "VP of Business Development",
-                bio: "Expert in connecting organizations with security resources they need.",
+                name: "Med Amin Ben Said",
+                role: "Cybersecurity Specialist and CEO Founder CyberHunt",
+                bio: "Leading cybersecurity expert and visionary founder of CyberHunt, dedicated to revolutionizing the bug bounty landscape.",
               }
             ].map((member, index) => (
               <div key={index} className="terminal-card p-5 rounded-lg hover:bg-matrix/5 transition-all duration-200">
