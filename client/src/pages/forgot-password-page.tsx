@@ -4,7 +4,7 @@ import { useLocation } from "wouter";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { ArrowLeft, Mail, ShieldAlert, Loader2 } from "lucide-react";
+import { ArrowLeft, Mail, ShieldAlert, Loader2, Terminal } from "lucide-react";
 import { Form, FormControl, FormField, FormItem, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -76,7 +76,7 @@ export default function ForgotPasswordPage() {
           <div className="text-center mb-8">
             <div className="flex justify-center mb-4">
               <div className="h-12 w-12 rounded-lg bg-matrix/10 border border-matrix/30 flex items-center justify-center">
-                <ShieldAlert className="h-6 w-6 text-matrix" />
+                <Terminal className="h-6 w-6 text-matrix" />
               </div>
             </div>
             <h1 className="text-matrix text-3xl font-mono font-bold mb-2">Password Reset_</h1>
@@ -143,6 +143,9 @@ export default function ForgotPasswordPage() {
               </form>
             </Form>
           )}
+
+          <div className="absolute -bottom-10 -right-10 w-40 h-40 bg-matrix/5 rounded-full blur-3xl"></div>
+          <div className="absolute -top-10 -left-10 w-40 h-40 bg-electric-blue/5 rounded-full blur-3xl"></div>
         </div>
       </div>
     </div>
