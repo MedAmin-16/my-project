@@ -37,7 +37,7 @@ export default function DashboardPage() {
   const reputation = user?.reputation || 0;
   let nextRankThreshold = 100;
   let nextRank = "Researcher";
-  
+
   if (reputation >= 100 && reputation < 500) {
     nextRankThreshold = 500;
     nextRank = "Bug Hunter";
@@ -48,7 +48,7 @@ export default function DashboardPage() {
     nextRankThreshold = 5000;
     nextRank = "Elite Hunter";
   }
-  
+
   const progressPercentage = Math.min(100, (reputation / nextRankThreshold) * 100);
 
   // Fetch active programs
@@ -128,7 +128,7 @@ export default function DashboardPage() {
                   <span className="text-warning-yellow">{user?.rank || "Newbie"}</span> |  
                   <span className="text-matrix ml-2">{user?.reputation || 0}</span> reputation points
                 </p>
-                
+
                 {/* Progress to next rank */}
                 <div className="ml-7 mt-4 mb-2">
                   <div className="flex justify-between items-center mb-1">
@@ -138,7 +138,7 @@ export default function DashboardPage() {
                   <Progress value={progressPercentage} className="h-1.5 bg-surface" indicatorClassName="bg-matrix" />
                 </div>
               </div>
-              
+
               {/* Security Level Animation */}
               <div className="mt-4 md:mt-0 p-3 bg-terminal/50 border border-matrix/30 rounded animate-pulse-glow">
                 <div className="text-center">
@@ -187,7 +187,7 @@ export default function DashboardPage() {
               Achievements
             </TabsTrigger>
           </TabsList>
-          
+
           {/* Overview Tab Content */}
           <TabsContent value="overview" className="pt-6">
             {/* Stats Grid */}
@@ -223,7 +223,7 @@ export default function DashboardPage() {
                     View All <ArrowRight className="ml-1 h-4 w-4" />
                   </Link>
                 </div>
-                
+
                 {programsLoading ? (
                   <div className="flex justify-center py-8">
                     <Loader2 className="h-8 w-8 animate-spin text-matrix" />
@@ -270,7 +270,7 @@ export default function DashboardPage() {
                     </Link>
                   </div>
                 </div>
-                
+
                 {/* Recent Activity */}
                 <div className="terminal-card p-4 rounded-lg border border-matrix/30">
                   <div className="flex justify-between items-center mb-4">
@@ -279,7 +279,7 @@ export default function DashboardPage() {
                       View All <ArrowRight className="ml-1 h-3 w-3" />
                     </Link>
                   </div>
-                  
+
                   {activitiesLoading ? (
                     <div className="flex justify-center py-4">
                       <Loader2 className="h-6 w-6 animate-spin text-matrix" />
@@ -301,7 +301,7 @@ export default function DashboardPage() {
                     </div>
                   )}
                 </div>
-                
+
                 {/* Your Badges */}
                 <div className="terminal-card p-4 rounded-lg border border-matrix/30">
                   <div className="flex justify-between items-center mb-4">
@@ -333,7 +333,7 @@ export default function DashboardPage() {
               </div>
             </div>
           </TabsContent>
-          
+
           {/* Programs Tab Content */}
           <TabsContent value="programs" className="pt-6">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
@@ -460,13 +460,13 @@ export default function DashboardPage() {
               </div>
             </div>
           </TabsContent>
-          
+
           {/* Activity Tab Content */}
           <TabsContent value="activity" className="pt-6">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
               <div className="md:col-span-2 space-y-6">
                 <h2 className="text-xl font-mono font-bold text-light-gray mb-4">All Activity</h2>
-                
+
                 {activitiesLoading ? (
                   <div className="flex justify-center py-8">
                     <Loader2 className="h-8 w-8 animate-spin text-matrix" />
@@ -511,7 +511,7 @@ export default function DashboardPage() {
                   </div>
                 )}
               </div>
-              
+
               <div className="space-y-6">
                 {/* Activity Filters */}
                 <div className="terminal-card p-4 rounded-lg border border-matrix/30">
@@ -535,7 +535,7 @@ export default function DashboardPage() {
                     </button>
                   </div>
                 </div>
-                
+
                 {/* Activity Stats */}
                 <div className="terminal-card p-4 rounded-lg border border-matrix/30">
                   <h2 className="text-lg font-mono font-bold text-light-gray mb-4">Activity Stats</h2>
@@ -567,13 +567,13 @@ export default function DashboardPage() {
               </div>
             </div>
           </TabsContent>
-          
+
           {/* Achievements Tab Content */}
           <TabsContent value="achievements" className="pt-6">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
               <div className="md:col-span-2">
                 <h2 className="text-xl font-mono font-bold text-light-gray mb-6">Your Achievements</h2>
-                
+
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8">
                   {/* Unlocked Achievements */}
                   <div className="terminal-card p-5 rounded-lg border border-matrix/30 hover:shadow-glow-sm transition-all duration-300">
@@ -593,7 +593,7 @@ export default function DashboardPage() {
                       <p className="text-xs text-dim-gray font-mono mt-1">Unlocked 3 days ago</p>
                     </div>
                   </div>
-                  
+
                   <div className="terminal-card p-5 rounded-lg border border-matrix/30 hover:shadow-glow-sm transition-all duration-300">
                     <div className="flex items-center mb-3">
                       <div className="h-10 w-10 rounded-full bg-matrix/10 p-2 mr-3 border border-matrix/50 flex items-center justify-center">
@@ -611,7 +611,7 @@ export default function DashboardPage() {
                       <p className="text-xs text-dim-gray font-mono mt-1">Unlocked 1 week ago</p>
                     </div>
                   </div>
-                  
+
                   {/* Locked Achievements with Progress */}
                   <div className="terminal-card p-5 rounded-lg border border-dim-gray/30 opacity-70 hover:opacity-90 transition-all duration-300">
                     <div className="flex items-center mb-3">
@@ -636,7 +636,7 @@ export default function DashboardPage() {
                       </div>
                     </div>
                   </div>
-                  
+
                   <div className="terminal-card p-5 rounded-lg border border-dim-gray/30 opacity-70 hover:opacity-90 transition-all duration-300">
                     <div className="flex items-center mb-3">
                       <div className="h-10 w-10 rounded-full bg-surface p-2 mr-3 border border-dim-gray/30 flex items-center justify-center">
@@ -661,16 +661,16 @@ export default function DashboardPage() {
                     </div>
                   </div>
                 </div>
-                
+
                 {/* Rank Progress */}
                 <div className="terminal-card p-5 rounded-lg border border-matrix/30 mb-6">
                   <h2 className="text-lg font-mono font-bold text-light-gray mb-4">Rank Progress</h2>
-                  
+
                   <div className="space-y-6">
                     <div className="relative pt-8">
                       {/* Rank progression line */}
                       <div className="absolute top-0 left-1/2 w-0.5 h-full bg-dim-gray/30 -translate-x-1/2"></div>
-                      
+
                       {/* Checkpoints */}
                       <div className="relative mb-8">
                         <div className="absolute left-1/2 -translate-x-1/2 w-4 h-4 rounded-full border-2 border-matrix bg-deep-black z-10"></div>
@@ -680,7 +680,7 @@ export default function DashboardPage() {
                           <p className="text-dim-gray font-mono text-xs">Complete</p>
                         </div>
                       </div>
-                      
+
                       <div className="relative mb-8">
                         <div className="absolute left-1/2 -translate-x-1/2 w-4 h-4 rounded-full border-2 border-matrix bg-deep-black z-10"></div>
                         <div className="pl-8 ml-8">
@@ -689,7 +689,7 @@ export default function DashboardPage() {
                           <p className="text-dim-gray font-mono text-xs">Complete</p>
                         </div>
                       </div>
-                      
+
                       <div className="relative mb-8">
                         <div className="absolute left-1/2 -translate-x-1/2 w-4 h-4 rounded-full border-2 border-matrix bg-deep-black z-10"></div>
                         <div className="pl-8 ml-8">
@@ -698,7 +698,7 @@ export default function DashboardPage() {
                           <p className="text-warning-yellow font-mono text-xs">In progress ({Math.round(progressPercentage)}%)</p>
                         </div>
                       </div>
-                      
+
                       <div className="relative mb-8">
                         <div className="absolute left-1/2 -translate-x-1/2 w-4 h-4 rounded-full border-2 border-dim-gray/50 bg-deep-black z-10"></div>
                         <div className="pl-8 ml-8">
@@ -707,7 +707,7 @@ export default function DashboardPage() {
                           <p className="text-dim-gray font-mono text-xs">Locked</p>
                         </div>
                       </div>
-                      
+
                       <div className="relative">
                         <div className="absolute left-1/2 -translate-x-1/2 w-4 h-4 rounded-full border-2 border-dim-gray/50 bg-deep-black z-10"></div>
                         <div className="pl-8 ml-8">
@@ -720,7 +720,7 @@ export default function DashboardPage() {
                   </div>
                 </div>
               </div>
-              
+
               <div className="space-y-6">
                 {/* Leaderboard Preview */}
                 <div className="terminal-card p-4 rounded-lg border border-matrix/30">
@@ -730,7 +730,7 @@ export default function DashboardPage() {
                       View Full Leaderboard
                     </Link>
                   </div>
-                  
+
                   <div className="space-y-3">
                     <div className="flex items-center justify-between p-2 rounded bg-matrix/5 border border-matrix/20">
                       <div className="flex items-center">
@@ -741,7 +741,7 @@ export default function DashboardPage() {
                       </div>
                       <span className="text-matrix text-xs font-mono">54,320 pts</span>
                     </div>
-                    
+
                     <div className="flex items-center justify-between p-2 rounded bg-surface border border-matrix/20">
                       <div className="flex items-center">
                         <div className="h-8 w-8 rounded-full bg-terminal p-1 mr-3 border border-matrix/30 flex items-center justify-center">
@@ -751,7 +751,7 @@ export default function DashboardPage() {
                       </div>
                       <span className="text-matrix text-xs font-mono">48,750 pts</span>
                     </div>
-                    
+
                     <div className="flex items-center justify-between p-2 rounded bg-surface border border-matrix/20">
                       <div className="flex items-center">
                         <div className="h-8 w-8 rounded-full bg-terminal p-1 mr-3 border border-matrix/30 flex items-center justify-center">
@@ -761,7 +761,7 @@ export default function DashboardPage() {
                       </div>
                       <span className="text-matrix text-xs font-mono">42,130 pts</span>
                     </div>
-                    
+
                     <div className="flex items-center justify-between p-2 rounded bg-surface border border-matrix/20">
                       <div className="flex items-center">
                         <div className="h-8 w-8 rounded-full bg-terminal p-1 mr-3 border border-matrix/30 flex items-center justify-center">
@@ -771,7 +771,7 @@ export default function DashboardPage() {
                       </div>
                       <span className="text-matrix text-xs font-mono">36,840 pts</span>
                     </div>
-                    
+
                     <div className="flex items-center justify-between p-2 rounded bg-surface border border-matrix/20">
                       <div className="flex items-center">
                         <div className="h-8 w-8 rounded-full bg-terminal p-1 mr-3 border border-matrix/30 flex items-center justify-center">
@@ -783,7 +783,7 @@ export default function DashboardPage() {
                     </div>
                   </div>
                 </div>
-                
+
                 {/* Your position */}
                 <div className="terminal-card p-4 rounded-lg border border-matrix/30">
                   <h2 className="text-lg font-mono font-bold text-light-gray mb-4">Your Position</h2>
@@ -804,7 +804,7 @@ export default function DashboardPage() {
                     </div>
                   </div>
                 </div>
-                
+
                 {/* Achievement Statistics */}
                 <div className="terminal-card p-4 rounded-lg border border-matrix/30">
                   <h2 className="text-lg font-mono font-bold text-light-gray mb-4">Statistics</h2>
