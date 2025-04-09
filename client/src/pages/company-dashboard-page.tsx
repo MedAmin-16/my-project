@@ -34,7 +34,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { formatDistanceToNow } from "date-fns";
-import { Link, useLocation, useNavigate } from "wouter";
+import { Link, useLocation } from "wouter";
 
 // Company Dashboard Page
 export default function CompanyDashboardPage() {
@@ -42,7 +42,6 @@ export default function CompanyDashboardPage() {
   const { user } = useAuth();
   const { toast } = useToast();
   const [location, setLocation] = useLocation();
-  const navigate = useNavigate();
 
   // Fetch company's bug bounty programs
   const { data: programs = [] } = useQuery({
@@ -89,7 +88,7 @@ export default function CompanyDashboardPage() {
   // Handle creating a new program
   const handleCreateProgram = () => {
     // Navigate to the create program page
-    navigate("/create-program");
+    setLocation("/create-program");
   };
 
   // Filter submissions to recent ones and pending
