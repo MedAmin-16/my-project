@@ -305,6 +305,70 @@ export default function LandingPage() {
         </div>
       </section>
       
+      {/* Resources Section */}
+      <section className="relative z-10 py-20 bg-terminal border-y border-matrix/30">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <h2 className="text-3xl font-mono font-bold text-light-gray text-center mb-12">
+            <span className="text-matrix">_</span> Resources
+          </h2>
+          
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <Link href="/documentation">
+              <div className="terminal-card p-6 rounded-lg border border-matrix/30 hover:bg-surface/50 transition-all">
+                <h3 className="text-xl font-mono text-matrix mb-4">Documentation</h3>
+                <p className="text-dim-gray">Comprehensive guides and API references for using our platform.</p>
+              </div>
+            </Link>
+            
+            <Link href="/help-center">
+              <div className="terminal-card p-6 rounded-lg border border-matrix/30 hover:bg-surface/50 transition-all">
+                <h3 className="text-xl font-mono text-matrix mb-4">Help Center</h3>
+                <p className="text-dim-gray">Get answers to common questions and learn how to use our features.</p>
+              </div>
+            </Link>
+            
+            <Link href="/blog">
+              <div className="terminal-card p-6 rounded-lg border border-matrix/30 hover:bg-surface/50 transition-all">
+                <h3 className="text-xl font-mono text-matrix mb-4">Blog</h3>
+                <p className="text-dim-gray">Latest news, tutorials, and insights from our security experts.</p>
+              </div>
+            </Link>
+          </div>
+        </div>
+      </section>
+
+      {/* Legal & About Section */}
+      <section className="relative z-10 py-20">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <h2 className="text-3xl font-mono font-bold text-light-gray text-center mb-12">
+            <span className="text-matrix">_</span> Legal & About
+          </h2>
+          
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <Link href="/about">
+              <div className="terminal-card p-6 rounded-lg border border-matrix/30 hover:bg-surface/50 transition-all">
+                <h3 className="text-xl font-mono text-matrix mb-4">About Us</h3>
+                <p className="text-dim-gray">Learn about our mission, team, and commitment to security.</p>
+              </div>
+            </Link>
+            
+            <Link href="/legal">
+              <div className="terminal-card p-6 rounded-lg border border-matrix/30 hover:bg-surface/50 transition-all">
+                <h3 className="text-xl font-mono text-matrix mb-4">Legal Information</h3>
+                <p className="text-dim-gray">Important legal documents and compliance information.</p>
+              </div>
+            </Link>
+            
+            <Link href="/security">
+              <div className="terminal-card p-6 rounded-lg border border-matrix/30 hover:bg-surface/50 transition-all">
+                <h3 className="text-xl font-mono text-matrix mb-4">Security</h3>
+                <p className="text-dim-gray">Our security practices and vulnerability disclosure policy.</p>
+              </div>
+            </Link>
+          </div>
+        </div>
+      </section>
+
       {/* Footer */}
       <footer className="relative z-10 py-12 border-t border-matrix/30">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">

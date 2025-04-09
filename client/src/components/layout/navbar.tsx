@@ -22,22 +22,7 @@ export default function Navbar() {
     { name: "Leaderboard", path: "/leaderboard" },
   ];
 
-  // Resource links for dropdown
-  const resourceLinks = [
-    { name: "Resources", path: "/resources" },
-    { name: "Help Center", path: "/help-center" },
-    { name: "Blog", path: "/blog" },
-    { name: "Documentation", path: "/documentation" },
-  ];
-
-  // Legal links for dropdown
-  const legalLinks = [
-    { name: "About", path: "/about" },
-    { name: "Legal", path: "/legal" },
-    { name: "Terms", path: "/terms-of-service" },
-    { name: "Privacy", path: "/privacy-policy" },
-    { name: "Security", path: "/security" },
-  ];
+  // No resource or legal links in dropdown anymore
 
   // Footer links (not visible in the top nav)
   const footerLinks = [
@@ -115,43 +100,7 @@ export default function Navbar() {
                 </Link>
                 <DropdownMenuSeparator className="bg-matrix/20" />
 
-                {/* Resources dropdown */}
-                <DropdownMenu>
-                  <DropdownMenuTrigger className="w-full text-left px-3 py-2 text-light-gray hover:bg-matrix/10 cursor-pointer font-mono text-sm">
-                    <div className="flex items-center justify-between">
-                      <span>Resources</span>
-                      <ChevronDown className="h-4 w-4 text-dim-gray" />
-                    </div>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent className="bg-terminal border border-matrix/30 ml-1">
-                    {resourceLinks.map((link) => (
-                      <Link key={link.path} href={link.path}>
-                        <DropdownMenuItem className="text-light-gray hover:bg-matrix/10 cursor-pointer font-mono text-sm">
-                          {link.name}
-                        </DropdownMenuItem>
-                      </Link>
-                    ))}
-                  </DropdownMenuContent>
-                </DropdownMenu>
-
-                {/* Legal dropdown */}
-                <DropdownMenu>
-                  <DropdownMenuTrigger className="w-full text-left px-3 py-2 text-light-gray hover:bg-matrix/10 cursor-pointer font-mono text-sm">
-                    <div className="flex items-center justify-between">
-                      <span>Legal & About</span>
-                      <ChevronDown className="h-4 w-4 text-dim-gray" />
-                    </div>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent className="bg-terminal border border-matrix/30 ml-1">
-                    {legalLinks.map((link) => (
-                      <Link key={link.path} href={link.path}>
-                        <DropdownMenuItem className="text-light-gray hover:bg-matrix/10 cursor-pointer font-mono text-sm">
-                          {link.name}
-                        </DropdownMenuItem>
-                      </Link>
-                    ))}
-                  </DropdownMenuContent>
-                </DropdownMenu>
+                {/* No resource or legal dropdowns anymore */}
 
                 <DropdownMenuSeparator className="bg-matrix/20" />
                 <DropdownMenuItem 
