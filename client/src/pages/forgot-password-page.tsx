@@ -19,6 +19,7 @@ type ForgotPasswordFormValues = z.infer<typeof forgotPasswordSchema>;
 
 export default function ForgotPasswordPage() {
   const [isLoading, setIsLoading] = useState(false);
+  const [emailSent, setEmailSent] = useState(false);
   const { toast } = useToast();
 
   const form = useForm<ForgotPasswordFormValues>({
@@ -38,6 +39,7 @@ export default function ForgotPasswordPage() {
       });
 
       if (response.ok) {
+        setEmailSent(true);
         toast({
           title: "Reset link sent",
           description: "Please check your email for password reset instructions.",
@@ -75,47 +77,62 @@ export default function ForgotPasswordPage() {
           </p>
         </div>
 
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-            <FormField
-              control={form.control}
-              name="email"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Email</FormLabel>
-                  <FormControl>
-                    <div className="relative">
-                      <Input
-                        {...field}
-                        type="email"
-                        className="terminal-input pl-10"
-                        placeholder="Enter your email"
-                        disabled={isLoading}
-                      />
-                      <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-dim-gray" />
-                    </div>
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <Button
-              type="submit"
+        {emailSent ? (
+          <div className="text-center space-y-4">
+            <div className="text-matrix text-lg">Email Sent!</div>
+            <p className="text-dim-gray">
+              Check your inbox for instructions on how to reset your password.
+            </p>
+            <Button 
               className="w-full glow-button"
-              disabled={isLoading}
+              onClick={() => setEmailSent(false)}
             >
-              {isLoading ? (
-                <span className="flex items-center justify-center">
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  SENDING RESET LINK...
-                </span>
-              ) : (
-                "SEND RESET LINK"
-              )}
+              Send Another Email
             </Button>
-          </form>
-        </Form>
+          </div>
+        ) : (
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+              <FormField
+                control={form.control}
+                name="email"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Email</FormLabel>
+                    <FormControl>
+                      <div className="relative">
+                        <Input
+                          {...field}
+                          type="email"
+                          className="terminal-input pl-10"
+                          placeholder="Enter your email"
+                          disabled={isLoading}
+                        />
+                        <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-dim-gray" />
+                      </div>
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <Button
+                type="submit"
+                className="w-full glow-button"
+                disabled={isLoading}
+              >
+                {isLoading ? (
+                  <span className="flex items-center justify-center">
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    SENDING RESET LINK...
+                  </span>
+                ) : (
+                  "SEND RESET LINK"
+                )}
+              </Button>
+            </form>
+          </Form>
+        )}
       </div>
     </div>
   );
