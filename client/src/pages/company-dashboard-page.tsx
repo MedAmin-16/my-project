@@ -44,7 +44,7 @@ import { Link, useLocation } from "wouter";
 // Company Dashboard Page
 export default function CompanyDashboardPage() {
   const [activeTab, setActiveTab] = useState("overview");
-  const { user } = useAuth();
+  const { user, logoutMutation } = useAuth();
   const { toast } = useToast();
   const [location, setLocation] = useLocation();
 
