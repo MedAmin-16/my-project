@@ -18,11 +18,15 @@ export default function Navbar() {
   // Navigation links
   const navLinks = [
     { name: "Dashboard", path: "/dashboard" },
+    { name: "About", path: "/about" },
     { name: "Programs", path: "/programs" },
     { name: "Leaderboard", path: "/leaderboard" },
   ];
 
-  // No resource or legal links in dropdown anymore
+  // Resource links for dropdown
+  const resourceLinks = [
+
+  ];
 
   // Footer links (not visible in the top nav)
   const footerLinks = [
