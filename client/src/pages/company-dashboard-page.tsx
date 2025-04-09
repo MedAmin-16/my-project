@@ -702,6 +702,19 @@ export default function CompanyDashboardPage() {
                   <Save className="mr-2 h-4 w-4" />
                   Save Changes
                 </Button>
+
+                <div className="mt-8 border-t border-matrix/20 pt-6">
+                  <h3 className="text-lg font-medium mb-4 text-alert-red">Danger Zone</h3>
+                  <Button 
+                    variant="destructive"
+                    className="w-full"
+                    onClick={() => {
+                      logoutMutation.mutate();
+                    }}
+                  >
+                    Logout
+                  </Button>
+                </div>
               </div>
             </CardContent>
           </Card>
