@@ -80,7 +80,7 @@ export default function ForgotPasswordPage() {
                 <Terminal className="h-6 w-6 text-matrix" />
               </div>
             </div>
-            <h1 className="text-matrix text-3xl font-mono font-bold mb-2">Password Reset</h1>
+            <h1 className="text-matrix text-3xl font-mono font-bold mb-2">Password Reset_</h1>
             <p className="text-dim-gray text-sm">
               Enter your email address and we'll send you instructions to reset your password.
             </p>
@@ -98,7 +98,7 @@ export default function ForgotPasswordPage() {
                 </p>
               </div>
               <Button 
-                className="w-full glow-button bg-matrix/10 hover:bg-matrix/20 text-matrix border border-matrix/30"
+                className="w-full bg-matrix/10 hover:bg-matrix/20 text-matrix border border-matrix/30"
                 onClick={() => setEmailSent(false)}
               >
                 Try Another Email
@@ -132,7 +132,7 @@ export default function ForgotPasswordPage() {
 
                 <Button
                   type="submit"
-                  className="w-full glow-button bg-matrix/10 hover:bg-matrix/20 text-matrix border border-matrix/30"
+                  className="w-full bg-matrix/10 hover:bg-matrix/20 text-matrix border border-matrix/30"
                   disabled={isLoading}
                 >
                   {isLoading ? (
