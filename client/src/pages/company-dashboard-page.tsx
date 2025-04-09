@@ -673,7 +673,5 @@ export default function CompanyDashboardPage() {
         </TabsContent>
       </Tabs>
     </div>
-      </Tabs>
-    </div>
   );
 }
