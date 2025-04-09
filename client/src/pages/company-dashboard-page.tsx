@@ -2,6 +2,11 @@ import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/use-auth";
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
+import { Switch } from "@/components/ui/switch";
+import { Save } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import {
   Card,
   CardContent,
@@ -546,11 +551,126 @@ export default function CompanyDashboardPage() {
         <TabsContent value="settings" className="space-y-6">
           <Card className="bg-black border border-matrix/20">
             <CardHeader>
-              <CardTitle>Company Settings</CardTitle>
+              <CardTitle className="text-matrix">Company Settings</CardTitle>
               <CardDescription>Manage your company profile and preferences</CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
               <div className="space-y-4">
+                <div>
+                  <h3 className="text-lg font-medium mb-2">Company Information</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label>Company Name</Label>
+                      <Input
+                        defaultValue={user?.companyName}
+                        className="terminal-input"
+                        placeholder="Enter company name"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Company Website</Label>
+                      <Input
+                        defaultValue={user?.companyWebsite}
+                        className="terminal-input"
+                        placeholder="https://example.com"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Industry</Label>
+                      <Input
+                        defaultValue={user?.industry}
+                        className="terminal-input"
+                        placeholder="Enter industry"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Company Size</Label>
+                      <Select defaultValue={user?.companySize}>
+                        <SelectTrigger className="terminal-input">
+                          <SelectValue placeholder="Select company size" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="1-10">1-10 employees</SelectItem>
+                          <SelectItem value="11-50">11-50 employees</SelectItem>
+                          <SelectItem value="51-200">51-200 employees</SelectItem>
+                          <SelectItem value="201-500">201-500 employees</SelectItem>
+                          <SelectItem value="501+">501+ employees</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+                </div>
+
+                <div>
+                  <h3 className="text-lg font-medium mb-2">Contact Information</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label>Primary Email</Label>
+                      <Input
+                        defaultValue={user?.email}
+                        className="terminal-input"
+                        placeholder="contact@company.com"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Phone Number</Label>
+                      <Input
+                        defaultValue={user?.phone}
+                        className="terminal-input"
+                        placeholder="+1 (555) 000-0000"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                <div>
+                  <h3 className="text-lg font-medium mb-2">Security Settings</h3>
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between p-3 bg-dark-terminal rounded">
+                      <div>
+                        <p className="font-medium">Two-Factor Authentication</p>
+                        <p className="text-sm text-dim-gray">Add an extra layer of security to your account</p>
+                      </div>
+                      <Switch />
+                    </div>
+                    <div className="flex items-center justify-between p-3 bg-dark-terminal rounded">
+                      <div>
+                        <p className="font-medium">Login Notifications</p>
+                        <p className="text-sm text-dim-gray">Get notified of new login attempts</p>
+                      </div>
+                      <Switch defaultChecked />
+                    </div>
+                  </div>
+                </div>
+
+                <div>
+                  <h3 className="text-lg font-medium mb-2">Notification Preferences</h3>
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between p-3 bg-dark-terminal rounded">
+                      <div>
+                        <p className="font-medium">Email Notifications</p>
+                        <p className="text-sm text-dim-gray">Receive program and submission updates via email</p>
+                      </div>
+                      <Switch defaultChecked />
+                    </div>
+                    <div className="flex items-center justify-between p-3 bg-dark-terminal rounded">
+                      <div>
+                        <p className="font-medium">Weekly Reports</p>
+                        <p className="text-sm text-dim-gray">Receive weekly summary of program activities</p>
+                      </div>
+                      <Switch defaultChecked />
+                    </div>
+                  </div>
+                </div>
+
+                <Button className="w-full mt-6 glow-button">
+                  <Save className="mr-2 h-4 w-4" />
+                  Save Changes
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
                 <div>
                   <h3 className="text-lg font-medium mb-2">Company Profile</h3>
                   <div className="grid grid-cols-1 gap-4 bg-primary/5 p-4 rounded-md">
