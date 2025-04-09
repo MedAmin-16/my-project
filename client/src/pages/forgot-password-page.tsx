@@ -63,21 +63,22 @@ export default function ForgotPasswordPage() {
     <div className="min-h-screen bg-deep-black relative">
       <MatrixBackground />
       
-      <div className="absolute top-4 left-4 z-20">
-        <button onClick={() => setLocation("/auth")} className="flex items-center gap-2 text-matrix hover:text-matrix-dark transition-colors">
-          <ArrowLeft className="h-5 w-5" />
-          <span className="text-sm font-mono">Back to Login</span>
-        </button>
-      </div>
+      <button 
+        onClick={() => setLocation("/auth")} 
+        className="absolute top-4 left-4 z-20 flex items-center gap-2 text-matrix hover:text-matrix-dark transition-colors"
+      >
+        <ArrowLeft className="h-5 w-5" />
+        <span className="text-sm font-mono">Back to Login</span>
+      </button>
 
       <div className="min-h-screen flex items-center justify-center p-4 relative z-10">
-        <div className="terminal-card w-full max-w-md p-8 rounded-lg relative overflow-hidden border border-matrix/30">
-          <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-matrix/0 via-matrix/50 to-matrix/0"></div>
+        <div className="w-full max-w-md p-8 rounded-lg relative overflow-hidden border border-matrix/30 bg-black/80 backdrop-blur-sm">
+          <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-matrix/0 via-matrix/50 to-matrix/0" />
           
           <div className="text-center mb-8">
             <div className="flex justify-center mb-4">
               <div className="h-12 w-12 rounded-lg bg-matrix/10 border border-matrix/30 flex items-center justify-center">
-                <Terminal className="h-6 w-6 text-matrix" />
+                <ShieldAlert className="h-6 w-6 text-matrix" />
               </div>
             </div>
             <h1 className="text-matrix text-3xl font-mono font-bold mb-2">Password Reset_</h1>
@@ -88,18 +89,16 @@ export default function ForgotPasswordPage() {
 
           {emailSent ? (
             <div className="space-y-6 text-center">
-              <div className="p-4 rounded-lg bg-matrix/5 border border-matrix/30">
-                <div className="flex justify-center mb-4">
-                  <ShieldAlert className="h-8 w-8 text-matrix" />
-                </div>
+              <div className="p-6 rounded-lg bg-matrix/5 border border-matrix/30">
+                <Mail className="h-8 w-8 text-matrix mx-auto mb-4" />
                 <h2 className="text-matrix text-xl font-mono mb-2">Check Your Inbox</h2>
-                <p className="text-dim-gray text-sm mb-4">
+                <p className="text-dim-gray text-sm">
                   If an account exists with this email, you'll receive password reset instructions shortly.
                 </p>
               </div>
               <Button 
-                className="w-full bg-matrix/10 hover:bg-matrix/20 text-matrix border border-matrix/30"
                 onClick={() => setEmailSent(false)}
+                className="w-full bg-matrix/10 hover:bg-matrix/20 text-matrix border border-matrix/30"
               >
                 Try Another Email
               </Button>
@@ -147,9 +146,6 @@ export default function ForgotPasswordPage() {
               </form>
             </Form>
           )}
-
-          <div className="absolute bottom-0 right-0 w-32 h-32 bg-matrix/5 rounded-full blur-3xl"></div>
-          <div className="absolute -top-10 -left-10 w-32 h-32 bg-electric-blue/5 rounded-full blur-3xl"></div>
         </div>
       </div>
     </div>
