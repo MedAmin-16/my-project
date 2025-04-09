@@ -24,6 +24,7 @@ import HelpCenterPage from "@/pages/help-center-page";
 import BlogPage from "@/pages/blog-page";
 import DocumentationPage from "@/pages/documentation-page";
 import SecurityPage from "@/pages/security-page";
+import BadgesPage from "@/pages/badges-page";
 import { ProtectedRoute } from "./lib/protected-route";
 import { AuthProvider, useAuth } from "@/hooks/use-auth";
 import { ThemeProvider } from "@/components/theme-provider";
