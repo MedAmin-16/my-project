@@ -18,9 +18,9 @@ export default function Navbar() {
   // Navigation links
   const navLinks = [
     { name: "Dashboard", path: "/dashboard" },
-    { name: "About", path: "/about" },
     { name: "Programs", path: "/programs" },
     { name: "Leaderboard", path: "/leaderboard" },
+    { name: "About", path: "/about" },
   ];
 
   // Resource links for dropdown
