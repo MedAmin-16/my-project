@@ -29,6 +29,7 @@ import AboutPage from "@/pages/about-page";
 import { ProtectedRoute } from "./lib/protected-route";
 import { AuthProvider, useAuth } from "@/hooks/use-auth";
 import { ThemeProvider } from "@/components/theme-provider";
+import { useLocation } from 'wouter';
 
 function Router() {
   const { user } = useAuth();

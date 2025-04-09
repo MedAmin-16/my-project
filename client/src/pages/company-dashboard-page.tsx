@@ -46,7 +46,7 @@ export default function CompanyDashboardPage() {
   const [activeTab, setActiveTab] = useState("overview");
   const { user, logoutMutation } = useAuth();
   const { toast } = useToast();
-  const [location, setLocation] = useLocation();
+  const [, setLocation] = useLocation();
 
   // Fetch company's bug bounty programs
   const { data: programs = [] } = useQuery({
