@@ -86,6 +86,8 @@ function Router() {
 }
 
 import AdminPage from "./pages/admin-page";
+import ForgotPasswordPage from "./pages/forgot-password-page";
+
 // Placeholder for FindProgramsPage component
 function FindProgramsPage() {
   return <h1>Find Programs Page</h1>;
