@@ -34,13 +34,15 @@ import {
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { formatDistanceToNow } from "date-fns";
-import { Link } from "wouter";
+import { Link, useLocation, useNavigate } from "wouter";
 
 // Company Dashboard Page
 export default function CompanyDashboardPage() {
   const [activeTab, setActiveTab] = useState("overview");
   const { user } = useAuth();
   const { toast } = useToast();
+  const [location, setLocation] = useLocation();
+  const navigate = useNavigate();
 
   // Fetch company's bug bounty programs
   const { data: programs = [] } = useQuery({
@@ -87,7 +89,7 @@ export default function CompanyDashboardPage() {
   // Handle creating a new program
   const handleCreateProgram = () => {
     // Navigate to the create program page
-    window.location.href = "/create-program";
+    navigate("/create-program");
   };
 
   // Filter submissions to recent ones and pending
@@ -394,7 +396,7 @@ export default function CompanyDashboardPage() {
                         </span>
                       </div>
                     </div>
-                    
+
                     <div className="flex space-x-2 mt-4">
                       <Link href={`/programs/${program.id}`}>
                         <Button variant="outline" className="w-full border-matrix/30 hover:bg-matrix/20 hover:text-matrix">
@@ -467,7 +469,7 @@ export default function CompanyDashboardPage() {
                       <th className="py-3 px-4 text-left text-xs font-medium text-dim-gray uppercase tracking-wider">Status</th>
                       <th className="py-3 px-4 text-left text-xs font-medium text-dim-gray uppercase tracking-wider">Submitted</th>
                       <th className="py-3 px-4 text-left text-xs font-medium text-dim-gray uppercase tracking-wider">Reward</th>
-                      <th className="py-3 px-4 text-xs font-medium text-dim-gray uppercase tracking-wider"></th>
+                      <th className="py-3 px-4 text-left text-xs font-medium text-dim-gray uppercase tracking-wider"></th>
                     </tr>
                   </thead>
                   <tbody>
@@ -594,7 +596,7 @@ export default function CompanyDashboardPage() {
                         </div>
                       </div>
                     </div>
-                    
+
                     <div className="flex items-center justify-between bg-primary/5 p-3 rounded-md">
                       <div>
                         <div className="font-medium">Weekly Summary</div>
@@ -606,7 +608,7 @@ export default function CompanyDashboardPage() {
                         </div>
                       </div>
                     </div>
-                    
+
                     <div className="flex items-center justify-between bg-primary/5 p-3 rounded-md">
                       <div>
                         <div className="font-medium">Critical Vulnerability Alerts</div>
