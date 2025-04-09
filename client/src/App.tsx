@@ -73,6 +73,7 @@ function Router() {
       <Route path="/blog" component={BlogPage} />
       <Route path="/documentation" component={DocumentationPage} />
       <Route path="/security" component={SecurityPage} />
+      <Route path="/badges" component={BadgesPage} />
       <Route path="/*" component={NotFound} /> {/* Added catch-all route */}
     </Switch>
   );
