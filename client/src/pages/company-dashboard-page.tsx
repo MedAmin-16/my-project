@@ -663,7 +663,42 @@ export default function CompanyDashboardPage() {
                   </div>
                 </div>
 
-                <Button className="w-full mt-6 glow-button">
+                <Button 
+                  className="w-full mt-6 glow-button"
+                  onClick={async () => {
+                    try {
+                      const response = await fetch('/api/user', {
+                        method: 'PATCH',
+                        headers: {
+                          'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                          companyName: user?.companyName,
+                          companyWebsite: user?.companyWebsite,
+                          companySize: user?.companySize,
+                          industry: user?.industry,
+                          email: user?.email,
+                          phone: user?.phone,
+                        }),
+                      });
+
+                      if (response.ok) {
+                        toast({
+                          title: "Success",
+                          description: "Settings updated successfully",
+                        });
+                      } else {
+                        throw new Error('Failed to update settings');
+                      }
+                    } catch (error) {
+                      toast({
+                        title: "Error",
+                        description: "Failed to update settings",
+                        variant: "destructive",
+                      });
+                    }
+                  }}
+                >
                   <Save className="mr-2 h-4 w-4" />
                   Save Changes
                 </Button>
