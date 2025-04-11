@@ -6,7 +6,7 @@ import { useAuth } from "@/hooks/use-auth";
 
 export default function LandingPage() {
   const { user } = useAuth();
-
+  
   // If user is logged in, redirect to dashboard
   if (user) {
     return <Redirect to="/dashboard" />;
@@ -14,7 +14,7 @@ export default function LandingPage() {
   return (
     <div className="min-h-screen bg-deep-black relative">
       <MatrixBackground />
-
+      
       {/* Header/Navigation */}
       <header className="relative z-10 border-b border-matrix/30">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -42,7 +42,7 @@ export default function LandingPage() {
           </div>
         </div>
       </header>
-
+      
       {/* Hero Section */}
       <section className="relative z-10 pt-20 pb-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -86,7 +86,7 @@ export default function LandingPage() {
           </div>
         </div>
       </section>
-
+      
       {/* Stats Stripe */}
       <section className="relative z-10 bg-terminal border-y border-matrix/30 py-10">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -110,14 +110,14 @@ export default function LandingPage() {
           </div>
         </div>
       </section>
-
+      
       {/* Features */}
       <section id="features" className="relative z-10 py-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <h2 className="text-3xl font-mono font-bold text-light-gray text-center mb-12">
             <span className="text-matrix">_</span> Platform Features
           </h2>
-
+          
           <div className="grid md:grid-cols-3 gap-8">
             <div className="terminal-card p-6 rounded-lg border border-matrix/30 hover:animate-pulse-glow">
               <Shield className="text-matrix h-10 w-10 mb-4" />
@@ -126,7 +126,7 @@ export default function LandingPage() {
                 Submit vulnerabilities through our encrypted pipeline with advanced security measures to protect sensitive data.
               </p>
             </div>
-
+            
             <div className="terminal-card p-6 rounded-lg border border-matrix/30 hover:animate-pulse-glow">
               <Bug className="text-matrix h-10 w-10 mb-4" />
               <h3 className="text-xl font-mono font-bold text-light-gray mb-3">Intelligent Matching</h3>
@@ -134,7 +134,7 @@ export default function LandingPage() {
                 Our algorithm matches your skills with the right programs to maximize your success rate and earnings.
               </p>
             </div>
-
+            
             <div className="terminal-card p-6 rounded-lg border border-matrix/30 hover:animate-pulse-glow">
               <Trophy className="text-matrix h-10 w-10 mb-4" />
               <h3 className="text-xl font-mono font-bold text-light-gray mb-3">Fast Payouts</h3>
@@ -145,14 +145,14 @@ export default function LandingPage() {
           </div>
         </div>
       </section>
-
+      
       {/* How It Works */}
       <section id="how-it-works" className="relative z-10 py-20 bg-terminal border-y border-matrix/30">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <h2 className="text-3xl font-mono font-bold text-light-gray text-center mb-12">
             <span className="text-matrix">_</span> How It Works
           </h2>
-
+          
           <div className="grid md:grid-cols-3 gap-8">
             <div className="bg-black/50 p-6 rounded-lg border border-matrix/20 relative">
               <div className="absolute -top-4 -left-4 w-8 h-8 rounded-full bg-matrix/20 flex items-center justify-center border border-matrix font-mono text-matrix">1</div>
@@ -161,7 +161,7 @@ export default function LandingPage() {
                 Browse available bug bounty programs and select those matching your expertise and interests.
               </p>
             </div>
-
+            
             <div className="bg-black/50 p-6 rounded-lg border border-matrix/20 relative">
               <div className="absolute -top-4 -left-4 w-8 h-8 rounded-full bg-matrix/20 flex items-center justify-center border border-matrix font-mono text-matrix">2</div>
               <h3 className="text-xl font-mono font-bold text-light-gray mb-3 mt-2">Find Vulnerabilities</h3>
@@ -169,7 +169,7 @@ export default function LandingPage() {
                 Use your skills to identify security vulnerabilities within the scope of the program.
               </p>
             </div>
-
+            
             <div className="bg-black/50 p-6 rounded-lg border border-matrix/20 relative">
               <div className="absolute -top-4 -left-4 w-8 h-8 rounded-full bg-matrix/20 flex items-center justify-center border border-matrix font-mono text-matrix">3</div>
               <h3 className="text-xl font-mono font-bold text-light-gray mb-3 mt-2">Submit & Get Paid</h3>
@@ -178,7 +178,7 @@ export default function LandingPage() {
               </p>
             </div>
           </div>
-
+          
           <div className="text-center mt-12">
             <Link href="/auth">
               <Button className="glow-button text-base font-mono py-6 px-8">
@@ -188,14 +188,14 @@ export default function LandingPage() {
           </div>
         </div>
       </section>
-
+      
       {/* Featured Programs */}
       <section id="programs" className="relative z-10 py-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <h2 className="text-3xl font-mono font-bold text-light-gray text-center mb-12">
             <span className="text-matrix">_</span> Featured Programs
           </h2>
-
+          
           <div className="grid md:grid-cols-3 gap-8">
             <div className="terminal-card p-6 rounded-lg border border-matrix/30">
               <div className="flex items-start mb-4">
@@ -222,7 +222,7 @@ export default function LandingPage() {
                 </div>
               </div>
             </div>
-
+            
             <div className="terminal-card p-6 rounded-lg border border-matrix/30">
               <div className="flex items-start mb-4">
                 <div className="h-12 w-12 rounded-md bg-terminal p-2 mr-4 border border-matrix/30 flex items-center justify-center">
@@ -248,7 +248,7 @@ export default function LandingPage() {
                 </div>
               </div>
             </div>
-
+            
             <div className="terminal-card p-6 rounded-lg border border-matrix/30">
               <div className="flex items-start mb-4">
                 <div className="h-12 w-12 rounded-md bg-terminal p-2 mr-4 border border-matrix/30 flex items-center justify-center">
@@ -275,7 +275,7 @@ export default function LandingPage() {
               </div>
             </div>
           </div>
-
+          
           <div className="text-center mt-8">
             <Link href="/auth?mode=register">
               <span className="text-matrix hover:text-matrix-dark text-sm font-mono cursor-pointer">
@@ -285,7 +285,7 @@ export default function LandingPage() {
           </div>
         </div>
       </section>
-
+      
       {/* CTA Section */}
       <section className="relative z-10 py-20 bg-black/50 border-y border-matrix/30">
         <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
@@ -304,14 +304,14 @@ export default function LandingPage() {
           </Link>
         </div>
       </section>
-
+      
       {/* Resources Section */}
       <section className="relative z-10 py-20 bg-terminal border-y border-matrix/30">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <h2 className="text-3xl font-mono font-bold text-light-gray text-center mb-12">
             <span className="text-matrix">_</span> Resources
           </h2>
-
+          
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             <Link href="/documentation">
               <div className="terminal-card p-6 rounded-lg border border-matrix/30 hover:bg-surface/50 transition-all">
@@ -319,14 +319,14 @@ export default function LandingPage() {
                 <p className="text-dim-gray">Comprehensive guides and API references for using our platform.</p>
               </div>
             </Link>
-
+            
             <Link href="/help-center">
               <div className="terminal-card p-6 rounded-lg border border-matrix/30 hover:bg-surface/50 transition-all">
                 <h3 className="text-xl font-mono text-matrix mb-4">Help Center</h3>
                 <p className="text-dim-gray">Get answers to common questions and learn how to use our features.</p>
               </div>
             </Link>
-
+            
             <Link href="/blog">
               <div className="terminal-card p-6 rounded-lg border border-matrix/30 hover:bg-surface/50 transition-all">
                 <h3 className="text-xl font-mono text-matrix mb-4">Blog</h3>
@@ -343,7 +343,7 @@ export default function LandingPage() {
           <h2 className="text-3xl font-mono font-bold text-light-gray text-center mb-12">
             <span className="text-matrix">_</span> Legal & About
           </h2>
-
+          
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             <Link href="/about">
               <div className="terminal-card p-6 rounded-lg border border-matrix/30 hover:bg-surface/50 transition-all">
@@ -351,14 +351,14 @@ export default function LandingPage() {
                 <p className="text-dim-gray">Learn about our mission, team, and commitment to security.</p>
               </div>
             </Link>
-
+            
             <Link href="/legal">
               <div className="terminal-card p-6 rounded-lg border border-matrix/30 hover:bg-surface/50 transition-all">
                 <h3 className="text-xl font-mono text-matrix mb-4">Legal Information</h3>
                 <p className="text-dim-gray">Important legal documents and compliance information.</p>
               </div>
             </Link>
-
+            
             <Link href="/security">
               <div className="terminal-card p-6 rounded-lg border border-matrix/30 hover:bg-surface/50 transition-all">
                 <h3 className="text-xl font-mono text-matrix mb-4">Security</h3>

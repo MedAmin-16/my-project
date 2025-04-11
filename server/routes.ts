@@ -27,18 +27,7 @@ function ensureCompanyUser(req: Request, res: Response, next: NextFunction) {
   next();
 }
 
-function sanitizePath(req: Request, res: Response, next: NextFunction) {
-  const unsafePath = decodeURIComponent(req.path);
-  if (unsafePath.includes('../') || unsafePath.includes('..\\')) {
-    return res.status(400).json({ message: 'Invalid path' });
-  }
-  next();
-}
-
 export async function registerRoutes(app: Express): Promise<Server> {
-  // Add path sanitization middleware
-  app.use(sanitizePath);
-  
   // Setup authentication routes (/api/login, /api/register, etc.)
   setupAuth(app);
   

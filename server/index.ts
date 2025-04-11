@@ -20,19 +20,14 @@ app.use(helmet({
   contentSecurityPolicy: {
     directives: {
       defaultSrc: ["'self'"],
-      scriptSrc: ["'self'"],
-      styleSrc: ["'self'"],
-      imgSrc: ["'self'"],
+      scriptSrc: ["'self'", "'unsafe-inline'"],
+      styleSrc: ["'self'", "'unsafe-inline'"],
+      imgSrc: ["'self'", "data:", "https:"],
       connectSrc: ["'self'"],
       frameSrc: ["'none'"],
-      formAction: ["'self'"],
-      objectSrc: ["'none'"],
-      baseUri: ["'none'"],
       upgradeInsecureRequests: [],
     }
   },
-  xssFilter: true,
-  noSniff: true,
   crossOriginEmbedderPolicy: true,
   crossOriginOpenerPolicy: true,
   crossOriginResourcePolicy: { policy: "same-origin" },
