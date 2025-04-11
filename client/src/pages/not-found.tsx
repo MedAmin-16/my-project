@@ -3,6 +3,7 @@ import React from 'react';
 import { useLocation, Link } from 'wouter';
 import { Home, Terminal, RefreshCw } from 'lucide-react';
 import MatrixBackground from '../components/matrix-background';
+import { Button } from '@/components/ui/button';
 
 export default function NotFound() {
   const [location] = useLocation();
@@ -56,19 +57,20 @@ export default function NotFound() {
             </div>
             
             <div className="flex flex-col md:flex-row space-y-3 md:space-y-0 md:space-x-3">
-              <Link href="/">
-                <button className="cyber-button py-2 flex items-center justify-center w-full">
+              <Button asChild variant="default" className="cyber-button">
+                <Link href="/">
                   <Home className="h-4 w-4 mr-2" />
                   Return Home
-                </button>
-              </Link>
-              <button 
+                </Link>
+              </Button>
+              <Button 
                 onClick={() => window.history.back()}
-                className="cyber-button-outline py-2 flex items-center justify-center w-full"
+                variant="outline"
+                className="cyber-button-outline"
               >
                 <RefreshCw className="h-4 w-4 mr-2" />
                 Go Back
-              </button>
+              </Button>
             </div>
             
             <div className="mt-8 text-xs text-gray-400">
