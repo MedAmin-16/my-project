@@ -3,40 +3,33 @@ import { randomBytes } from 'crypto';
 import { storage } from './storage';
 import { Notification, User, Program, Submission } from '@shared/schema';
 
-// Development transporter using Ethereal Email for testing
-// In production, you would use a real SMTP service
+// Production transporter using Gmail SMTP
 let transporterPromise: Promise<nodemailer.Transporter>;
 
-async function createTestTransporter() {
+async function createProductionTransporter() {
   try {
-    // Generate test SMTP service account from ethereal.email
-    // Only needed if you don't have a real mail account for testing
-    const testAccount = await nodemailer.createTestAccount();
-
-    // Create reusable transporter object using the default SMTP transport
     const transporter = nodemailer.createTransport({
-      host: 'smtp.ethereal.email',
-      port: 587,
-      secure: false, // true for 465, false for other ports
+      host: 'smtp.gmail.com',
+      port: 465,
+      secure: true,
       auth: {
-        user: testAccount.user, // generated ethereal user
-        pass: testAccount.pass, // generated ethereal password
+        user: process.env.SMTP_USER,
+        pass: process.env.SMTP_PASS,
       },
     });
 
-    console.log(`Created Ethereal email test account: ${testAccount.user}`);
-    console.log(`Preview link available at: https://ethereal.email/login`);
-    console.log(`Email credentials: ${testAccount.user} / ${testAccount.pass}`);
-
+    // Verify the connection
+    await transporter.verify();
+    console.log('SMTP connection established successfully');
     return transporter;
   } catch (error) {
-    console.error('Failed to create test email transporter:', error);
+    console.error('Failed to create email transporter:', error);
     throw error;
   }
 }
 
 // Initialize the transporter once when the module is loaded
-transporterPromise = createTestTransporter();
+transporterPromise = createProductionTransporter();
 
 // Generate a verification token
 export function generateVerificationToken(): string {
