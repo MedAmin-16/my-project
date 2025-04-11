@@ -5,46 +5,41 @@ import helmet from 'helmet';
 import rateLimit from 'express-rate-limit';
 import cookieParser from 'cookie-parser';
 import csrf from 'csurf';
-import hpp from 'hpp';
 
 const app = express();
 
-// Rate limiting
-const limiter = rateLimit({
+// Apply rate limiting to all routes
+app.use(rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 100 // limit each IP to 100 requests per windowMs
-});
+  max: 100, // limit each IP to 100 requests per windowMs
+  standardHeaders: true, // Return rate limit info in the `RateLimit-*` headers
+  legacyHeaders: false, // Disable the `X-RateLimit-*` headers
+}));
 
-// Add security headers
 app.use(helmet({
   contentSecurityPolicy: {
     directives: {
       defaultSrc: ["'self'"],
-      scriptSrc: ["'self'", "'unsafe-inline'"],
+      scriptSrc: ["'self'", "'unsafe-inline'", "https://www.google.com"], //Allowing google.com as an example, adjust as needed.
       styleSrc: ["'self'", "'unsafe-inline'"],
-      imgSrc: ["'self'", "data:", "https:"],
+      imgSrc: ["'self'", "data:" ], //Adding data: to allow base64 images
       connectSrc: ["'self'"],
       frameSrc: ["'none'"],
+      objectSrc: ["'none'"],
       upgradeInsecureRequests: [],
-    }
+    },
   },
-  crossOriginEmbedderPolicy: true,
-  crossOriginOpenerPolicy: true,
-  crossOriginResourcePolicy: { policy: "same-origin" },
-  dnsPrefetchControl: true,
-  frameguard: { action: "deny" },
-  hsts: true,
-  ieNoOpen: true,
+  hsts: {
+    maxAge: 31536000,
+    includeSubDomains: true,
+    preload: true
+  },
   noSniff: true,
-  referrerPolicy: { policy: "strict-origin-when-cross-origin" },
-  xssFilter: true
+  referrerPolicy: { policy: 'strict-origin-when-cross-origin' },
+  crossOriginEmbedderPolicy: true,
+  crossOriginOpenerPolicy: { policy: 'same-origin' },
+  crossOriginResourcePolicy: { policy: 'same-origin' }
 }));
-
-// Prevent HTTP Parameter Pollution
-app.use(hpp());
-
-// Apply rate limiting
-app.use(limiter);
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
