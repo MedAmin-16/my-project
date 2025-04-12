@@ -8,19 +8,21 @@ let transporterPromise: Promise<nodemailer.Transporter>;
 
 async function createProductionTransporter() {
   try {
+    const testAccount = await nodemailer.createTestAccount();
+    
     const transporter = nodemailer.createTransport({
-      host: 'smtp.gmail.com',
-      port: 465,
-      secure: true,
+      host: 'smtp.ethereal.email',
+      port: 587,
+      secure: false,
       auth: {
-        user: process.env.SMTP_USER,
-        pass: process.env.SMTP_PASS,
+        user: testAccount.user,
+        pass: testAccount.pass,
       },
     });
 
     // Verify the connection
     await transporter.verify();
-    console.log('SMTP connection established successfully');
+    console.log('Ethereal SMTP connection established successfully');
     return transporter;
   } catch (error) {
     console.error('Failed to create email transporter:', error);
