@@ -49,13 +49,19 @@ app.use(cookieParser());
 app.use(csrf({ 
   cookie: {
     httpOnly: true,
-    secure: process.env.NODE_ENV === 'production'
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'lax'
   }
 }));
 
 // Add CSRF token to all responses
 app.use((req, res, next) => {
-  res.cookie('XSRF-TOKEN', req.csrfToken());
+  if (req.method === 'GET') {
+    res.cookie('XSRF-TOKEN', req.csrfToken(), {
+      sameSite: 'lax',
+      secure: process.env.NODE_ENV === 'production'
+    });
+  }
   next();
 });
 
