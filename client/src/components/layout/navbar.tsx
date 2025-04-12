@@ -24,7 +24,11 @@ export default function Navbar() {
 
   // Resource links for dropdown
   const resourceLinks = [
-
+    { name: "Features", path: "/features" },
+    { name: "How It Works", path: "/how-it-works" },
+    { name: "Legal", path: "/legal" },
+    { name: "About", path: "/about" },
+    { name: "Help Center", path: "/help-center" }
   ];
 
   // Footer links (not visible in the top nav)
@@ -102,8 +106,14 @@ export default function Navbar() {
                   </DropdownMenuItem>
                 </Link>
                 <DropdownMenuSeparator className="bg-matrix/20" />
-
-                {/* No resource or legal dropdowns anymore */}
+                
+                {resourceLinks.map((link) => (
+                  <Link key={link.path} href={link.path}>
+                    <DropdownMenuItem className="text-light-gray hover:bg-matrix/10 cursor-pointer font-mono text-sm">
+                      {link.name}
+                    </DropdownMenuItem>
+                  </Link>
+                ))}
 
                 <DropdownMenuSeparator className="bg-matrix/20" />
                 <DropdownMenuItem 
