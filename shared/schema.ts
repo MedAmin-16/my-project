@@ -22,15 +22,14 @@ export const users = pgTable("users", {
 });
 
 export const passwordSchema = z.string()
-  .min(16, "Password must be at least 16 characters")
+  .min(8, "Password must be at least 8 characters")
   .max(128, "Password cannot exceed 128 characters")
   .regex(/[A-Z]/, "Password must contain at least one uppercase letter")
   .regex(/[a-z]/, "Password must contain at least one lowercase letter")
   .regex(/[0-9]/, "Password must contain at least one number")
   .regex(/[^A-Za-z0-9]/, "Password must contain at least one special character")
   .refine(pwd => !(/(.)\1{2,}/.test(pwd)), "Password cannot contain repeating characters (e.g., 'aaa')")
-  .refine(pwd => !/password|123456|qwerty/i.test(pwd), "Password contains common patterns")
-  .refine(pwd => !(/(.)\1{2,}/.test(pwd)), "Password cannot contain repeating characters (e.g., 'aaa')");
+  .refine(pwd => !/password|123456|qwerty/i.test(pwd), "Password contains common patterns");
 
 export const insertUserSchema = createInsertSchema(users, {
   password: z.string()
