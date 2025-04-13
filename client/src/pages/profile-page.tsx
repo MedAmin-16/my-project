@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useParams, useLocation } from 'wouter';
 import { useQuery } from '@tanstack/react-query';
 import { 
-  User as UserIcon, Award, Calendar, Shield, 
+  User as UserIcon, Award, Calendar,
   Star, CheckCircle, Terminal, 
   BarChart, Activity as ActivityIcon, Loader2, AlertTriangle, 
   Settings as SettingsIcon 

@@ -5,7 +5,7 @@ import { z } from 'zod';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { 
-  Settings, User, Bell, Mail, Shield, Lock, LogOut, 
+  User, Bell, Lock, LogOut, 
   Eye, EyeOff, CheckCircle, Loader2, Save, AlertTriangle 
 } from 'lucide-react';
 import { useAuth } from '@/hooks/use-auth';
