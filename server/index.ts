@@ -45,12 +45,31 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 
-// Add CSRF protection with simpler configuration
-app.use(csrf());
+// Add session middleware before CSRF
+app.use(session({
+  secret: process.env.SESSION_SECRET || 'your-secret-key',
+  resave: false,
+  saveUninitialized: false,
+  cookie: {
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'lax'
+  }
+}));
+
+// Add CSRF protection
+app.use(csrf({
+  cookie: {
+    key: 'XSRF-TOKEN',
+    path: '/',
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'lax'
+  }
+}));
 
 // Add CSRF token to all responses
 app.use((req, res, next) => {
-  res.cookie("XSRF-TOKEN", req.csrfToken());
+  res.cookie('XSRF-TOKEN', req.csrfToken());
   next();
 });
 
