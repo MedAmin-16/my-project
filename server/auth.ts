@@ -54,10 +54,9 @@ const apiLimiter = rateLimit({
   message: { message: "Too many requests, please try again later" }
 });
 
-// Apply rate limit to all API routes
-app.use('/api/', apiLimiter);
-
 export function setupAuth(app: Express) {
+  // Apply rate limit to all API routes
+  app.use('/api/', apiLimiter);
   const sessionSettings: session.SessionOptions = {
     secret: process.env.SESSION_SECRET || crypto.randomBytes(32).toString('hex'),
     resave: false,
