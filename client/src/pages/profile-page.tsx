@@ -3,7 +3,7 @@ import { useParams, useLocation } from 'wouter';
 import { useQuery } from '@tanstack/react-query';
 import { 
   User as UserIcon, Award, Calendar,
-  Star, CheckCircle, Terminal, 
+  Star, CheckCircle, Terminal, Shield,
   BarChart, Activity as ActivityIcon, Loader2, AlertTriangle, 
   Settings as SettingsIcon 
 } from 'lucide-react';
