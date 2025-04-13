@@ -17,21 +17,17 @@ app.use(rateLimit({
   legacyHeaders: false, // Disable the `X-RateLimit-*` headers
 }));
 
-// Enhanced security middleware
 app.use(helmet({
   contentSecurityPolicy: {
     directives: {
       defaultSrc: ["'self'"],
-      scriptSrc: ["'self'"],
-      styleSrc: ["'self'"],
-      imgSrc: ["'self'", "data:"],
+      scriptSrc: ["'self'", "'unsafe-inline'", "https://www.google.com"], //Allowing google.com as an example, adjust as needed.
+      styleSrc: ["'self'", "'unsafe-inline'"],
+      imgSrc: ["'self'", "data:" ], //Adding data: to allow base64 images
       connectSrc: ["'self'"],
       frameSrc: ["'none'"],
       objectSrc: ["'none'"],
-      baseUri: ["'none'"],
-      formAction: ["'self'"],
-      frameAncestors: ["'none'"],
-      upgradeInsecureRequests: []
+      upgradeInsecureRequests: [],
     },
   },
   hsts: {
@@ -43,31 +39,8 @@ app.use(helmet({
   referrerPolicy: { policy: 'strict-origin-when-cross-origin' },
   crossOriginEmbedderPolicy: true,
   crossOriginOpenerPolicy: { policy: 'same-origin' },
-  crossOriginResourcePolicy: { policy: 'same-origin' },
-  dnsPrefetchControl: { allow: false },
-  permittedCrossDomainPolicies: { permittedPolicies: "none" }
+  crossOriginResourcePolicy: { policy: 'same-origin' }
 }));
-
-// Add security headers
-app.use((req, res, next) => {
-  res.setHeader('X-Content-Type-Options', 'nosniff');
-  res.setHeader('X-Frame-Options', 'DENY');
-  res.setHeader('X-XSS-Protection', '1; mode=block');
-  res.setHeader('Permissions-Policy', 'geolocation=(), camera=(), microphone=()');
-  next();
-});
-
-// Add request sanitization
-app.use((req, res, next) => {
-  if (req.body) {
-    Object.keys(req.body).forEach(key => {
-      if (typeof req.body[key] === 'string') {
-        req.body[key] = req.body[key].trim().replace(/[<>]/g, '');
-      }
-    });
-  }
-  next();
-});
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
