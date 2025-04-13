@@ -5,9 +5,9 @@ export async function apiRequest(method: string, path: string, data?: any) {
     method,
     headers: {
       'Content-Type': 'application/json',
-      'X-CSRF-Token': token || '',
+      'x-csrf-token': token || '',
     },
-    credentials: 'same-origin',
+    credentials: 'include',
     body: data ? JSON.stringify(data) : undefined,
   });
   return response;

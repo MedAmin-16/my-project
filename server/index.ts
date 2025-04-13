@@ -45,14 +45,12 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 
-// Add CSRF protection
-app.use(csrf({ 
-  cookie: true
-}));
+// Add CSRF protection with simpler configuration
+app.use(csrf());
 
 // Add CSRF token to all responses
 app.use((req, res, next) => {
-  res.cookie('XSRF-TOKEN', req.csrfToken());
+  res.cookie("XSRF-TOKEN", req.csrfToken());
   next();
 });
 
