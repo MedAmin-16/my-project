@@ -47,20 +47,12 @@ app.use(cookieParser());
 
 // Add CSRF protection
 app.use(csrf({ 
-  cookie: {
-    httpOnly: false,
-    secure: process.env.NODE_ENV === 'production',
-    sameSite: 'lax'
-  }
+  cookie: true
 }));
 
 // Add CSRF token to all responses
 app.use((req, res, next) => {
-  res.cookie('XSRF-TOKEN', req.csrfToken(), {
-    httpOnly: false,
-    secure: process.env.NODE_ENV === 'production',
-    sameSite: 'lax'
-  });
+  res.cookie('XSRF-TOKEN', req.csrfToken());
   next();
 });
 
