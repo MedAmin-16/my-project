@@ -32,16 +32,30 @@ async function comparePasswords(supplied: string, stored: string) {
 }
 
 const loginLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 50, // 50 attempts
-  message: { message: "Too many login attempts, please try again later" }
+  windowMs: 15 * 60 * 1000,
+  max: 5,
+  message: { message: "Too many login attempts, please try again later" },
+  standardHeaders: true,
+  legacyHeaders: false,
+  skipSuccessfulRequests: true
 });
 
 const registerLimiter = rateLimit({
-  windowMs: 60 * 60 * 1000, // 1 hour
-  max: 20, // 20 attempts
-  message: { message: "Too many registration attempts, please try again later" }
+  windowMs: 60 * 60 * 1000,
+  max: 3,
+  message: { message: "Too many registration attempts, please try again later" },
+  standardHeaders: true,
+  legacyHeaders: false
 });
+
+const apiLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 100,
+  message: { message: "Too many requests, please try again later" }
+});
+
+// Apply rate limit to all API routes
+app.use('/api/', apiLimiter);
 
 export function setupAuth(app: Express) {
   const sessionSettings: session.SessionOptions = {
