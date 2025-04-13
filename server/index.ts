@@ -57,22 +57,7 @@ app.use(session({
   }
 }));
 
-// Add CSRF protection
-app.use(csrf({
-  cookie: {
-    key: 'XSRF-TOKEN',
-    path: '/',
-    httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
-    sameSite: 'lax'
-  }
-}));
-
-// Add CSRF token to all responses
-app.use((req, res, next) => {
-  res.cookie('XSRF-TOKEN', req.csrfToken());
-  next();
-});
+// CSRF protection removed
 
 app.use((req, res, next) => {
   const start = Date.now();

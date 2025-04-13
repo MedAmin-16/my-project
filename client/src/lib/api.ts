@@ -5,7 +5,6 @@ export async function apiRequest(method: string, path: string, data?: any) {
     method,
     headers: {
       'Content-Type': 'application/json',
-      'x-csrf-token': token || '',
     },
     credentials: 'include',
     body: data ? JSON.stringify(data) : undefined,
