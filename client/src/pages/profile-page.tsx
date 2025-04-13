@@ -5,7 +5,7 @@ import {
   User as UserIcon, Award, Calendar,
   Star, CheckCircle, Terminal, Shield,
   BarChart, Activity as ActivityIcon, Loader2, AlertTriangle, 
-  Settings as SettingsIcon 
+  Settings as SettingsIcon, Camera
 } from 'lucide-react';
 import { useAuth } from '@/hooks/use-auth';
 import { Button } from '@/components/ui/button';
@@ -27,7 +27,7 @@ export default function ProfilePage() {
   const { user: currentUser } = useAuth();
   const [activeTab, setActiveTab] = useState('overview');
   const userId = params.id ? parseInt(params.id) : currentUser?.id;
-  
+
   // Determine if this is the current user's profile
   const isCurrentUser = currentUser && currentUser.id === userId;
 
@@ -172,15 +172,62 @@ export default function ProfilePage() {
     <div className="min-h-screen bg-deep-black relative">
       <MatrixBackground className="opacity-20" />
       <Navbar />
-      
+
       <main className="max-w-6xl mx-auto px-4 py-12 relative z-10">
         {/* Profile Header */}
         <div className="terminal-card p-6 rounded-lg mb-6">
           <div className="flex flex-col md:flex-row gap-6 items-center md:items-start">
-            <div className="w-24 h-24 bg-dark-terminal rounded-full flex items-center justify-center text-matrix border-2 border-matrix/30">
-              <UserIcon size={40} />
+            <div className="relative w-24 h-24">
+              {user.photoUrl ? (
+                <img 
+                  src={user.photoUrl} 
+                  alt={user.username}
+                  className="w-24 h-24 rounded-full object-cover border-2 border-matrix/30"
+                />
+              ) : (
+                <div className="w-24 h-24 bg-dark-terminal rounded-full flex items-center justify-center text-matrix border-2 border-matrix/30">
+                  <UserIcon size={40} />
+                </div>
+              )}
+              {isCurrentUser && (
+                <label 
+                  htmlFor="photo-upload" 
+                  className="absolute bottom-0 right-0 bg-matrix text-black p-2 rounded-full cursor-pointer hover:bg-matrix/80"
+                >
+                  <input
+                    id="photo-upload"
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={async (e) => {
+                      const file = e.target.files?.[0];
+                      if (file) {
+                        const formData = new FormData();
+                        formData.append('photo', file);
+
+                        try {
+                          const response = await fetch('/api/user/photo', {
+                            method: 'POST',
+                            credentials: 'include',
+                            body: formData
+                          });
+
+                          if (response.ok) {
+                            const data = await response.json();
+                            // Trigger a refetch of user data to get the new photo URL
+                            queryClient.invalidateQueries(['/api/user']);
+                          }
+                        } catch (error) {
+                          console.error('Failed to upload photo:', error);
+                        }
+                      }
+                    }}
+                  />
+                  <Camera className="h-4 w-4" />
+                </label>
+              )}
             </div>
-            
+
             <div className="flex-1 text-center md:text-left">
               <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div>
@@ -194,7 +241,7 @@ export default function ProfilePage() {
                     {user.rank || 'Newbie'} Hacker
                   </p>
                 </div>
-                
+
                 {isCurrentUser && (
                   <Button 
                     variant="outline" 
@@ -206,13 +253,13 @@ export default function ProfilePage() {
                   </Button>
                 )}
               </div>
-              
+
               <div className="flex flex-wrap justify-center md:justify-start gap-4 mt-4">
                 <div className="inline-flex items-center text-dim-gray text-sm">
                   <Award className="h-4 w-4 mr-2 text-electric-blue" />
                   <span>Reputation: <span className="text-green-500">{user.reputation || 0}</span></span>
                 </div>
-                
+
                 <div className="inline-flex items-center text-dim-gray text-sm">
                   <Calendar className="h-4 w-4 mr-2 text-electric-blue" />
                   <span>Joined: {formatDate(user.createdAt)}</span>
@@ -221,7 +268,7 @@ export default function ProfilePage() {
             </div>
           </div>
         </div>
-        
+
         {/* Tabs */}
         <Tabs defaultValue="overview" value={activeTab} onValueChange={setActiveTab} className="w-full">
           <TabsList className="w-full border-b border-dark-terminal mb-6 bg-transparent h-auto p-0 justify-start">
@@ -231,7 +278,7 @@ export default function ProfilePage() {
             >
               Overview
             </TabsTrigger>
-            
+
             {isCurrentUser && (
               <>
                 <TabsTrigger 
@@ -240,7 +287,7 @@ export default function ProfilePage() {
                 >
                   Submissions
                 </TabsTrigger>
-                
+
                 <TabsTrigger 
                   value="activity" 
                   className={`px-4 py-2 ${activeTab === 'activity' ? 'border-b-2 border-matrix text-matrix' : 'text-dim-gray'}`}
@@ -250,7 +297,7 @@ export default function ProfilePage() {
               </>
             )}
           </TabsList>
-          
+
           {/* Overview Tab */}
           <TabsContent value="overview" className="p-0 mt-0">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -268,23 +315,23 @@ export default function ProfilePage() {
                       <p className="text-dim-gray text-sm mb-1">Submissions</p>
                       <p className="text-matrix text-xl">{stats.totalSubmissions}</p>
                     </div>
-                    
+
                     <div className="p-3 bg-dark-terminal rounded-lg">
                       <p className="text-dim-gray text-sm mb-1">Accepted</p>
                       <p className="text-green-500 text-xl">{stats.acceptedSubmissions}</p>
                     </div>
-                    
+
                     <div className="p-3 bg-dark-terminal rounded-lg">
                       <p className="text-dim-gray text-sm mb-1">Pending</p>
                       <p className="text-yellow-500 text-xl">{stats.pendingSubmissions}</p>
                     </div>
-                    
+
                     <div className="p-3 bg-dark-terminal rounded-lg">
                       <p className="text-dim-gray text-sm mb-1">Rejected</p>
                       <p className="text-red-500 text-xl">{stats.rejectedSubmissions}</p>
                     </div>
                   </div>
-                  
+
                   {isCurrentUser && (
                     <div className="mt-4 p-3 bg-dark-terminal rounded-lg">
                       <p className="text-dim-gray text-sm mb-1">Total Rewards</p>
@@ -293,7 +340,7 @@ export default function ProfilePage() {
                   )}
                 </CardContent>
               </Card>
-              
+
               {/* Skills Card */}
               <Card className="terminal-card border-dark-terminal">
                 <CardHeader className="pb-2">
@@ -336,7 +383,7 @@ export default function ProfilePage() {
                   )}
                 </CardContent>
               </Card>
-              
+
               {/* Achievements Card */}
               <Card className="terminal-card border-dark-terminal md:col-span-2">
                 <CardHeader className="pb-2">
@@ -356,7 +403,7 @@ export default function ProfilePage() {
                         <p className="text-dim-gray text-xs">Email verification completed</p>
                       </div>
                     </div>
-                    
+
                     {user.reputation >= 10 && (
                       <div className="terminal-card p-4 rounded-lg flex items-center">
                         <div className="h-10 w-10 bg-dark-terminal rounded-full flex items-center justify-center mr-3">
@@ -368,7 +415,7 @@ export default function ProfilePage() {
                         </div>
                       </div>
                     )}
-                    
+
                     {stats.totalSubmissions >= 1 && (
                       <div className="terminal-card p-4 rounded-lg flex items-center">
                         <div className="h-10 w-10 bg-dark-terminal rounded-full flex items-center justify-center mr-3">
@@ -380,7 +427,7 @@ export default function ProfilePage() {
                         </div>
                       </div>
                     )}
-                    
+
                     {stats.acceptedSubmissions >= 1 && (
                       <div className="terminal-card p-4 rounded-lg flex items-center">
                         <div className="h-10 w-10 bg-dark-terminal rounded-full flex items-center justify-center mr-3">
@@ -397,7 +444,7 @@ export default function ProfilePage() {
               </Card>
             </div>
           </TabsContent>
-          
+
           {/* Submissions Tab */}
           <TabsContent value="submissions" className="p-0 mt-0">
             {isSubmissionsLoading ? (
@@ -429,30 +476,30 @@ export default function ProfilePage() {
                           >
                             {submission.status.charAt(0).toUpperCase() + submission.status.slice(1)}
                           </span>
-                          
+
                           <span className="inline-flex items-center px-2 py-1 bg-dark-terminal rounded text-xs text-blue-400">
                             {submission.type}
                           </span>
-                          
+
                           <span className="inline-flex items-center px-2 py-1 bg-dark-terminal rounded text-xs text-purple-400">
                             {submission.severity}
                           </span>
                         </div>
                         <p className="text-dim-gray text-sm line-clamp-2">{submission.description}</p>
                       </div>
-                      
+
                       <div className="flex flex-col items-start md:items-end justify-between">
                         <span className="text-dim-gray text-sm">
                           Submitted on {formatDate(submission.createdAt)}
                         </span>
-                        
+
                         {submission.reward && (
                           <span className="inline-flex items-center mt-2 text-yellow-400">
                             <Award className="h-4 w-4 mr-1" />
                             ${submission.reward}
                           </span>
                         )}
-                        
+
                         <Button 
                           variant="outline" 
                           size="sm" 
@@ -481,7 +528,7 @@ export default function ProfilePage() {
               </div>
             )}
           </TabsContent>
-          
+
           {/* Activity Tab */}
           <TabsContent value="activity" className="p-0 mt-0">
             {isActivitiesLoading ? (
