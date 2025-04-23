@@ -81,18 +81,16 @@ app.use(session({
 }));
 
 // Initialize CSRF protection
-const csrfProtection = csrf({
-  cookie: true
-});
+app.use(csrf({ cookie: true }));
 
-// Apply CSRF protection only to /api routes that modify data
-app.use('/api', (req, res, next) => {
-  if (req.method === 'GET') return next();
-  csrfProtection(req, res, next);
+// CSRF error handler
+app.use((err: any, req: Request, res: Response, next: NextFunction) => {
+  if (err.code !== 'EBADCSRFTOKEN') return next(err);
+  res.status(403).json({ message: 'Invalid CSRF token' });
 });
 
 // Provide CSRF token endpoint
-app.get('/api/csrf-token', csrfProtection, (req, res) => {
+app.get('/api/csrf-token', (req, res) => {
   res.cookie('XSRF-TOKEN', req.csrfToken(), {
     httpOnly: false,
     secure: process.env.NODE_ENV === 'production',
