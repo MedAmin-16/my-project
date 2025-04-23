@@ -18,15 +18,17 @@ declare global {
 
 const scryptAsync = promisify(scrypt);
 
-import bcrypt from 'bcrypt';
-
 async function hashPassword(password: string) {
-  const saltRounds = 12;
-  return bcrypt.hash(password, saltRounds);
+  const salt = randomBytes(16).toString("hex");
+  const buf = (await scryptAsync(password, salt, 64)) as Buffer;
+  return `${buf.toString("hex")}.${salt}`;
 }
 
 async function comparePasswords(supplied: string, stored: string) {
-  return bcrypt.compare(supplied, stored);
+  const [hashed, salt] = stored.split(".");
+  const hashedBuf = Buffer.from(hashed, "hex");
+  const suppliedBuf = (await scryptAsync(supplied, salt, 64)) as Buffer;
+  return timingSafeEqual(hashedBuf, suppliedBuf);
 }
 
 const loginLimiter = rateLimit({

@@ -7,7 +7,6 @@ import { insertSubmissionSchema, insertProgramSchema } from "@shared/schema";
 import { sendWelcomeEmail, sendAchievementEmail, sendSubmissionStatusEmail } from "./email-service";
 import multer from "multer";
 import path from "path";
-import { body, validationResult } from 'express-validator';
 
 const upload = multer({
   storage: multer.diskStorage({
@@ -50,14 +49,6 @@ function ensureCompanyUser(req: Request, res: Response, next: NextFunction) {
 
   next();
 }
-
-const registerValidation = [
-  body('username').trim().isLength({ min: 3 }).escape(),
-  body('email').isEmail().normalizeEmail(),
-  body('password').isLength({ min: 8 })
-    .matches(/^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}$/)
-    .withMessage('Password must be at least 8 characters long and contain letters and numbers'),
-];
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Setup authentication routes (/api/login, /api/register, etc.)
@@ -425,14 +416,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.error('Error updating submission status:', error);
       res.status(500).json({ message: "Failed to update submission status" });
     }
-  });
-
-  app.post("/api/register", registerValidation, async (req, res, next) => {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      return res.status(400).json({ errors: errors.array() });
-    }
-    //Existing register logic here...  This is incomplete due to lack of original code
   });
 
   app.get("/api/user", ensureAuthenticated, async (req, res) => {

@@ -21,14 +21,13 @@ app.use(helmet({
   contentSecurityPolicy: {
     directives: {
       defaultSrc: ["'self'"],
-      scriptSrc: ["'self'", "https://cdnjs.cloudflare.com"],
-      styleSrc: ["'self'", "https://cdnjs.cloudflare.com"],
-      imgSrc: ["'self'"],
+      scriptSrc: ["'self'", "'unsafe-inline'", "https://www.google.com"], //Allowing google.com as an example, adjust as needed.
+      styleSrc: ["'self'", "'unsafe-inline'"],
+      imgSrc: ["'self'", "data:" ], //Adding data: to allow base64 images
       connectSrc: ["'self'"],
       frameSrc: ["'none'"],
       objectSrc: ["'none'"],
       upgradeInsecureRequests: [],
-      blockAllMixedContent: [],
     },
   },
   hsts: {
@@ -40,11 +39,7 @@ app.use(helmet({
   referrerPolicy: { policy: 'strict-origin-when-cross-origin' },
   crossOriginEmbedderPolicy: true,
   crossOriginOpenerPolicy: { policy: 'same-origin' },
-  crossOriginResourcePolicy: { policy: 'same-origin' },
-  dnsPrefetchControl: { allow: false },
-  frameguard: { action: 'deny' },
-  permittedCrossDomainPolicies: { permittedPolicies: 'none' },
-  hidePoweredBy: true,
+  crossOriginResourcePolicy: { policy: 'same-origin' }
 }));
 
 app.use(express.json());
