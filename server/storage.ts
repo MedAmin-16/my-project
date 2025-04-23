@@ -2,9 +2,11 @@ import { users, type User, type InsertUser } from "@shared/schema";
 import { programs, type Program, type InsertProgram } from "@shared/schema";
 import { submissions, type Submission, type InsertSubmission } from "@shared/schema";
 import { activities, type Activity, type InsertActivity } from "@shared/schema";
+import { notifications, type Notification, type InsertNotification } from "@shared/schema"; // Added import for Notification
 import createMemoryStore from "memorystore";
 import session from "express-session";
 import { encrypt, decrypt } from "./crypto-utils";
+import crypto from 'crypto';
 
 // Encrypt sensitive data before storage
 function encryptSensitiveData(data: any) {
@@ -24,9 +26,6 @@ function decryptSensitiveData(data: any) {
   if (data.details) data.details = decrypt(data.details);
   return data;
 }
-// Add encryption library (replace with your chosen library)
-import crypto from 'crypto';
-
 
 const MemoryStore = createMemoryStore(session);
 
@@ -43,6 +42,8 @@ export interface IStorage {
   setVerificationToken(userId: number, token: string, expiryHours?: number): Promise<User | undefined>;
   verifyEmail(token: string): Promise<User | undefined>;
   getUserByVerificationToken(token: string): Promise<User | undefined>;
+  setPasswordResetToken(email: string): Promise<string | null>;
+  resetPassword(token: string, newPassword: string): Promise<boolean>;
 
   // Program CRUD
   getProgram(id: number): Promise<Program | undefined>;
@@ -92,12 +93,6 @@ export class MemStorage implements IStorage {
   private submissions: Map<number, Submission>;
   private activities: Map<number, Activity>;
   private notifications: Map<number, Notification>;
-
-  currentUserId: number;
-  currentProgramId: number;
-  currentSubmissionId: number;
-  currentActivityId: number;
-  currentNotificationId: number;
   sessionStore: session.SessionStore;
 
   constructor() {
@@ -106,13 +101,6 @@ export class MemStorage implements IStorage {
     this.submissions = new Map();
     this.activities = new Map();
     this.notifications = new Map();
-
-    this.currentUserId = 1;
-    this.currentProgramId = 1;
-    this.currentSubmissionId = 1;
-    this.currentActivityId = 1;
-    this.currentNotificationId = 1;
-
     this.sessionStore = new MemoryStore({
       checkPeriod: 86400000 // 24 hours
     });
@@ -243,14 +231,24 @@ export class MemStorage implements IStorage {
     user.verificationTokenExpiry = null;
 
     this.users.set(user.id, user);
-    return user;
-}
 
-async setPasswordResetToken(email: string): Promise<string | null> {
+    // Create an activity for email verification
+    await this.createActivity({
+      type: "account_update",
+      message: "Email verified successfully",
+      details: "Your email has been verified",
+      userId: user.id,
+      relatedId: null
+    });
+
+    return user;
+  }
+
+  async setPasswordResetToken(email: string): Promise<string | null> {
     const user = await this.getUserByEmail(email);
     if (!user) return null;
 
-    const token = randomBytes(32).toString('hex');
+    const token = crypto.randomBytes(32).toString('hex'); // Use crypto.randomBytes for better randomness
     const expiry = new Date();
     expiry.setHours(expiry.getHours() + 1);
 
@@ -259,9 +257,9 @@ async setPasswordResetToken(email: string): Promise<string | null> {
     this.users.set(user.id, user);
 
     return token;
-}
+  }
 
-async resetPassword(token: string, newPassword: string): Promise<boolean> {
+  async resetPassword(token: string, newPassword: string): Promise<boolean> {
     const user = Array.from(this.users.values()).find(
         u => u.resetPasswordToken === token && 
             u.resetPasswordExpiry && 
@@ -276,18 +274,6 @@ async resetPassword(token: string, newPassword: string): Promise<boolean> {
     this.users.set(user.id, user);
 
     return true;
-}
-
-    // Create an activity for email verification
-    await this.createActivity({
-      type: "account_update",
-      message: "Email verified successfully",
-      details: "Your email has been verified",
-      userId: user.id,
-      relatedId: null
-    });
-
-    return user;
   }
 
   async updateUserReputation(id: number, reputation: number): Promise<User | undefined> {
