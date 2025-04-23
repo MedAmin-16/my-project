@@ -1,37 +1,11 @@
 import nodemailer from 'nodemailer';
+import { Resend } from 'resend';
 import { randomBytes } from 'crypto';
 import { storage } from './storage';
 import { Notification, User, Program, Submission } from '@shared/schema';
 
-// Production transporter using Gmail SMTP
-let transporterPromise: Promise<nodemailer.Transporter>;
-
-async function createProductionTransporter() {
-  try {
-    const testAccount = await nodemailer.createTestAccount();
-    
-    const transporter = nodemailer.createTransport({
-      host: 'smtp.ethereal.email',
-      port: 587,
-      secure: false,
-      auth: {
-        user: testAccount.user,
-        pass: testAccount.pass,
-      },
-    });
-
-    // Verify the connection
-    await transporter.verify();
-    console.log('Ethereal SMTP connection established successfully');
-    return transporter;
-  } catch (error) {
-    console.error('Failed to create email transporter:', error);
-    throw error;
-  }
-}
-
-// Initialize the transporter once when the module is loaded
-transporterPromise = createProductionTransporter();
+// Initialize Resend with API key from environment
+const resend = new Resend(process.env.RESEND_API_KEY);
 
 // Generate a verification token
 export function generateVerificationToken(): string {
@@ -41,21 +15,15 @@ export function generateVerificationToken(): string {
 // Send a verification email
 export async function sendVerificationEmail(userId: number, userEmail: string, username: string): Promise<string> {
   try {
-    // Generate a verification token
     const token = generateVerificationToken();
-    
-    // Save the token to the user record
     await storage.setVerificationToken(userId, token);
 
-    // Create the verification link
-    const verificationUrl = `${process.env.BASE_URL || 'http://localhost:3000'}/verify-email?token=${token}`;
+    const verificationUrl = `${process.env.BASE_URL || 'http://localhost:5000'}/verify-email?token=${token}`;
 
-    // Email content
-    const emailContent = {
-      from: '"CyberHunt" <verification@cyberhunt.com>',
+    await resend.emails.send({
+      from: 'CyberHunt <onboarding@resend.dev>',
       to: userEmail,
       subject: 'Verify Your CyberHunt Account',
-      text: `Hello ${username},\n\nPlease verify your email by clicking on the following link: ${verificationUrl}\n\nThis link will expire in 24 hours.\n\nThank you,\nThe CyberHunt Team`,
       html: `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #00ff00; border-radius: 5px; background-color: #0a0a0a; color: #cccccc;">
           <h2 style="color: #00ff00; text-align: center;">CyberHunt Email Verification</h2>
@@ -68,24 +36,12 @@ export async function sendVerificationEmail(userId: number, userEmail: string, u
           <p>Or copy and paste this link into your browser:</p>
           <p style="background-color: #000000; padding: 10px; border-radius: 4px; word-break: break-all;"><a href="${verificationUrl}" style="color: #00ff00;">${verificationUrl}</a></p>
           <p><strong>Note:</strong> This link will expire in 24 hours.</p>
-          <p>If you didn't register for an account, please ignore this email.</p>
           <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #333333; text-align: center; font-size: 12px;">
             <p>&copy; ${new Date().getFullYear()} CyberHunt. All rights reserved.</p>
           </div>
         </div>
       `,
-    };
-
-    // Get the transporter and send the email
-    const transporter = await transporterPromise;
-    const info = await transporter.sendMail(emailContent);
-
-    console.log(`Verification email sent: ${info.messageId}`);
-    
-    // For Ethereal emails, log the preview URL
-    if (info.messageId && info.messageId.includes('ethereal')) {
-      console.log(`Preview URL: ${nodemailer.getTestMessageUrl(info)}`);
-    }
+    });
 
     return token;
   } catch (error) {
@@ -105,133 +61,46 @@ export async function verifyEmailWithToken(token: string): Promise<boolean> {
   }
 }
 
-// Email template wrapper for consistent styling
-function getEmailTemplate(title: string, content: string): string {
-  return `
-    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #00ff00; border-radius: 5px; background-color: #0a0a0a; color: #cccccc;">
-      <h2 style="color: #00ff00; text-align: center;">${title}</h2>
-      ${content}
-      <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #333333; text-align: center; font-size: 12px;">
-        <p>&copy; ${new Date().getFullYear()} CyberHunt. All rights reserved.</p>
-      </div>
-    </div>
-  `;
-}
-
-// Used for notification emails to ensure correct type checking
-interface NotificationEmailData {
-  id: number;
-  type: string;
-  message: string;
-  link: string | null;
-  isRead: boolean | null;
-  userId: number;
-  relatedId: number | null;
-  createdAt: Date | null;
-}
-
-// Send a notification email based on notification object
-export async function sendNotificationEmail(notification: NotificationEmailData): Promise<boolean> {
+// Helper function to send any email
+async function sendEmail(to: string, subject: string, html: string) {
   try {
-    // Get user details
-    const user = await storage.getUser(notification.userId);
-    if (!user || !user.email || !user.isEmailVerified) return false;
-
-    // Create base URL
-    const baseUrl = process.env.BASE_URL || 'http://localhost:3000';
-    
-    // Default link to notifications page if none provided
-    const actionUrl = notification.link ? `${baseUrl}${notification.link}` : `${baseUrl}/dashboard`;
-    
-    // Content based on notification type
-    let subject = 'CyberHunt Notification';
-    let content = '';
-    
-    switch(notification.type) {
-      case 'new_submission':
-        subject = 'New Submission on CyberHunt';
-        content = `
-          <p>Hello <strong>${user.username}</strong>,</p>
-          <p>You have a new bug submission to review.</p>
-          <p>${notification.message}</p>
-          <div style="text-align: center; margin: 30px 0;">
-            <a href="${actionUrl}" style="background-color: #00ff00; color: #000000; padding: 12px 24px; text-decoration: none; border-radius: 4px; font-weight: bold; display: inline-block;">View Submission</a>
-          </div>
-        `;
-        break;
-        
-      case 'status_change':
-        subject = 'Submission Status Update';
-        content = `
-          <p>Hello <strong>${user.username}</strong>,</p>
-          <p>There has been a change to one of your submissions:</p>
-          <p>${notification.message}</p>
-          <div style="text-align: center; margin: 30px 0;">
-            <a href="${actionUrl}" style="background-color: #00ff00; color: #000000; padding: 12px 24px; text-decoration: none; border-radius: 4px; font-weight: bold; display: inline-block;">View Details</a>
-          </div>
-        `;
-        break;
-        
-      case 'achievement':
-        subject = 'You\'ve Earned an Achievement on CyberHunt!';
-        content = `
-          <p>Hello <strong>${user.username}</strong>,</p>
-          <p>Congratulations! You've reached a new milestone:</p>
-          <p style="font-size: 18px; text-align: center; color: #00ff00; padding: 15px; background-color: #111111; border-radius: 5px;">${notification.message}</p>
-          <div style="text-align: center; margin: 30px 0;">
-            <a href="${actionUrl}" style="background-color: #00ff00; color: #000000; padding: 12px 24px; text-decoration: none; border-radius: 4px; font-weight: bold; display: inline-block;">See Your Achievements</a>
-          </div>
-        `;
-        break;
-        
-      default: // system
-        subject = 'CyberHunt System Notification';
-        content = `
-          <p>Hello <strong>${user.username}</strong>,</p>
-          <p>${notification.message}</p>
-          <div style="text-align: center; margin: 30px 0;">
-            <a href="${actionUrl}" style="background-color: #00ff00; color: #000000; padding: 12px 24px; text-decoration: none; border-radius: 4px; font-weight: bold; display: inline-block;">Go to Dashboard</a>
-          </div>
-        `;
-    }
-    
-    // Email content with template
-    const emailContent = {
-      from: '"CyberHunt" <notifications@cyberhunt.com>',
-      to: user.email,
+    await resend.emails.send({
+      from: 'CyberHunt <onboarding@resend.dev>',
+      to,
       subject,
-      text: `${subject}\n\nHello ${user.username},\n\n${notification.message}\n\nCheck it out here: ${actionUrl}\n\nThe CyberHunt Team`,
-      html: getEmailTemplate(subject, content),
-    };
-    
-    // Get the transporter and send the email
-    const transporter = await transporterPromise;
-    const info = await transporter.sendMail(emailContent);
-    
-    console.log(`Notification email sent: ${info.messageId}`);
-    
-    // For Ethereal emails, log the preview URL
-    if (info.messageId && info.messageId.includes('ethereal')) {
-      console.log(`Preview URL: ${nodemailer.getTestMessageUrl(info)}`);
-    }
-    
+      html,
+    });
     return true;
   } catch (error) {
-    console.error('Failed to send notification email:', error);
+    console.error('Failed to send email:', error);
     return false;
   }
 }
 
-// Send a submission status update email
+export async function sendNotificationEmail(notification: any): Promise<boolean> {
+  const user = await storage.getUser(notification.userId);
+  if (!user?.email || !user.isEmailVerified) return false;
+
+  const baseUrl = process.env.BASE_URL || 'http://localhost:5000';
+  const actionUrl = notification.link ? `${baseUrl}${notification.link}` : `${baseUrl}/dashboard`;
+
+  return sendEmail(
+    user.email,
+    'CyberHunt Notification',
+    `<div style="font-family: Arial, sans-serif;">
+      <h2>New Notification</h2>
+      <p>${notification.message}</p>
+      <a href="${actionUrl}">View Details</a>
+    </div>`
+  );
+}
+
 export async function sendSubmissionStatusEmail(submission: Submission, message: string): Promise<boolean> {
   try {
-    // Get user and program details
     const user = await storage.getUser(submission.userId);
     const program = await storage.getProgram(submission.programId);
-    
     if (!user || !user.email || !user.isEmailVerified || !program) return false;
-    
-    // Create the status notification
+
     const notificationData = {
       type: 'status_change',
       message: `Your submission for "${program.name}" has been ${submission.status}. ${message}`,
@@ -239,14 +108,10 @@ export async function sendSubmissionStatusEmail(submission: Submission, message:
       userId: user.id,
       relatedId: submission.id
     };
-    
-    const createdNotification = await storage.createNotification(notificationData);
-    
-    // Direct email sending without using the notification email function
-    const baseUrl = process.env.BASE_URL || 'http://localhost:3000';
-    const linkPath = notificationData.link;
-    const actionUrl = linkPath ? `${baseUrl}${linkPath}` : `${baseUrl}/dashboard`;
-    
+
+    const baseUrl = process.env.BASE_URL || 'http://localhost:5000';
+    const actionUrl = notificationData.link ? `${baseUrl}${notificationData.link}` : `${baseUrl}/dashboard`;
+
     const subject = 'Submission Status Update';
     const content = `
       <p>Hello <strong>${user.username}</strong>,</p>
@@ -256,39 +121,20 @@ export async function sendSubmissionStatusEmail(submission: Submission, message:
         <a href="${actionUrl}" style="background-color: #00ff00; color: #000000; padding: 12px 24px; text-decoration: none; border-radius: 4px; font-weight: bold; display: inline-block;">View Details</a>
       </div>
     `;
-    
-    const emailContent = {
-      from: '"CyberHunt" <notifications@cyberhunt.com>',
-      to: user.email,
-      subject,
-      text: `${subject}\n\nHello ${user.username},\n\n${notificationData.message}\n\nCheck it out here: ${actionUrl}\n\nThe CyberHunt Team`,
-      html: getEmailTemplate(subject, content),
-    };
-    
-    const transporter = await transporterPromise;
-    const info = await transporter.sendMail(emailContent);
-    
-    console.log(`Submission status email sent: ${info.messageId}`);
-    
-    if (info.messageId && info.messageId.includes('ethereal')) {
-      console.log(`Preview URL: ${nodemailer.getTestMessageUrl(info)}`);
-    }
-    
-    return true;
+
+    return sendEmail(user.email, subject, getEmailTemplate(subject, content));
   } catch (error) {
     console.error('Failed to send submission status email:', error);
     return false;
   }
 }
 
-// Send an achievement notification email
+
 export async function sendAchievementEmail(userId: number, achievementTitle: string, description: string): Promise<boolean> {
   try {
-    // Get user details
     const user = await storage.getUser(userId);
     if (!user || !user.email || !user.isEmailVerified) return false;
-    
-    // Create the achievement notification content
+
     const notificationData = {
       type: 'achievement',
       message: `Achievement Unlocked: ${achievementTitle} - ${description}`,
@@ -296,14 +142,10 @@ export async function sendAchievementEmail(userId: number, achievementTitle: str
       userId,
       relatedId: null
     };
-    
-    const createdNotification = await storage.createNotification(notificationData);
-    
-    // Direct email sending without using the notification email function
-    const baseUrl = process.env.BASE_URL || 'http://localhost:3000';
-    const linkPath = notificationData.link;
-    const actionUrl = linkPath ? `${baseUrl}${linkPath}` : `${baseUrl}/dashboard`;
-    
+
+    const baseUrl = process.env.BASE_URL || 'http://localhost:5000';
+    const actionUrl = notificationData.link ? `${baseUrl}${notificationData.link}` : `${baseUrl}/dashboard`;
+
     const subject = 'You\'ve Earned an Achievement on CyberHunt!';
     const content = `
       <p>Hello <strong>${user.username}</strong>,</p>
@@ -313,44 +155,24 @@ export async function sendAchievementEmail(userId: number, achievementTitle: str
         <a href="${actionUrl}" style="background-color: #00ff00; color: #000000; padding: 12px 24px; text-decoration: none; border-radius: 4px; font-weight: bold; display: inline-block;">See Your Achievements</a>
       </div>
     `;
-    
-    const emailContent = {
-      from: '"CyberHunt" <notifications@cyberhunt.com>',
-      to: user.email,
-      subject,
-      text: `${subject}\n\nHello ${user.username},\n\n${notificationData.message}\n\nCheck it out here: ${actionUrl}\n\nThe CyberHunt Team`,
-      html: getEmailTemplate(subject, content),
-    };
-    
-    const transporter = await transporterPromise;
-    const info = await transporter.sendMail(emailContent);
-    
-    console.log(`Achievement email sent: ${info.messageId}`);
-    
-    if (info.messageId && info.messageId.includes('ethereal')) {
-      console.log(`Preview URL: ${nodemailer.getTestMessageUrl(info)}`);
-    }
-    
-    return true;
+
+    return sendEmail(user.email, subject, getEmailTemplate(subject, content));
   } catch (error) {
     console.error('Failed to send achievement email:', error);
     return false;
   }
 }
 
-// Send a welcome email after verification
 export async function sendWelcomeEmail(userId: number): Promise<boolean> {
   try {
     const user = await storage.getUser(userId);
     if (!user || !user.email || !user.isEmailVerified) return false;
-    
-    const baseUrl = process.env.BASE_URL || 'http://localhost:3000';
-    
-    // Get active programs for recommendation
+
+    const baseUrl = process.env.BASE_URL || 'http://localhost:5000';
+
     const programs = await storage.getPublicPrograms();
     const topPrograms = programs.slice(0, 3);
-    
-    // Create program recommendations HTML
+
     let programRecommendations = '';
     if (topPrograms.length > 0) {
       programRecommendations = `
@@ -366,8 +188,7 @@ export async function sendWelcomeEmail(userId: number): Promise<boolean> {
         </div>
       `;
     }
-    
-    // Email content
+
     const emailContent = {
       from: '"CyberHunt" <welcome@cyberhunt.com>',
       to: user.email,
@@ -415,21 +236,35 @@ The CyberHunt Team`,
         <p style="margin-top: 15px;">Happy hunting!</p>
       `),
     };
-    
-    // Get the transporter and send the email
-    const transporter = await transporterPromise;
-    const info = await transporter.sendMail(emailContent);
-    
-    console.log(`Welcome email sent: ${info.messageId}`);
-    
-    // For Ethereal emails, log the preview URL
-    if (info.messageId && info.messageId.includes('ethereal')) {
-      console.log(`Preview URL: ${nodemailer.getTestMessageUrl(info)}`);
-    }
-    
-    return true;
+
+    return sendEmail(user.email, emailContent.subject, emailContent.html);
   } catch (error) {
     console.error('Failed to send welcome email:', error);
     return false;
   }
+}
+
+// Email template wrapper for consistent styling
+function getEmailTemplate(title: string, content: string): string {
+  return `
+    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #00ff00; border-radius: 5px; background-color: #0a0a0a; color: #cccccc;">
+      <h2 style="color: #00ff00; text-align: center;">${title}</h2>
+      ${content}
+      <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #333333; text-align: center; font-size: 12px;">
+        <p>&copy; ${new Date().getFullYear()} CyberHunt. All rights reserved.</p>
+      </div>
+    </div>
+  `;
+}
+
+// Used for notification emails to ensure correct type checking
+interface NotificationEmailData {
+  id: number;
+  type: string;
+  message: string;
+  link: string | null;
+  isRead: boolean | null;
+  userId: number;
+  relatedId: number | null;
+  createdAt: Date | null;
 }
