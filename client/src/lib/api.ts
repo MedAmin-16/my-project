@@ -1,11 +1,21 @@
 
+export async function getCsrfToken() {
+  const response = await fetch('/api/csrf-token');
+  const data = await response.json();
+  return data.csrfToken;
+}
+
 export async function apiRequest(method: string, path: string, data?: any) {
   try {
-    // Get CSRF token from cookie
-    const csrfToken = document.cookie
+    // Get CSRF token from cookie or fetch new one if needed
+    let csrfToken = document.cookie
       .split('; ')
       .find(row => row.startsWith('XSRF-TOKEN'))
       ?.split('=')[1];
+    
+    if (!csrfToken) {
+      csrfToken = await getCsrfToken();
+    }
 
     const response = await fetch(path, {
       method,

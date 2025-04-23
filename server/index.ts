@@ -69,19 +69,36 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 
-// Initialize CSRF middleware
-app.use(csrf({ cookie: true }));
-
-// Add session middleware
+// Add session middleware first
 app.use(session({
   secret: process.env.SESSION_SECRET || 'your-secret-key',
   resave: false,
   saveUninitialized: false,
   cookie: {
     secure: process.env.NODE_ENV === 'production',
-    sameSite: 'lax'
+    sameSite: 'lax',
+    maxAge: 24 * 60 * 60 * 1000 // 24 hours
   }
 }));
+
+// Initialize CSRF protection
+app.use(csrf({
+  cookie: {
+    key: '_csrf',
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: process.env.NODE_ENV === 'production' ? 'strict' : 'lax',
+    httpOnly: true
+  }
+}));
+
+// Provide CSRF token to all routes
+app.use((req, res, next) => {
+  res.cookie('XSRF-TOKEN', req.csrfToken(), {
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: process.env.NODE_ENV === 'production' ? 'strict' : 'lax'
+  });
+  next();
+});
 
 // Make CSRF token available
 app.use((req, res, next) => {
