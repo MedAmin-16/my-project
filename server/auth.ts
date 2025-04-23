@@ -95,6 +95,14 @@ export function setupAuth(app: Express) {
         return res.status(400).json({ message: "Username, password, and email are required" });
       }
 
+      // Password complexity check
+      const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+      if (!passwordRegex.test(password)) {
+        return res.status(400).json({ 
+          message: "Password must be at least 8 characters long and contain uppercase, lowercase, number and special characters" 
+        });
+      }
+
       // Check if username is taken
       const existingUser = await storage.getUserByUsername(username);
       if (existingUser) {

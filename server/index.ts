@@ -21,15 +21,21 @@ app.use(helmet({
   contentSecurityPolicy: {
     directives: {
       defaultSrc: ["'self'"],
-      scriptSrc: ["'self'", "'unsafe-inline'", "https://www.google.com"], //Allowing google.com as an example, adjust as needed.
+      scriptSrc: ["'self'", "'unsafe-inline'"],
       styleSrc: ["'self'", "'unsafe-inline'"],
-      imgSrc: ["'self'", "data:" ], //Adding data: to allow base64 images
+      imgSrc: ["'self'", "data:", "https:"],
       connectSrc: ["'self'"],
       frameSrc: ["'none'"],
       objectSrc: ["'none'"],
+      baseUri: ["'self'"],
+      formAction: ["'self'"],
+      frameAncestors: ["'none'"],
       upgradeInsecureRequests: [],
     },
   },
+  crossOriginEmbedderPolicy: { policy: "require-corp" },
+  crossOriginOpenerPolicy: { policy: "same-origin" },
+  crossOriginResourcePolicy: { policy: "same-origin" },
   hsts: {
     maxAge: 31536000,
     includeSubDomains: true,
@@ -37,9 +43,7 @@ app.use(helmet({
   },
   noSniff: true,
   referrerPolicy: { policy: 'strict-origin-when-cross-origin' },
-  crossOriginEmbedderPolicy: true,
-  crossOriginOpenerPolicy: { policy: 'same-origin' },
-  crossOriginResourcePolicy: { policy: 'same-origin' }
+
 }));
 
 app.use(express.json());
@@ -57,7 +61,13 @@ app.use(session({
   }
 }));
 
-// CSRF protection removed
+const csrfProtection = csrf({ cookie: true });
+app.use(csrfProtection);
+
+app.use((req, res, next) => {
+  res.locals.csrftoken = req.csrfToken();
+  next();
+});
 
 app.use((req, res, next) => {
   const start = Date.now();
