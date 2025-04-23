@@ -80,8 +80,25 @@ app.use(session({
   }
 }));
 
-// Initialize CSRF protection
-app.use(csrf({ cookie: true }));
+// Initialize CSRF protection with proper cookie settings
+app.use(csrf({
+  cookie: {
+    key: '_csrf',
+    path: '/',
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'lax',
+    httpOnly: true
+  }
+}));
+
+// Provide CSRF token for all requests
+app.use((req: Request, res: Response, next: NextFunction) => {
+  res.cookie('XSRF-TOKEN', req.csrfToken(), {
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'lax'
+  });
+  next();
+});
 
 // Error handler for CSRF token errors
 app.use((err: any, req: Request, res: Response, next: NextFunction) => {

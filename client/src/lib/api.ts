@@ -1,10 +1,18 @@
 
 export async function apiRequest(method: string, path: string, data?: any) {
   try {
+    // Get CSRF token from cookie
+    const csrfToken = document.cookie
+      .split('; ')
+      .find(row => row.startsWith('XSRF-TOKEN'))
+      ?.split('=')[1];
+
     const response = await fetch(path, {
       method,
       headers: {
         'Content-Type': 'application/json',
+        'XSRF-TOKEN': csrfToken || '',
+        'X-CSRF-Token': csrfToken || '',
       },
       credentials: 'include',
       body: data ? JSON.stringify(data) : undefined,
