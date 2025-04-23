@@ -2,20 +2,29 @@
 let csrfToken: string | null = null;
 
 async function getCsrfToken() {
-  try {
-    const response = await fetch('/api/csrf-token', {
-      credentials: 'include'
-    });
-    if (!response.ok) {
-      throw new Error('Failed to fetch CSRF token');
+  if (!csrfToken) {
+    try {
+      const response = await fetch('/api/csrf-token', {
+        method: 'GET',
+        credentials: 'include',
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json',
+        }
+      });
+      
+      if (!response.ok) {
+        throw new Error('Failed to fetch CSRF token');
+      }
+      
+      const data = await response.json();
+      csrfToken = data.csrfToken;
+    } catch (error) {
+      console.error('Error fetching CSRF token:', error);
+      throw error;
     }
-    const data = await response.json();
-    csrfToken = data.csrfToken;
-    return csrfToken;
-  } catch (error) {
-    console.error('Error fetching CSRF token:', error);
-    throw error;
   }
+  return csrfToken;
 }
 
 export async function apiRequest(method: string, path: string, data?: any) {
