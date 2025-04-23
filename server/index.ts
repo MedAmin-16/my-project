@@ -80,6 +80,15 @@ app.use(session({
   }
 }));
 
+// Initialize CSRF protection
+app.use(csrf({ cookie: true }));
+
+// Error handler for CSRF token errors
+app.use((err: any, req: Request, res: Response, next: NextFunction) => {
+  if (err.code !== 'EBADCSRFTOKEN') return next(err);
+  res.status(403).json({ message: 'Invalid CSRF token' });
+});
+
 
 
 app.use((req, res, next) => {
