@@ -4,6 +4,9 @@ let csrfToken: string | null = null;
 async function getCsrfToken() {
   if (!csrfToken) {
     const response = await fetch('/api/csrf-token');
+    if (!response.ok) {
+      throw new Error('Failed to fetch CSRF token');
+    }
     const data = await response.json();
     csrfToken = data.csrfToken;
   }
@@ -26,4 +29,8 @@ export async function apiRequest(method: string, path: string, data?: any) {
 
 export async function login(username: string, password: string) {
   return apiRequest('POST', '/api/login', { username, password });
+}
+
+export async function register(data: any) {
+  return apiRequest('POST', '/api/register', data);
 }

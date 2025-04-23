@@ -443,6 +443,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.use((req, res, next) => {
+    res.locals.csrftoken = req.csrfToken();
+    next();
+  });
+
+  // Add CSRF token endpoint
+  app.get('/api/csrf-token', (req, res) => {
+    res.json({ csrfToken: req.csrfToken() });
+  });
 
   // Create HTTP server
   const httpServer = createServer(app);
