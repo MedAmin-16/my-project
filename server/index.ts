@@ -80,6 +80,7 @@ app.use(session({
   }
 }));
 
+// Initialize CSRF protection
 const csrfProtection = csrf({
   cookie: {
     httpOnly: true,
@@ -88,12 +89,18 @@ const csrfProtection = csrf({
   }
 });
 
-// Apply CSRF protection to /api routes only
-app.use('/api', csrfProtection);
+// Initialize CSRF before routes that need it
+app.use(csrfProtection);
 
-// Provide CSRF token
-app.get('/api/csrf-token', csrfProtection, (req, res) => {
+// Provide CSRF token endpoint
+app.get('/api/csrf-token', (req, res) => {
   res.json({ csrfToken: req.csrfToken() });
+});
+
+// Add CSRF token to all responses
+app.use((req, res, next) => {
+  res.cookie('XSRF-TOKEN', req.csrfToken());
+  next();
 });
 
 app.use((req, res, next) => {
