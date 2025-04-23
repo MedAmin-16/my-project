@@ -1,41 +1,10 @@
 
-let csrfToken: string | null = null;
-
-async function getCsrfToken() {
-  if (!csrfToken) {
-    try {
-      const response = await fetch('/api/csrf-token', {
-        method: 'GET',
-        credentials: 'include',
-        headers: {
-          'Accept': 'application/json',
-          'Content-Type': 'application/json',
-        }
-      });
-      
-      if (!response.ok) {
-        throw new Error('Failed to fetch CSRF token');
-      }
-      
-      const data = await response.json();
-      csrfToken = data.csrfToken;
-    } catch (error) {
-      console.error('Error fetching CSRF token:', error);
-      throw error;
-    }
-  }
-  return csrfToken;
-}
-
 export async function apiRequest(method: string, path: string, data?: any) {
   try {
-    const token = await getCsrfToken();
     const response = await fetch(path, {
       method,
       headers: {
         'Content-Type': 'application/json',
-        'CSRF-Token': token || '',
-        'X-CSRF-Token': token || '',
       },
       credentials: 'include',
       body: data ? JSON.stringify(data) : undefined,
