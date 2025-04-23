@@ -243,6 +243,40 @@ export class MemStorage implements IStorage {
     user.verificationTokenExpiry = null;
 
     this.users.set(user.id, user);
+    return user;
+}
+
+async setPasswordResetToken(email: string): Promise<string | null> {
+    const user = await this.getUserByEmail(email);
+    if (!user) return null;
+
+    const token = randomBytes(32).toString('hex');
+    const expiry = new Date();
+    expiry.setHours(expiry.getHours() + 1);
+
+    user.resetPasswordToken = token;
+    user.resetPasswordExpiry = expiry;
+    this.users.set(user.id, user);
+
+    return token;
+}
+
+async resetPassword(token: string, newPassword: string): Promise<boolean> {
+    const user = Array.from(this.users.values()).find(
+        u => u.resetPasswordToken === token && 
+            u.resetPasswordExpiry && 
+            u.resetPasswordExpiry > new Date()
+    );
+
+    if (!user) return false;
+
+    user.password = newPassword;
+    user.resetPasswordToken = null;
+    user.resetPasswordExpiry = null;
+    this.users.set(user.id, user);
+
+    return true;
+}
 
     // Create an activity for email verification
     await this.createActivity({

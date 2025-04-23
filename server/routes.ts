@@ -4,9 +4,10 @@ import { storage } from "./storage";
 import { setupAuth } from "./auth";
 import { z } from "zod";
 import { insertSubmissionSchema, insertProgramSchema } from "@shared/schema";
-import { sendWelcomeEmail, sendAchievementEmail, sendSubmissionStatusEmail } from "./email-service";
+import { sendWelcomeEmail, sendAchievementEmail, sendSubmissionStatusEmail, sendPasswordResetEmail } from "./email-service";
 import multer from "multer";
 import path from "path";
+import { hashPassword } from "./auth"; // Assuming this function exists for password hashing
 
 const upload = multer({
   storage: multer.diskStorage({
@@ -443,6 +444,46 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Forgot password
+  app.post("/api/forgot-password", async (req, res) => {
+    const { email } = req.body;
+
+    const token = await storage.setPasswordResetToken(email);
+    if (!token) {
+      return res.status(400).json({ message: "Email not found" });
+    }
+
+    try {
+      await sendPasswordResetEmail(email, token);
+      res.json({ message: "Password reset email sent" });
+    } catch (error) {
+      console.error('Failed to send reset email:', error);
+      res.status(500).json({ message: "Failed to send reset email" });
+    }
+  });
+
+  // Reset password
+  app.post("/api/reset-password", async (req, res) => {
+    const { token, password } = req.body;
+
+    if (!token || !password) {
+      return res.status(400).json({ message: "Token and password required" });
+    }
+
+    const hashedPassword = await hashPassword(password);
+    const success = await storage.resetPassword(token, hashedPassword);
+
+    if (success) {
+      res.json({ message: "Password reset successful" });
+    } else {
+      res.status(400).json({ message: "Invalid or expired token" });
+    }
+  });
+
+  app.post("/api/logout", (req, res, next) => {
+
+
+  });
 
   // Create HTTP server
   const httpServer = createServer(app);
