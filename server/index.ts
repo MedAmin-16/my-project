@@ -69,6 +69,9 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 
+// Initialize CSRF middleware
+app.use(csrf({ cookie: true }));
+
 // Add session middleware
 app.use(session({
   secret: process.env.SESSION_SECRET || 'your-secret-key',
@@ -80,7 +83,19 @@ app.use(session({
   }
 }));
 
-// Only enable CSRF in production
+// Make CSRF token available
+app.use((req, res, next) => {
+  res.locals.csrfToken = req.csrfToken();
+  next();
+});
+
+// CSRF error handler
+app.use((err: any, req: Request, res: Response, next: NextFunction) => {
+  if (err.code !== 'EBADCSRFTOKEN') return next(err);
+  res.status(403).json({ message: 'Invalid CSRF token' });
+});
+
+// Only enable additional CSRF settings in production
 if (process.env.NODE_ENV === 'production') {
   app.use(csrf({
     cookie: {
