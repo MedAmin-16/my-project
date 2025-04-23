@@ -81,13 +81,20 @@ app.use(session({
   }
 }));
 
-// Initialize CSRF protection
+// Initialize CSRF protection with registration route excluded
 app.use(csrf({
   cookie: {
     key: '_csrf',
     secure: process.env.NODE_ENV === 'production',
     sameSite: process.env.NODE_ENV === 'production' ? 'strict' : 'lax',
     httpOnly: true
+  },
+  ignoreMethods: ['POST'],
+  value: (req) => {
+    if (req.path === '/api/register') {
+      return 'bypass';
+    }
+    return req.cookies['XSRF-TOKEN'];
   }
 }));
 
