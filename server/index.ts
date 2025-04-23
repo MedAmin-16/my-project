@@ -43,8 +43,27 @@ app.use(helmet({
   },
   noSniff: true,
   referrerPolicy: { policy: 'strict-origin-when-cross-origin' },
-
+  permissionsPolicy: {
+    policy: {
+      'geolocation': [],
+      'camera': [],
+      'microphone': []
+    }
+  }
 }));
+
+// Add request sanitization
+app.use((req, res, next) => {
+  // Sanitize request body
+  if (req.body) {
+    Object.keys(req.body).forEach(key => {
+      if (typeof req.body[key] === 'string') {
+        req.body[key] = req.body[key].trim();
+      }
+    });
+  }
+  next();
+});
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));

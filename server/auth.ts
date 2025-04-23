@@ -33,8 +33,9 @@ async function comparePasswords(supplied: string, stored: string) {
 
 const loginLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 50, // 50 attempts
-  message: { message: "Too many login attempts, please try again later" }
+  max: 5, // 5 attempts
+  skipSuccessfulRequests: true,
+  message: { message: "Too many login attempts, please try again in 15 minutes" }
 });
 
 const registerLimiter = rateLimit({
