@@ -42,9 +42,10 @@ function Router() {
     return <DashboardPage />;
   };
 
-  // Admin route component with proper admin check
+  // Admin route component with strict admin check
   const AdminComponent = () => {
-    if (user?.userType !== 'admin') {
+    // Check for both user existence and admin type
+    if (!user || user.userType !== 'admin') {
       return <Redirect to="/dashboard" />;
     }
     return <AdminPage />;

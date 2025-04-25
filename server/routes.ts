@@ -50,6 +50,15 @@ function ensureCompanyUser(req: Request, res: Response, next: NextFunction) {
   next();
 }
 
+// Middleware to check if user is an admin
+function ensureAdmin(req: Request, res: Response, next: NextFunction) {
+  if (!req.isAuthenticated() || req.user?.role !== "admin") {
+    return res.status(403).json({ message: "Access denied. Admin privileges required." });
+  }
+  next();
+}
+
+
 export async function registerRoutes(app: Express): Promise<Server> {
   // Setup authentication routes (/api/login, /api/register, etc.)
   setupAuth(app);
@@ -452,6 +461,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get('/api/csrf-token', (req, res) => {
     res.json({ csrfToken: req.csrfToken() });
   });
+
+  //Admin endpoint example
+  app.get("/api/admin/users", ensureAdmin, async (req, res) => {
+    try {
+      const users = await storage.getAllUsers();
+      res.json(users);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch users" });
+    }
+  });
+
 
   // Create HTTP server
   const httpServer = createServer(app);
