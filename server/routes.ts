@@ -52,11 +52,35 @@ function ensureCompanyUser(req: Request, res: Response, next: NextFunction) {
 
 // Middleware to check if user is an admin
 function ensureAdmin(req: Request, res: Response, next: NextFunction) {
+  // Check authentication and role
   if (!req.isAuthenticated() || req.user?.role !== "admin") {
-    return res.status(403).json({ message: "Access denied. Admin privileges required." });
+    console.warn(`Unauthorized admin access attempt from IP ${req.ip}`);
+    return res.status(403).json({ message: "Access denied." });
   }
+
+  // Check if session is fresh (less than 1 hour old)
+  const sessionAge = req.session?.cookie?.maxAge || 0;
+  if (sessionAge > 3600000) { // 1 hour in milliseconds
+    return res.status(401).json({ message: "Session expired. Please login again." });
+  }
+
+  // Rate limiting for admin endpoints
+  const ipAddress = req.ip;
+  const currentTime = Date.now();
+  const requestLog = adminRequestLog.get(ipAddress) || [];
+  const recentRequests = requestLog.filter(time => currentTime - time < 60000); // Last minute
+
+  if (recentRequests.length > 30) { // Max 30 requests per minute
+    console.warn(`Rate limit exceeded for admin access from IP ${ipAddress}`);
+    return res.status(429).json({ message: "Too many requests" });
+  }
+
+  adminRequestLog.set(ipAddress, [...recentRequests, currentTime]);
   next();
 }
+
+// Track admin endpoint requests for rate limiting
+const adminRequestLog = new Map<string, number[]>();
 
 
 export async function registerRoutes(app: Express): Promise<Server> {

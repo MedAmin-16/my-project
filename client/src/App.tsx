@@ -42,10 +42,28 @@ function Router() {
     return <DashboardPage />;
   };
 
-  // Admin route component with strict admin check
+  // Admin route component with enhanced security checks
   const AdminComponent = () => {
-    // Check for both user existence and admin type
-    if (!user || user.userType !== 'admin') {
+    const [isAuthorized, setIsAuthorized] = useState(false);
+
+    useEffect(() => {
+      // Verify admin status on component mount
+      const verifyAdmin = async () => {
+        try {
+          const response = await fetch('/api/admin/verify', {
+            credentials: 'include'
+          });
+          setIsAuthorized(response.ok);
+        } catch (error) {
+          console.error('Admin verification failed');
+          setIsAuthorized(false);
+        }
+      };
+      verifyAdmin();
+    }, []);
+
+    // Multiple layers of protection
+    if (!user || user.userType !== 'admin' || !isAuthorized) {
       return <Redirect to="/dashboard" />;
     }
     return <AdminPage />;
