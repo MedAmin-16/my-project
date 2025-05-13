@@ -667,11 +667,19 @@ export default function CompanyDashboardPage() {
                   className="w-full mt-6 glow-button"
                   onClick={async () => {
                     try {
+                      // Get CSRF token first
+                      const csrfResponse = await fetch('/api/csrf-token', {
+                        credentials: 'include'
+                      });
+                      const { csrfToken } = await csrfResponse.json();
+
                       const response = await fetch('/api/user', {
                         method: 'PATCH',
                         headers: {
                           'Content-Type': 'application/json',
+                          'X-CSRF-Token': csrfToken
                         },
+                        credentials: 'include',
                         body: JSON.stringify({
                           companyName: user?.companyName,
                           companyWebsite: user?.companyWebsite,
