@@ -193,14 +193,9 @@ export class MemStorage implements IStorage {
 
   async createUser(insertUser: InsertUser): Promise<User> {
     const id = this.currentUserId++;
-    const encryptedData = {
-      ...insertUser, 
-      email: insertUser.email ? encrypt(insertUser.email) : null,
-      companyName: insertUser.companyName ? encrypt(insertUser.companyName) : null,
-      companyWebsite: insertUser.companyWebsite ? encrypt(insertUser.companyWebsite) : null
-    };
+    // Only encrypt password, keep other fields as plaintext
     const user: User = { 
-      ...encryptedData, 
+      ...insertUser,
       id, 
       isEmailVerified: false,
       reputation: 0, 
