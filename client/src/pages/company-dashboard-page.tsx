@@ -118,22 +118,27 @@ export default function CompanyDashboardPage() {
       });
       const { csrfToken } = await csrfResponse.json();
 
-      // Update headers with CSRF token
-      logoutMutation.mutate(undefined, {
-        onSuccess: () => {
-          toast({
-            title: "Success",
-            description: "Logged out successfully",
-          });
+      // Make the logout request with CSRF token
+      const response = await fetch('/api/logout', {
+        method: 'POST',
+        headers: {
+          'X-CSRF-Token': csrfToken
         },
-        onError: (error) => {
-          toast({
-            title: "Error",
-            description: "Failed to logout. Please try again.",
-            variant: "destructive",
-          });
-        }
+        credentials: 'include'
       });
+
+      if (response.ok) {
+        logoutMutation.mutate(undefined, {
+          onSuccess: () => {
+            toast({
+              title: "Success", 
+              description: "Logged out successfully"
+            });
+          }
+        });
+      } else {
+        throw new Error('Logout failed');
+      }
     } catch (error) {
       console.error('Logout error:', error);
       toast({
