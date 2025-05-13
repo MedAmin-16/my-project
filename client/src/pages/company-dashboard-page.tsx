@@ -683,17 +683,24 @@ export default function CompanyDashboardPage() {
                       });
 
                       if (response.ok) {
+                        const data = await response.json();
                         toast({
                           title: "Success",
                           description: "Settings updated successfully",
                         });
                       } else {
-                        throw new Error('Failed to update settings');
+                        const errorData = await response.json();
+                        toast({
+                          title: "Error",
+                          description: errorData.message || "Failed to update settings",
+                          variant: "destructive",
+                        });
                       }
                     } catch (error) {
+                      console.error('Save error:', error);
                       toast({
                         title: "Error",
-                        description: "Failed to update settings",
+                        description: "Failed to update settings. Please try again.",
                         variant: "destructive",
                       });
                     }
