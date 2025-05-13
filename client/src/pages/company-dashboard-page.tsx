@@ -110,6 +110,40 @@ export default function CompanyDashboardPage() {
     })
     .slice(0, 5);
 
+  const handleLogout = async () => {
+    try {
+      // Get CSRF token first
+      const csrfResponse = await fetch('/api/csrf-token', {
+        credentials: 'include'
+      });
+      const { csrfToken } = await csrfResponse.json();
+
+      // Update headers with CSRF token
+      logoutMutation.mutate(undefined, {
+        onSuccess: () => {
+          toast({
+            title: "Success",
+            description: "Logged out successfully",
+          });
+        },
+        onError: (error) => {
+          toast({
+            title: "Error",
+            description: "Failed to logout. Please try again.",
+            variant: "destructive",
+          });
+        }
+      });
+    } catch (error) {
+      console.error('Logout error:', error);
+      toast({
+        title: "Error",
+        description: "Failed to logout. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
+
   return (
     <div className="flex flex-col space-y-6 p-6 bg-black min-h-screen text-white">
       <div className="flex flex-col space-y-2">
@@ -723,9 +757,7 @@ export default function CompanyDashboardPage() {
                   <Button 
                     variant="destructive"
                     className="w-full"
-                    onClick={() => {
-                      logoutMutation.mutate();
-                    }}
+                    onClick={handleLogout}
                   >
                     Logout
                   </Button>
