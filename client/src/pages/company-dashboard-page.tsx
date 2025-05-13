@@ -112,46 +112,24 @@ export default function CompanyDashboardPage() {
 
   const handleLogout = async () => {
     try {
-      // Get CSRF token first
-      const { getCsrfToken } = await import('@/lib/api');
-      const csrfToken = await getCsrfToken();
+      const { apiRequest } = await import('@/lib/api');
+      const response = await apiRequest('POST', '/api/logout');
       
-      // Make the logout request with CSRF token
-      const response = await fetch('/api/logout', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-CSRF-Token': csrfToken
-        },
-        credentials: 'include'
-      });
-
-      if (!response.ok) {
-        throw new Error('Logout request failed');
+      if (response.ok) {
+        logoutMutation.mutate(undefined, {
+          onSuccess: () => {
+            toast({
+              title: "Success",
+              description: "Logged out successfully"
+            });
+          }
+        });
       }
-
-      // Only trigger mutation after successful logout
-      logoutMutation.mutate(undefined, {
-        onSuccess: () => {
-          toast({
-            title: "Success",
-            description: "Logged out successfully"
-          });
-        },
-        onError: (error) => {
-          console.error('Mutation error:', error);
-          toast({
-            title: "Error",
-            description: "Failed to complete logout process",
-            variant: "destructive",
-          });
-        }
-      });
     } catch (error) {
       console.error('Logout error:', error);
       toast({
         title: "Error",
-        description: error instanceof Error ? error.message : "Failed to logout. Please try again.",
+        description: "Failed to logout. Please try again.",
         variant: "destructive",
       });
     }
