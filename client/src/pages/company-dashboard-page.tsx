@@ -120,18 +120,12 @@ export default function CompanyDashboardPage() {
         }
       });
 
-      const data = await response.json();
+      // Clear client storage regardless of response
+      localStorage.clear();
+      sessionStorage.clear();
       
-      if (response.ok) {
-        // Clear client storage after successful logout
-        localStorage.clear();
-        sessionStorage.clear();
-        
-        // Proper redirect to auth page
-        window.location.href = '/auth';
-      } else {
-        throw new Error(data.message || 'Logout failed');
-      }
+      // Force redirect to auth page
+      window.location.replace('/auth');
     } catch (error) {
       console.error('Logout error:', error);
       toast({
@@ -698,15 +692,6 @@ export default function CompanyDashboardPage() {
                 <Button 
                   className="w-full mt-6 glow-button"
                   onClick={async () => {
-                    const formData = {
-                      companyName: (document.querySelector('input[placeholder="Enter company name"]') as HTMLInputElement)?.value,
-                      companyWebsite: (document.querySelector('input[placeholder="https://example.com"]') as HTMLInputElement)?.value,
-                      industry: (document.querySelector('input[placeholder="Enter industry"]') as HTMLInputElement)?.value,
-                      companySize: (document.querySelector('select') as HTMLSelectElement)?.value,
-                      email: (document.querySelector('input[placeholder="contact@company.com"]') as HTMLInputElement)?.value,
-                      phone: (document.querySelector('input[placeholder="+1 (555) 000-0000"]') as HTMLInputElement)?.value,
-                    };
-
                     try {
                       const response = await fetch('/api/user', {
                         method: 'PATCH',
@@ -714,13 +699,18 @@ export default function CompanyDashboardPage() {
                           'Content-Type': 'application/json'
                         },
                         credentials: 'include',
-                        body: JSON.stringify(formData),
+                        body: JSON.stringify({
+                          companyName: user?.companyName,
+                          companyWebsite: user?.companyWebsite,
+                          companySize: user?.companySize,
+                          industry: user?.industry,
+                          email: user?.email,
+                          phone: user?.phone,
+                        }),
                       });
 
                       if (response.ok) {
-                        await response.json();
-                        // Refresh user data
-                        window.location.reload();
+                        const data = await response.json();
                         toast({
                           title: "Success",
                           description: "Settings updated successfully",
