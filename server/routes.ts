@@ -485,36 +485,35 @@ function suggestSeverity(description: string, type: string): string {
 
         // If approved, award reputation points
         if (status === 'approved') {
-        const reputationPoints = reward ? Math.min(Math.floor(reward / 10), 100) : 20;
-        const currentReputation = submissionUser.reputation || 0;
-        await storage.updateUserReputation(submissionUser.id, currentReputation + reputationPoints);
+          const reputationPoints = reward ? Math.min(Math.floor(reward / 10), 100) : 20;
+          const currentReputation = submissionUser.reputation || 0;
+          await storage.updateUserReputation(submissionUser.id, currentReputation + reputationPoints);
 
-        // Handle bounty payout
-        if (reward) {
-          const wallet = await storage.getWalletByUserId(submissionUser.id);
-          if (wallet) {
-            // Create bounty transaction
-            await storage.createTransaction({
-              walletId: wallet.id,
-              type: 'bounty',
-              amount: reward,
-              description: `Bounty for submission: ${updatedSubmission.title}`,
-              submissionId: submissionId
-            });
+          // Handle bounty payout
+          if (reward) {
+            const wallet = await storage.getWalletByUserId(submissionUser.id);
+            if (wallet) {
+              // Create bounty transaction
+              await storage.createTransaction({
+                walletId: wallet.id,
+                type: 'bounty',
+                amount: reward,
+                description: `Bounty for submission: ${updatedSubmission.title}`,
+                submissionId: submissionId
+              });
 
-            // Update wallet balance
-            await storage.updateWalletBalance(wallet.id, wallet.balance + reward);
+              // Update wallet balance
+              await storage.updateWalletBalance(wallet.id, wallet.balance + reward);
+            }
           }
         }
-      }
 
-      res.json(updatedSubmission);
-    } catch (error) {
-      console.error('Error updating submission status:', error);
-      res.status(500).json({ message: "Failed to update submission status" });
-    }
-  });
-});
+        res.json(updatedSubmission);
+      } catch (error) {
+        console.error('Error updating submission status:', error);
+        res.status(500).json({ message: "Failed to update submission status" });
+      }
+    });
 
   app.get("/api/user", ensureAuthenticated, async (req, res) => {
     res.json(req.user);
