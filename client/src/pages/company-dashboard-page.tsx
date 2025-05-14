@@ -125,9 +125,6 @@ export default function CompanyDashboardPage() {
           'X-CSRF-Token': csrfToken
         }
       });
-
-      const csrfResponse = await fetch('/api/csrf-token');
-    const { csrfToken } = await csrfResponse.json();
     
     if (logoutResponse.ok) {
         window.location.href = '/auth'; // Redirect to auth page after successful logout
