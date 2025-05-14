@@ -112,23 +112,13 @@ export default function CompanyDashboardPage() {
 
   const handleLogout = async () => {
     try {
-      const response = await fetch('/api/csrf-token', {
-        credentials: 'include'
-      });
-      const { csrfToken } = await response.json();
-
-      const logoutResponse = await fetch('/api/logout', {
+      const response = await fetch('/api/logout', {
         method: 'POST',
         credentials: 'include',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-CSRF-Token': csrfToken,
-          'XSRF-TOKEN': csrfToken
-        }
       });
 
-      if (logoutResponse.ok) {
-        window.location.href = '/auth'; // Redirect to auth page after successful logout
+      if (response.ok) {
+        window.location.href = '/auth';
       } else {
         throw new Error('Logout failed');
       }
