@@ -567,13 +567,18 @@ function suggestSeverity(description: string, type: string): string {
   app.post("/api/logout", (req, res, next) => {
     req.logout((err) => {
       if (err) return next(err);
+      
+      // Clear all session-related cookies
       res.clearCookie('connect.sid');
+      res.clearCookie('XSRF-TOKEN');
+      res.clearCookie('_csrf');
+      
       req.session.destroy((sessionErr) => {
         if (sessionErr) {
           console.error('Session destruction error:', sessionErr);
           return next(sessionErr);
         }
-        res.sendStatus(200);
+        res.status(200).json({ message: "Logged out successfully" });
       });
     });
   });

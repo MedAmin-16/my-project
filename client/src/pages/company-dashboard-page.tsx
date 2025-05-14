@@ -115,9 +115,16 @@ export default function CompanyDashboardPage() {
       const response = await fetch('/api/logout', {
         method: 'POST',
         credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json'
+        }
       });
 
       if (response.ok) {
+        // Clear any client-side state
+        localStorage.clear();
+        sessionStorage.clear();
+        // Redirect to auth page
         window.location.href = '/auth';
       } else {
         throw new Error('Logout failed');
