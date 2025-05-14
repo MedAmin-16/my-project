@@ -698,6 +698,15 @@ export default function CompanyDashboardPage() {
                 <Button 
                   className="w-full mt-6 glow-button"
                   onClick={async () => {
+                    const formData = {
+                      companyName: (document.querySelector('input[placeholder="Enter company name"]') as HTMLInputElement)?.value,
+                      companyWebsite: (document.querySelector('input[placeholder="https://example.com"]') as HTMLInputElement)?.value,
+                      industry: (document.querySelector('input[placeholder="Enter industry"]') as HTMLInputElement)?.value,
+                      companySize: (document.querySelector('select') as HTMLSelectElement)?.value,
+                      email: (document.querySelector('input[placeholder="contact@company.com"]') as HTMLInputElement)?.value,
+                      phone: (document.querySelector('input[placeholder="+1 (555) 000-0000"]') as HTMLInputElement)?.value,
+                    };
+
                     try {
                       const response = await fetch('/api/user', {
                         method: 'PATCH',
@@ -705,18 +714,13 @@ export default function CompanyDashboardPage() {
                           'Content-Type': 'application/json'
                         },
                         credentials: 'include',
-                        body: JSON.stringify({
-                          companyName: user?.companyName,
-                          companyWebsite: user?.companyWebsite,
-                          companySize: user?.companySize,
-                          industry: user?.industry,
-                          email: user?.email,
-                          phone: user?.phone,
-                        }),
+                        body: JSON.stringify(formData),
                       });
 
                       if (response.ok) {
-                        const data = await response.json();
+                        await response.json();
+                        // Refresh user data
+                        window.location.reload();
                         toast({
                           title: "Success",
                           description: "Settings updated successfully",
