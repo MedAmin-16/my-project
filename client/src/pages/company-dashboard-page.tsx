@@ -126,7 +126,10 @@ export default function CompanyDashboardPage() {
         }
       });
 
-      if (logoutResponse.ok) {
+      const csrfResponse = await fetch('/api/csrf-token');
+    const { csrfToken } = await csrfResponse.json();
+    
+    if (logoutResponse.ok) {
         window.location.href = '/auth'; // Redirect to auth page after successful logout
       } else {
         throw new Error('Logout failed');

@@ -564,18 +564,24 @@ function suggestSeverity(description: string, type: string): string {
     }
   });
 
-  app.post("/api/logout", (req, res, next) => {
-  // This route is already protected by the global CSRF middleware
+  app.post("/api/logout", csrfProtection, (req, res, next) => {
   req.logout((err) => {
     if (err) return next(err);
+    const cookies = ['connect.sid', 'XSRF-TOKEN', '_csrf'];
+    cookies.forEach(cookie => {
+      res.clearCookie(cookie, {
+        path: '/',
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'lax'
+      });
+    });
+
     req.session.destroy((sessionErr) => {
       if (sessionErr) {
         console.error('Session destruction error:', sessionErr);
         return next(sessionErr);
       }
-      res.clearCookie('connect.sid');
-      res.clearCookie('XSRF-TOKEN');
-      res.clearCookie('_csrf');
       res.sendStatus(200);
     });
   });
