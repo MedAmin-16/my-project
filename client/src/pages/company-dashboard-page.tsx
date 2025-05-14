@@ -112,18 +112,24 @@ export default function CompanyDashboardPage() {
 
   const handleLogout = async () => {
     try {
-      const { apiRequest } = await import('@/lib/api');
-      const response = await apiRequest('POST', '/api/logout');
-      
-      if (response.ok) {
-        logoutMutation.mutate(undefined, {
-          onSuccess: () => {
-            toast({
-              title: "Success",
-              description: "Logged out successfully"
-            });
-          }
-        });
+      const response = await fetch('/api/csrf-token', {
+        credentials: 'include'
+      });
+      const { csrfToken } = await response.json();
+
+      const logoutResponse = await fetch('/api/logout', {
+        method: 'POST',
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRF-Token': csrfToken
+        }
+      });
+
+      if (logoutResponse.ok) {
+        window.location.href = '/auth'; // Redirect to auth page after successful logout
+      } else {
+        throw new Error('Logout failed');
       }
     } catch (error) {
       console.error('Logout error:', error);

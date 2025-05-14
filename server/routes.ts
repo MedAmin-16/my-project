@@ -252,7 +252,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 app.post('/api/enhance-report', async (req, res) => {
   try {
     const report = req.body;
-    
+
     // Enhance report structure and content
     const enhancedReport = {
       ...report,
@@ -260,7 +260,7 @@ app.post('/api/enhance-report', async (req, res) => {
       description: formatDescription(report.description, report.type),
       severity: suggestSeverity(report.description, report.type)
     };
-    
+
     res.json(enhancedReport);
   } catch (error) {
     res.status(500).json({ message: 'Failed to enhance report' });
@@ -274,16 +274,16 @@ function formatDescription(description: string, type: string): string {
     '## Affected Components',
     '## Suggestions for Remediation'
   ];
-  
+
   let formatted = description;
-  
+
   // Add missing sections if they don't exist
   sections.forEach(section => {
     if (!description.includes(section)) {
       formatted += `\n\n${section}\n`;
     }
   });
-  
+
   return formatted;
 }
 
@@ -291,15 +291,15 @@ function suggestSeverity(description: string, type: string): string {
   // Basic severity suggestion logic
   const criticalPatterns = ['remote code execution', 'unauthorized access', 'data breach'];
   const highPatterns = ['sql injection', 'xss', 'authentication bypass'];
-  
+
   description = description.toLowerCase();
-  
+
   if (criticalPatterns.some(pattern => description.includes(pattern))) {
     return 'Critical';
   } else if (highPatterns.some(pattern => description.includes(pattern))) {
     return 'High';
   }
-  
+
   return 'Medium';
 }
 
@@ -562,6 +562,20 @@ function suggestSeverity(description: string, type: string): string {
     } catch (error) {
       res.status(500).json({ message: "Failed to fetch users" });
     }
+  });
+
+  app.post("/api/logout", csrfProtection, (req, res, next) => {
+    req.logout((err) => {
+      if (err) return next(err);
+      req.session.destroy((sessionErr) => {
+        if (sessionErr) {
+          console.error('Session destruction error:', sessionErr);
+          return next(sessionErr);
+        }
+        res.clearCookie('connect.sid');
+        res.sendStatus(200);
+      });
+    });
   });
 
 
