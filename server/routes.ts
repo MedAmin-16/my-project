@@ -564,23 +564,26 @@ function suggestSeverity(description: string, type: string): string {
     }
   });
 
-  app.post("/api/logout", (req, res, next) => {
-    req.logout((err) => {
-      if (err) return next(err);
-      
-      // Clear all session-related cookies
-      res.clearCookie('connect.sid');
-      res.clearCookie('XSRF-TOKEN');
-      res.clearCookie('_csrf');
-      
-      req.session.destroy((sessionErr) => {
-        if (sessionErr) {
-          console.error('Session destruction error:', sessionErr);
-          return next(sessionErr);
-        }
-        res.status(200).json({ message: "Logged out successfully" });
+  app.post("/api/logout", (req, res) => {
+    try {
+      req.logout(() => {
+        req.session.destroy((err) => {
+          if (err) {
+            console.error('Session destruction error:', err);
+            return res.status(500).json({ message: "Logout failed" });
+          }
+          
+          res.clearCookie('connect.sid');
+          res.clearCookie('XSRF-TOKEN');
+          res.clearCookie('_csrf');
+          
+          return res.status(200).json({ message: "Logged out successfully" });
+        });
       });
-    });
+    } catch (error) {
+      console.error('Logout error:', error);
+      return res.status(500).json({ message: "Logout failed" });
+    }
   });
 
 

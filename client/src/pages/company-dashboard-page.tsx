@@ -120,15 +120,12 @@ export default function CompanyDashboardPage() {
         }
       });
 
-      if (response.ok) {
-        // Clear any client-side state
-        localStorage.clear();
-        sessionStorage.clear();
-        // Redirect to auth page
-        window.location.href = '/auth';
-      } else {
-        throw new Error('Logout failed');
-      }
+      // Clear client storage regardless of response
+      localStorage.clear();
+      sessionStorage.clear();
+      
+      // Force redirect to auth page
+      window.location.replace('/auth');
     } catch (error) {
       console.error('Logout error:', error);
       toast({
