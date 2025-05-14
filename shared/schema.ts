@@ -144,3 +144,35 @@ export const insertNotificationSchema = createInsertSchema(notifications).pick({
 
 export type InsertNotification = z.infer<typeof insertNotificationSchema>;
 export type Notification = typeof notifications.$inferSelect;
+
+// Wallet table
+export const wallets = pgTable("wallets", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").notNull().references(() => users.id),
+  balance: integer("balance").notNull().default(0),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+export type Wallet = typeof wallets.$inferSelect;
+
+// Transaction History table
+export const transactions = pgTable("transactions", {
+  id: serial("id").primaryKey(),
+  walletId: integer("wallet_id").notNull().references(() => wallets.id),
+  type: text("type").notNull(), // bounty, withdrawal, adjustment
+  amount: integer("amount").notNull(),
+  description: text("description").notNull(),
+  status: text("status").notNull().default("completed"),
+  createdAt: timestamp("created_at").defaultNow(),
+  submissionId: integer("submission_id").references(() => submissions.id),
+});
+
+export const insertTransactionSchema = createInsertSchema(transactions).pick({
+  walletId: true,
+  type: true,
+  amount: true,
+  description: true,
+  submissionId: true,
+});
+
+export type Transaction = typeof transactions.$inferSelect;

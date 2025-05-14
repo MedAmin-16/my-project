@@ -450,4 +450,32 @@ export class MemStorage implements IStorage {
   }
 }
 
-export const storage = new MemStorage();
+export const storage = {
+  async getWalletByUserId(userId: number) {
+    const [wallet] = await db.select().from(wallets).where(eq(wallets.userId, userId));
+    return wallet;
+  },
+
+  async createWallet(userId: number) {
+    const [wallet] = await db.insert(wallets).values({ userId }).returning();
+    return wallet;
+  },
+
+  async updateWalletBalance(walletId: number, newBalance: number) {
+    const [wallet] = await db
+      .update(wallets)
+      .set({ balance: newBalance, updatedAt: new Date() })
+      .where(eq(wallets.id, walletId))
+      .returning();
+    return wallet;
+  },
+
+  async createTransaction(data: any) {
+    const [transaction] = await db.insert(transactions).values(data).returning();
+    return transaction;
+  },
+
+  async getTransactionsByWalletId(walletId: number) {
+    return db.select().from(transactions).where(eq(transactions.walletId, walletId));
+  },
+};

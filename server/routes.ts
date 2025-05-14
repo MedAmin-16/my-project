@@ -485,17 +485,26 @@ function suggestSeverity(description: string, type: string): string {
 
         // If approved, award reputation points
         if (status === 'approved') {
-          const reputationPoints = reward ? Math.min(Math.floor(reward / 10), 100) : 20;
-          const currentReputation = submissionUser.reputation || 0;
-          await storage.updateUserReputation(submissionUser.id, currentReputation + reputationPoints);
+        const reputationPoints = reward ? Math.min(Math.floor(reward / 10), 100) : 20;
+        const currentReputation = submissionUser.reputation || 0;
+        await storage.updateUserReputation(submissionUser.id, currentReputation + reputationPoints);
 
-          // Create notification about reputation gain
-          await storage.createNotification({
-            type: 'reputation_gain',
-            message: `You earned ${reputationPoints} reputation points for your approved submission`,
-            userId: submissionUser.id,
-            relatedId: submissionId
-          });
+        // Handle bounty payout
+        if (reward) {
+          const wallet = await storage.getWalletByUserId(submissionUser.id);
+          if (wallet) {
+            // Create bounty transaction
+            await storage.createTransaction({
+              walletId: wallet.id,
+              type: 'bounty',
+              amount: reward,
+              description: `Bounty for submission: ${updatedSubmission.title}`,
+              submissionId: submissionId
+            });
+
+            // Update wallet balance
+            await storage.updateWalletBalance(wallet.id, wallet.balance + reward);
+          }
         }
       }
 
@@ -531,7 +540,7 @@ function suggestSeverity(description: string, type: string): string {
     }
   });
 
-  
+
 
   //Admin endpoint example
   app.get("/api/admin/users", ensureAdmin, async (req, res) => {
