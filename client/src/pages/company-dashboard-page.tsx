@@ -122,11 +122,12 @@ export default function CompanyDashboardPage() {
         credentials: 'include',
         headers: {
           'Content-Type': 'application/json',
-          'X-CSRF-Token': csrfToken
+          'X-CSRF-Token': csrfToken,
+          'XSRF-TOKEN': csrfToken
         }
       });
-    
-    if (logoutResponse.ok) {
+
+      if (logoutResponse.ok) {
         window.location.href = '/auth'; // Redirect to auth page after successful logout
       } else {
         throw new Error('Logout failed');
