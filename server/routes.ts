@@ -7,8 +7,6 @@ import { insertSubmissionSchema, insertProgramSchema } from "@shared/schema";
 import { sendWelcomeEmail, sendAchievementEmail, sendSubmissionStatusEmail } from "./email-service";
 import multer from "multer";
 import path from "path";
-import csrf from "csurf"; //Import csrf middleware
-
 const upload = multer({
   storage: multer.diskStorage({
     destination: './uploads',
@@ -533,26 +531,7 @@ function suggestSeverity(description: string, type: string): string {
     }
   });
 
-  app.use((req, res, next) => {
-    res.locals.csrftoken = req.csrfToken();
-    next();
-  });
-
-  // Initialize CSRF protection
-  const csrfProtection = csrf();
-
-  // Add CSRF middleware except for login, registration and logout
-  app.use((req, res, next) => {
-    if (req.path === '/api/login' || req.path === '/api/register' || req.path === '/api/logout') {
-      next();
-    } else {
-      csrfProtection(req, res, next);
-    }
-  });
-
-  app.get('/api/csrf-token', (req, res) => {
-    res.json({ csrfToken: req.csrfToken() });
-  });
+  
 
   //Admin endpoint example
   app.get("/api/admin/users", ensureAdmin, async (req, res) => {
