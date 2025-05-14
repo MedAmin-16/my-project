@@ -4,7 +4,6 @@ import { setupVite, serveStatic, log } from "./vite";
 import helmet from 'helmet';
 import rateLimit from 'express-rate-limit';
 import cookieParser from 'cookie-parser';
-import csrf from 'csurf';
 import session from 'express-session';
 
 const app = express();
@@ -81,42 +80,7 @@ app.use(session({
   }
 }));
 
-// Initialize CSRF protection
-const csrfProtection = csrf({
-  cookie: {
-    key: '_csrf',
-    sameSite: 'lax',
-    secure: process.env.NODE_ENV === 'production',
-    httpOnly: true
-  }
-});
 
-// CSRF protection middleware with exclusions for auth routes
-app.use((req, res, next) => {
-  if (req.path === '/api/login' || req.path === '/api/register') {
-    next();
-  } else {
-    csrfProtection(req, res, next);
-  }
-});
-
-// Generate CSRF token for all routes except auth
-app.use((req, res, next) => {
-  if (req.path !== '/api/login' && req.path !== '/api/register' && req.csrfToken) {
-    const token = req.csrfToken();
-    res.cookie('XSRF-TOKEN', token, {
-      sameSite: 'lax',
-      secure: process.env.NODE_ENV === 'production'
-    });
-  }
-  next();
-});
-
-// Global error handler for CSRF errors
-app.use((err: any, req: Request, res: Response, next: NextFunction) => {
-  if (err.code !== 'EBADCSRFTOKEN') return next(err);
-  res.status(403).json({ message: 'Invalid CSRF token' });
-});
 
 
 
