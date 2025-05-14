@@ -541,9 +541,9 @@ function suggestSeverity(description: string, type: string): string {
   // Initialize CSRF protection
   const csrfProtection = csrf();
 
-  // Add CSRF middleware except for login and registration
+  // Add CSRF middleware except for login, registration and logout
   app.use((req, res, next) => {
-    if (req.path === '/api/register' || req.path === '/api/login') {
+    if (req.path === '/api/login' || req.path === '/api/register' || req.path === '/api/logout') {
       next();
     } else {
       csrfProtection(req, res, next);
@@ -572,15 +572,15 @@ function suggestSeverity(description: string, type: string): string {
             console.error('Session destruction error:', err);
             return res.status(500).json({ message: "Logout failed" });
           }
-          
+
           // Clear all session-related cookies
           res.clearCookie('connect.sid', { path: '/' });
           res.clearCookie('XSRF-TOKEN', { path: '/' });
           res.clearCookie('_csrf', { path: '/' });
-          
+
           // Ensure proper headers for CORS if needed
           res.header('Cache-Control', 'no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0');
-          
+
           return res.status(200).json({ message: "Logged out successfully" });
         });
       });

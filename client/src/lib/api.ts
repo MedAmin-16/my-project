@@ -20,8 +20,11 @@ export async function apiRequest(method: string, path: string, data?: any) {
       'Content-Type': 'application/json'
     };
     
-    // Include CSRF token for POST/PUT/DELETE requests except logout
-    if ((needsCsrf || ['POST', 'PUT', 'DELETE'].includes(method.toUpperCase())) && !path.endsWith('/logout')) {
+    // Include CSRF token for POST/PUT/DELETE requests except login, register and logout
+    if ((needsCsrf || ['POST', 'PUT', 'DELETE'].includes(method.toUpperCase())) && 
+        !path.endsWith('/logout') && 
+        !path.endsWith('/login') && 
+        !path.endsWith('/register')) {
       const csrfToken = await getCsrfToken();
       headers['X-CSRF-Token'] = csrfToken;
     }
