@@ -564,7 +564,7 @@ function suggestSeverity(description: string, type: string): string {
     }
   });
 
-  app.post("/api/logout", csrfProtection, (req, res) => {
+  app.post("/api/logout", (req, res) => {
     try {
       req.logout(() => {
         req.session.destroy((err) => {
