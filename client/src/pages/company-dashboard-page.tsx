@@ -113,10 +113,21 @@ export default function CompanyDashboardPage() {
   const handleLogout = async () => {
     try {
       await logoutMutation.mutateAsync();
+      
+      // Clear all cookies
+      document.cookie.split(';').forEach(c => {
+        document.cookie = c.trim().split('=')[0] + '=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/';
+      });
+      
+      // Clear stored data
+      localStorage.clear();
+      sessionStorage.clear();
+      
       // Clear any cached queries
       queryClient.clear();
+      
       // Redirect to auth page
-      setLocation("/auth");
+      window.location.href = '/auth';
     } catch (error) {
       console.error('Logout error:', error);
       toast({
