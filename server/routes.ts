@@ -507,13 +507,14 @@ function suggestSeverity(description: string, type: string): string {
             }
           }
         }
-
-        res.json(updatedSubmission);
-      } catch (error) {
-        console.error('Error updating submission status:', error);
-        res.status(500).json({ message: "Failed to update submission status" });
       }
-    });
+
+      res.json(updatedSubmission);
+    } catch (error) {
+      console.error('Error updating submission status:', error);
+      res.status(500).json({ message: "Failed to update submission status" });
+    }
+  });
 
   app.get("/api/user", ensureAuthenticated, async (req, res) => {
     res.json(req.user);
