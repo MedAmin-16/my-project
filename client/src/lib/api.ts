@@ -20,7 +20,8 @@ export async function apiRequest(method: string, path: string, data?: any) {
       'Content-Type': 'application/json'
     };
     
-    if (needsCsrf) {
+    // Always include CSRF token for POST/PUT/DELETE requests
+    if (needsCsrf || ['POST', 'PUT', 'DELETE'].includes(method.toUpperCase())) {
       const csrfToken = await getCsrfToken();
       headers['X-CSRF-Token'] = csrfToken;
     }
