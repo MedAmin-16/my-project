@@ -112,20 +112,11 @@ export default function CompanyDashboardPage() {
 
   const handleLogout = async () => {
     try {
-      const response = await fetch('/api/logout', {
-        method: 'POST',
-        credentials: 'include',
-        headers: {
-          'Content-Type': 'application/json'
-        }
-      });
-
-      // Clear client storage regardless of response
-      localStorage.clear();
-      sessionStorage.clear();
-      
-      // Force redirect to auth page
-      window.location.replace('/auth');
+      await logoutMutation.mutateAsync();
+      // Clear any cached queries
+      queryClient.clear();
+      // Redirect to auth page
+      setLocation("/auth");
     } catch (error) {
       console.error('Logout error:', error);
       toast({
