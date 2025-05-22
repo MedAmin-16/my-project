@@ -2,55 +2,22 @@ import { drizzle } from 'drizzle-orm/postgres-js';
 import postgres from 'postgres';
 import { users, programs, submissions, activities, notifications, wallets, transactions, type User, type InsertUser } from '@shared/schema';
 import { eq } from 'drizzle-orm';
-import Database from '@replit/database';
 import createMemoryStore from "memorystore";
 import session from "express-session";
 import { encrypt, decrypt } from "./crypto-utils";
 
-// Initialize PostgreSQL client
-const client = postgres(process.env.DATABASE_URL || "postgres://postgres:postgres@localhost:5432/cyberhunt");
+if (!process.env.DATABASE_URL) {
+  throw new Error("DATABASE_URL environment variable is required");
+}
+
+// Initialize PostgreSQL client with pooling
+const client = postgres(process.env.DATABASE_URL, {
+  max: 10, // Connection pool size
+  idle_timeout: 20,
+  connect_timeout: 10,
+});
+
 const db = drizzle(client);
-
-// Initialize Replit DB as fallback
-const replitDb = new Database();
-
-// Helper functions for ReplitDB
-async function setReplitDb(key: string, value: any) {
-  try {
-    return await replitDb.set(key, JSON.stringify(value));
-  } catch (error) {
-    console.error('ReplitDB set error:', error);
-    throw error;
-  }
-}
-
-async function getReplitDb(key: string) {
-  try {
-    const value = await replitDb.get(key);
-    return value ? JSON.parse(value) : null;
-  } catch (error) {
-    console.error('ReplitDB get error:', error);
-    throw error;
-  }
-}
-
-async function deleteReplitDb(key: string) {
-  try {
-    return await replitDb.delete(key);
-  } catch (error) {
-    console.error('ReplitDB delete error:', error);
-    throw error;
-  }
-}
-
-async function listReplitDb(prefix?: string) {
-  try {
-    return await replitDb.list(prefix ? prefix : '');
-  } catch (error) {
-    console.error('ReplitDB list error:', error);
-    throw error;
-  }
-}
 
 // Example usage in storage methods
 async function fallbackToReplitDb(key: string, value: any) {
@@ -135,54 +102,23 @@ function decrypt(text: string): string {
 
 export const storage = {
   async getUserByUsername(username: string) {
-    let pgUser = null;
-    let replitUser = null;
-    
-    // Try PostgreSQL
     try {
       const result = await db.select().from(users).where(eq(users.username, username));
-      if (result && result.length > 0) {
-        pgUser = result[0];
-      }
+      return result[0] || null;
     } catch (error) {
-      console.error('PostgreSQL error:', error);
+      console.error('Error getting user by username:', error);
+      throw error;
     }
-
-    // Try ReplitDB
-    try {
-      replitUser = await replitDb.get(`user_${username}`);
-    } catch (error) {
-      console.error('ReplitDB error:', error);
-    }
-
-    // Return PostgreSQL user if found, otherwise ReplitDB user
-    return pgUser || replitUser || null;
   },
 
   async createUser(userData: any) {
-    let user = null;
-    
-    // Try PostgreSQL first
     try {
       const result = await db.insert(users).values(userData).returning();
-      if (result && result.length > 0) {
-        user = result[0];
-      }
+      return result[0];
     } catch (error) {
-      console.error('PostgreSQL create error:', error);
+      console.error('Error creating user:', error);
+      throw error;
     }
-
-    // Always store in ReplitDB as backup
-    try {
-      const replitUser = { ...userData, id: user?.id || Date.now() };
-      await replitDb.set(`user_${userData.username}`, replitUser);
-      if (!user) user = replitUser;
-    } catch (error) {
-      console.error('ReplitDB create error:', error);
-      if (!user) throw error;
-    }
-
-    return user;
   },
 
   async setVerificationToken(userId: number, token: string) {
