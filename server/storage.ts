@@ -3,10 +3,6 @@ import postgres from 'postgres';
 import { users, programs, submissions, activities, notifications, wallets, transactions, type User, type InsertUser } from '@shared/schema';
 import { eq } from 'drizzle-orm';
 import Database from '@replit/database';
-const replitDb = new Database();
-import { type Program, type InsertProgram } from "@shared/schema";
-import { type Submission, type InsertSubmission } from "@shared/schema";
-import { type Activity, type InsertActivity } from "@shared/schema";
 import createMemoryStore from "memorystore";
 import session from "express-session";
 import { encrypt, decrypt } from "./crypto-utils";
@@ -16,7 +12,7 @@ const client = postgres(process.env.DATABASE_URL || "postgres://postgres:postgre
 const db = drizzle(client);
 
 // Initialize Replit DB as fallback
-const replitDb = createClient();
+const replitDb = new Database();
 
 // Only encrypt password
 function encryptSensitiveData(data: any) {
@@ -30,9 +26,6 @@ function decryptSensitiveData(data: any) {
   if (data.password) data.password = decrypt(data.password);
   return data;
 }
-// Add encryption library (replace with your chosen library)
-import crypto from 'crypto';
-
 
 const MemoryStore = createMemoryStore(session);
 
@@ -67,10 +60,10 @@ export interface IStorage {
   getUserActivities(userId: number, limit?: number): Promise<Activity[]>;
   createActivity(activity: InsertActivity): Promise<Activity>;
 
-  // Notification CRUD
-  getUserNotifications(userId: number, limit?: number): Promise<Notification[]>;
-  createNotification(notification: InsertNotification): Promise<Notification>;
-  markNotificationAsRead(id: number): Promise<Notification | undefined>;
+    // Notification CRUD
+    getUserNotifications(userId: number, limit?: number): Promise<Notification[]>;
+    createNotification(notification: InsertNotification): Promise<Notification>;
+    markNotificationAsRead(id: number): Promise<Notification | undefined>;
 
   // Session storage
   sessionStore: session.SessionStore;
@@ -78,25 +71,24 @@ export interface IStorage {
 
 // Simple Encryption/Decryption functions (REPLACE WITH A ROBUST CRYPTO LIBRARY)
 function encrypt(text: string): string {
-  const iv = crypto.randomBytes(16);
-  const key = crypto.scryptSync('password', 'salt', 32);
-  const cipher = crypto.createCipheriv('aes-256-cbc', key, iv);
-  let encrypted = cipher.update(text, 'utf8', 'hex');
-  encrypted += cipher.final('hex');
-  return iv.toString('hex') + ':' + encrypted;
+    const iv = crypto.randomBytes(16);
+    const key = crypto.scryptSync('password', 'salt', 32);
+    const cipher = crypto.createCipheriv('aes-256-cbc', key, iv);
+    let encrypted = cipher.update(text, 'utf8', 'hex');
+    encrypted += cipher.final('hex');
+    return iv.toString('hex') + ':' + encrypted;
 }
 
 function decrypt(text: string): string {
-  const [ivHex, encryptedText] = text.split(':');
-  if (!ivHex || !encryptedText) return text; // Return original if not encrypted
-  const iv = Buffer.from(ivHex, 'hex');
-  const key = crypto.scryptSync('password', 'salt', 32);
-  const decipher = crypto.createDecipheriv('aes-256-cbc', key, iv);
-  let decrypted = decipher.update(encryptedText, 'hex', 'utf8');
-  decrypted += decipher.final('utf8');
-  return decrypted;
+    const [ivHex, encryptedText] = text.split(':');
+    if (!ivHex || !encryptedText) return text; // Return original if not encrypted
+    const iv = Buffer.from(ivHex, 'hex');
+    const key = crypto.scryptSync('password', 'salt', 32);
+    const decipher = crypto.createDecipheriv('aes-256-cbc', key, iv);
+    let decrypted = decipher.update(encryptedText, 'hex', 'utf8');
+    decrypted += decipher.final('utf8');
+    return decrypted;
 }
-
 
 export const storage = {
   async getUserByUsername(username: string) {
@@ -152,6 +144,7 @@ export const storage = {
       return null;
     }
   },
+
   async getWalletByUserId(userId: number) {
     const [wallet] = await db.select().from(wallets).where(eq(wallets.userId, userId));
     return wallet;
@@ -179,4 +172,21 @@ export const storage = {
   async getTransactionsByWalletId(walletId: number) {
     return db.select().from(transactions).where(eq(transactions.walletId, walletId));
   },
+  
+  async getUserNotifications(userId: number, limit?: number) {
+        return db.select().from(notifications).where(eq(notifications.userId, userId)).limit(limit || 10);
+    },
+
+    async createNotification(notification: InsertNotification) {
+        const [newNotification] = await db.insert(notifications).values(notification).returning();
+        return newNotification;
+    },
+
+    async markNotificationAsRead(id: number) {
+        const [notification] = await db.update(notifications).set({ read: true }).where(eq(notifications.id, id)).returning();
+        return notification;
+    },
+  sessionStore: new MemoryStore({
+        checkPeriod: 86400000, // prune expired entries every 24h
+    }),
 };
