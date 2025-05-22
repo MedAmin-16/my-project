@@ -631,9 +631,3 @@ export async function registerWalletRoutes(app: Express): Promise<void> {
   });
 }
 
-function ensureAuthenticated(req: Request, res: Response, next: NextFunction) {
-    if (!req.isAuthenticated()) {
-        return res.status(401).json({ message: "Unauthorized" });
-    }
-    next();
-}
