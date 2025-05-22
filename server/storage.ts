@@ -12,7 +12,25 @@ const client = postgres(process.env.DATABASE_URL || "postgres://postgres:postgre
 const db = drizzle(client);
 
 // Initialize Replit DB as fallback
+import Database from '@replit/database';
 const replitDb = new Database();
+
+// Helper functions for ReplitDB
+async function setReplitDb(key: string, value: any) {
+  return await replitDb.set(key, value);
+}
+
+async function getReplitDb(key: string) {
+  return await replitDb.get(key);
+}
+
+async function deleteReplitDb(key: string) {
+  return await replitDb.delete(key);
+}
+
+async function listReplitDb(prefix?: string) {
+  return await replitDb.list(prefix);
+}
 
 // Only encrypt password
 function encryptSensitiveData(data: any) {
@@ -172,7 +190,7 @@ export const storage = {
   async getTransactionsByWalletId(walletId: number) {
     return db.select().from(transactions).where(eq(transactions.walletId, walletId));
   },
-  
+
   async getUserNotifications(userId: number, limit?: number) {
         return db.select().from(notifications).where(eq(notifications.userId, userId)).limit(limit || 10);
     },
