@@ -141,20 +141,21 @@ export const storage = {
       if (result && result.length > 0) {
         return result[0];
       }
-
-      // Try ReplitDB if not found in PostgreSQL
-      const replitDbUser = await replitDb.get(`user_${username}`);
-      return replitDbUser || null;
-
     } catch (error) {
-      console.error('Error getting user by username:', error);
-      // If there's an error, try ReplitDB as fallback
-      try {
-        return await replitDb.get(`user_${username}`);
-      } catch (e) {
-        console.error('Fallback error:', e);
-        return null;
+      console.error('PostgreSQL error:', error);
+    }
+
+    // Try ReplitDB
+    try {
+      const replitDbUser = await replitDb.get(`user_${username}`);
+      if (replitDbUser) {
+        console.log('Found user in ReplitDB:', username);
+        return replitDbUser;
       }
+      return null;
+    } catch (error) {
+      console.error('ReplitDB error:', error);
+      return null;
     }
   },
 
