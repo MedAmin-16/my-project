@@ -12,24 +12,49 @@ const client = postgres(process.env.DATABASE_URL || "postgres://postgres:postgre
 const db = drizzle(client);
 
 // Initialize Replit DB as fallback
-import Database from '@replit/database';
 const replitDb = new Database();
 
 // Helper functions for ReplitDB
 async function setReplitDb(key: string, value: any) {
-  return await replitDb.set(key, value);
+  try {
+    return await replitDb.set(key, JSON.stringify(value));
+  } catch (error) {
+    console.error('ReplitDB set error:', error);
+    throw error;
+  }
 }
 
 async function getReplitDb(key: string) {
-  return await replitDb.get(key);
+  try {
+    const value = await replitDb.get(key);
+    return value ? JSON.parse(value) : null;
+  } catch (error) {
+    console.error('ReplitDB get error:', error);
+    throw error;
+  }
 }
 
 async function deleteReplitDb(key: string) {
-  return await replitDb.delete(key);
+  try {
+    return await replitDb.delete(key);
+  } catch (error) {
+    console.error('ReplitDB delete error:', error);
+    throw error;
+  }
 }
 
 async function listReplitDb(prefix?: string) {
-  return await replitDb.list(prefix);
+  try {
+    return await replitDb.list(prefix ? prefix : '');
+  } catch (error) {
+    console.error('ReplitDB list error:', error);
+    throw error;
+  }
+}
+
+// Example usage in storage methods
+async function fallbackToReplitDb(key: string, value: any) {
+  return await replitDb.set(key, value);
 }
 
 // Only encrypt password
