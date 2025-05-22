@@ -584,3 +584,56 @@ function suggestSeverity(description: string, type: string): string {
   const httpServer = createServer(app);
   return httpServer;
 }
+
+import { Express } from "express";
+import { storage } from "./storage";
+
+// I am placing the new code block here because it seems to be related to setting up routes.
+export async function registerWalletRoutes(app: Express): Promise<void> {
+  // Get user wallet
+  app.get("/api/wallet", ensureAuthenticated, async (req, res) => {
+    const wallet = await storage.getWalletByUserId(req.user!.id);
+    if (!wallet) {
+      const newWallet = await storage.createWallet(req.user!.id);
+      return res.json(newWallet);
+    }
+    return res.json(wallet);
+  });
+
+  // Create withdrawal request
+  app.post("/api/withdrawals", ensureAuthenticated, async (req, res) => {
+    const { amount, method, destination, notes } = req.body;
+
+    const wallet = await storage.getWalletByUserId(req.user!.id);
+    if (!wallet) {
+      return res.status(404).json({ message: "Wallet not found" });
+    }
+
+    if (wallet.balance < amount) {
+      return res.status(400).json({ message: "Insufficient balance" });
+    }
+
+    const withdrawal = await storage.createWithdrawal({
+      walletId: wallet.id,
+      amount,
+      method,
+      destination,
+      notes
+    });
+
+    return res.status(201).json(withdrawal);
+  });
+
+  // Get user withdrawals
+  app.get("/api/withdrawals", ensureAuthenticated, async (req, res) => {
+    const withdrawals = await storage.getUserWithdrawals(req.user!.id);
+    return res.json(withdrawals);
+  });
+}
+
+function ensureAuthenticated(req: Request, res: Response, next: NextFunction) {
+    if (!req.isAuthenticated()) {
+        return res.status(401).json({ message: "Unauthorized" });
+    }
+    next();
+}

@@ -110,6 +110,75 @@ function decrypt(text: string): string {
 }
 
 export const storage = {
+  async createWallet(userId: number) {
+    if (db) {
+      try {
+        const [wallet] = await db.insert(wallets).values({ userId, balance: 0 }).returning();
+        return wallet;
+      } catch (error) {
+        console.error('Error creating wallet:', error);
+        return null;
+      }
+    }
+    return null;
+  },
+
+  async getWalletByUserId(userId: number) {
+    if (db) {
+      try {
+        const [wallet] = await db.select().from(wallets).where(eq(wallets.userId, userId));
+        return wallet;
+      } catch (error) {
+        console.error('Error getting wallet:', error);
+        return null;
+      }
+    }
+    return null;
+  },
+
+  async updateWalletBalance(walletId: number, amount: number) {
+    if (db) {
+      try {
+        const [wallet] = await db
+          .update(wallets)
+          .set({ balance: amount, updatedAt: new Date() })
+          .where(eq(wallets.id, walletId))
+          .returning();
+        return wallet;
+      } catch (error) {
+        console.error('Error updating wallet balance:', error);
+        return null;
+      }
+    }
+    return null;
+  },
+
+  async createWithdrawal(data: InsertWithdrawal) {
+    if (db) {
+      try {
+        const [withdrawal] = await db.insert(withdrawals).values(data).returning();
+        return withdrawal;
+      } catch (error) {
+        console.error('Error creating withdrawal:', error);
+        return null;
+      }
+    }
+    return null;
+  },
+
+  async getUserWithdrawals(userId: number) {
+    if (db) {
+      try {
+        const userWallet = await this.getWalletByUserId(userId);
+        if (!userWallet) return [];
+        return db.select().from(withdrawals).where(eq(withdrawals.walletId, userWallet.id));
+      } catch (error) {
+        console.error('Error getting user withdrawals:', error);
+        return [];
+      }
+    }
+    return [];
+  },
   async getUserByUsername(username: string) {
     if (db) {
       try {

@@ -176,3 +176,27 @@ export const insertTransactionSchema = createInsertSchema(transactions).pick({
 });
 
 export type Transaction = typeof transactions.$inferSelect;
+
+// Withdrawal Requests table
+export const withdrawals = pgTable("withdrawals", {
+  id: serial("id").primaryKey(),
+  walletId: integer("wallet_id").notNull().references(() => wallets.id),
+  amount: integer("amount").notNull(),
+  method: text("method").notNull(), // PayPal, Wise, Crypto, etc.
+  destination: text("destination").notNull(), // PayPal email, wallet address, etc.
+  status: text("status").notNull().default("pending"), // pending, approved, rejected, completed
+  notes: text("notes"),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at")
+});
+
+export const insertWithdrawalSchema = createInsertSchema(withdrawals).pick({
+  walletId: true,
+  amount: true,
+  method: true,
+  destination: true,
+  notes: true,
+});
+
+export type Withdrawal = typeof withdrawals.$inferSelect;
+export type InsertWithdrawal = z.infer<typeof insertWithdrawalSchema>;
