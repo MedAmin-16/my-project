@@ -20,6 +20,7 @@ export default function Navbar() {
     { name: "Dashboard", path: "/dashboard" },
     { name: "Programs", path: "/programs" },
     { name: "Leaderboard", path: "/leaderboard" },
+    { name: "Wallet", path: "/wallet" },
   ];
 
   // Resource links for dropdown
@@ -106,7 +107,7 @@ export default function Navbar() {
                   </DropdownMenuItem>
                 </Link>
                 <DropdownMenuSeparator className="bg-matrix/20" />
-                
+
                 {resourceLinks.map((link) => (
                   <Link key={link.path} href={link.path}>
                     <DropdownMenuItem className="text-light-gray hover:bg-matrix/10 cursor-pointer font-mono text-sm">
