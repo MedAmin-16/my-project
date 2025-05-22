@@ -42,15 +42,13 @@ function Router() {
     return <DashboardPage />;
   };
 
-  // Add wallet route
-  app.get("/api/wallet", ensureAuthenticated, async (req, res) => {
-    const wallet = await storage.getWalletByUserId(req.user!.id);
-    if (!wallet) {
-      const newWallet = await storage.createWallet(req.user!.id);
-      return res.json(newWallet);
+  // Wallet route component 
+  const WalletComponent = () => {
+    if (!user) {
+      return <Redirect to="/auth" />;
     }
-    return res.json(wallet);
-  });
+    return <WalletPage />;
+  };
 
   // Admin route component with enhanced security checks
   const AdminComponent = () => {
