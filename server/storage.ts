@@ -6,18 +6,27 @@ import createMemoryStore from "memorystore";
 import session from "express-session";
 import { encrypt, decrypt } from "./crypto-utils";
 
-if (!process.env.DATABASE_URL) {
-  throw new Error("DATABASE_URL environment variable is required");
+// Initialize in-memory storage
+const memoryStorage = {
+  users: new Map(),
+  programs: new Map(),
+  submissions: new Map(),
+  activities: new Map(),
+  notifications: new Map(),
+  wallets: new Map(),
+  transactions: new Map(),
+  verificationTokens: new Map()
+};
+
+let db: any = null;
+if (process.env.DATABASE_URL) {
+  const client = postgres(process.env.DATABASE_URL, {
+    max: 10,
+    idle_timeout: 20,
+    connect_timeout: 10,
+  });
+  db = drizzle(client);
 }
-
-// Initialize PostgreSQL client with pooling
-const client = postgres(process.env.DATABASE_URL, {
-  max: 10, // Connection pool size
-  idle_timeout: 20,
-  connect_timeout: 10,
-});
-
-const db = drizzle(client);
 
 // Example usage in storage methods
 async function fallbackToReplitDb(key: string, value: any) {
@@ -102,161 +111,312 @@ function decrypt(text: string): string {
 
 export const storage = {
   async getUserByUsername(username: string) {
-    try {
-      const result = await db.select().from(users).where(eq(users.username, username));
-      return result[0] || null;
-    } catch (error) {
-      console.error('Error getting user by username:', error);
-      throw error;
+    if (db) {
+      try {
+        const result = await db.select().from(users).where(eq(users.username, username));
+        return result[0] || null;
+      } catch (error) {
+        console.error('Error getting user by username:', error);
+        return null;
+      }
     }
+    return memoryStorage.users.get(username) || null;
   },
 
   async createUser(userData: any) {
-    try {
-      const result = await db.insert(users).values(userData).returning();
-      return result[0];
-    } catch (error) {
-      console.error('Error creating user:', error);
-      throw error;
+    if (db) {
+      try {
+        const result = await db.insert(users).values(userData).returning();
+        return result[0];
+      } catch (error) {
+        console.error('Error creating user:', error);
+      }
     }
+
+    const user = { ...userData, id: Date.now() };
+    memoryStorage.users.set(userData.username, user);
+    return user;
   },
 
   async setVerificationToken(userId: number, token: string) {
-    try {
-      await replitDb.set(`verification_${token}`, userId);
-      return true;
-    } catch (error) {
-      console.error('Error setting verification token:', error);
-      return false;
-    }
+    memoryStorage.verificationTokens.set(token, userId);
+    return true;
   },
 
   async getUserByVerificationToken(token: string) {
-    try {
-      const userId = await replitDb.get(`verification_${token}`);
-      if (!userId) return null;
-      return await this.getUser(userId);
-    } catch (error) {
-      console.error('Error getting user by verification token:', error);
-      return null;
+    const userId = memoryStorage.verificationTokens.get(token);
+    if (!userId) return null;
+
+    for (const user of memoryStorage.users.values()) {
+      if (user.id === userId) return user;
     }
+    return null;
   },
 
   async getUserByEmail(email: string) {
-    try {
-      const result = await db.select().from(users).where(eq(users.email, email));
-      return result[0] || null;
-    } catch (error) {
-      console.error('Error getting user by email:', error);
-      return null;
+    for (const user of memoryStorage.users.values()) {
+      if (user.email === email) return user;
     }
-  },
-
-  async createUser(userData: any) {
-    try {
-      const result = await db.insert(users).values(userData).returning();
-      return result[0];
-    } catch (error) {
-      console.error('Error creating user:', error);
-      // Fallback to Replit DB
-      try {
-        const user = { ...userData, id: Date.now() };
-        await replitDb.set(`user_${userData.username}`, user);
-        return user;
-      } catch (e) {
-        console.error('Fallback error:', e);
-        throw error;
-      }
-    }
+    return null;
   },
 
   async getUser(id: number) {
-    try {
-      const result = await db.select().from(users).where(eq(users.id, id));
-      return result[0] || null;
-    } catch (error) {
-      console.error('Error getting user by id:', error);
-      return null;
+    for (const user of memoryStorage.users.values()) {
+      if (user.id === id) return user;
     }
+    return null;
   },
 
   async getWalletByUserId(userId: number) {
-    const [wallet] = await db.select().from(wallets).where(eq(wallets.userId, userId));
-    return wallet;
+    if (db) {
+      try {
+        const [wallet] = await db.select().from(wallets).where(eq(wallets.userId, userId));
+        return wallet;
+      } catch (error) {
+        console.error('Error getting wallet by user id:', error);
+        return null;
+      }
+    }
+    return null;
   },
 
   async createWallet(userId: number) {
-    const [wallet] = await db.insert(wallets).values({ userId }).returning();
-    return wallet;
+    if (db) {
+      try {
+        const [wallet] = await db.insert(wallets).values({ userId }).returning();
+        return wallet;
+      } catch (error) {
+        console.error('Error creating wallet:', error);
+        return null;
+      }
+    }
+    return null;
   },
 
   async updateWalletBalance(walletId: number, newBalance: number) {
-    const [wallet] = await db
-      .update(wallets)
-      .set({ balance: newBalance, updatedAt: new Date() })
-      .where(eq(wallets.id, walletId))
-      .returning();
-    return wallet;
+    if (db) {
+      try {
+        const [wallet] = await db
+          .update(wallets)
+          .set({ balance: newBalance, updatedAt: new Date() })
+          .where(eq(wallets.id, walletId))
+          .returning();
+        return wallet;
+      } catch (error) {
+        console.error('Error updating wallet balance:', error);
+        return null;
+      }
+    }
+    return null;
   },
 
   async createTransaction(data: any) {
-    const [transaction] = await db.insert(transactions).values(data).returning();
-    return transaction;
+    if (db) {
+      try {
+        const [transaction] = await db.insert(transactions).values(data).returning();
+        return transaction;
+      } catch (error) {
+        console.error('Error creating transaction:', error);
+        return null;
+      }
+    }
+    return null;
   },
 
   async getTransactionsByWalletId(walletId: number) {
-    return db.select().from(transactions).where(eq(transactions.walletId, walletId));
+    if (db) {
+      try {
+        return db.select().from(transactions).where(eq(transactions.walletId, walletId));
+      } catch (error) {
+        console.error('Error getting transactions by wallet id:', error);
+        return [];
+      }
+    }
+    return [];
   },
 
   async getUserNotifications(userId: number, limit?: number) {
+    if (db) {
+      try {
         return db.select().from(notifications).where(eq(notifications.userId, userId)).limit(limit || 10);
-    },
+      } catch (error) {
+        console.error('Error getting user notifications:', error);
+        return [];
+      }
+    }
+    return [];
+  },
 
-    async createNotification(notification: InsertNotification) {
+  async createNotification(notification: InsertNotification) {
+    if (db) {
+      try {
         const [newNotification] = await db.insert(notifications).values(notification).returning();
         return newNotification;
-    },
+      } catch (error) {
+        console.error('Error creating notification:', error);
+        return null;
+      }
+    }
+    return null;
+  },
 
-    async markNotificationAsRead(id: number) {
+  async markNotificationAsRead(id: number) {
+    if (db) {
+      try {
         const [notification] = await db.update(notifications).set({ read: true }).where(eq(notifications.id, id)).returning();
         return notification;
-    },
+      } catch (error) {
+        console.error('Error marking notification as read:', error);
+        return null;
+      }
+    }
+    return null;
+  },
+
   sessionStore: new MemoryStore({
-    checkPeriod: 86400000, // prune expired entries every 24h
+    checkPeriod: 86400000,
   }),
 
   async getAllPrograms() {
-    try {
-      const keys = await replitDb.list('program_');
-      const programs = await Promise.all(
-        keys.map(key => replitDb.get(key))
-      );
-      return programs.filter(p => p !== null);
-    } catch (error) {
-      console.error('Error getting all programs:', error);
-      return [];
-    }
+    return Array.from(memoryStorage.programs.values());
   },
 
   async getPublicPrograms() {
-    try {
-      const programs = await this.getAllPrograms();
-      return programs.filter(p => p.isActive);
-    } catch (error) {
-      console.error('Error getting public programs:', error);
-      return [];
-    }
+    return Array.from(memoryStorage.programs.values()).filter(p => p.isActive);
   },
 
   async createProgram(program: any) {
-    try {
-      const id = Date.now();
-      const newProgram = { ...program, id };
-      await replitDb.set(`program_${id}`, newProgram);
-      return newProgram;
-    } catch (error) {
-      console.error('Error creating program:', error);
-      throw error;
+    const id = Date.now();
+    const newProgram = { ...program, id };
+    memoryStorage.programs.set(id, newProgram);
+    return newProgram;
+  },
+  async updateUserReputation(id: number, reputation: number){
+    if (db) {
+      try {
+        const [user] = await db.update(users).set({reputation: reputation}).where(eq(users.id, id)).returning()
+        return user
+      } catch (error) {
+        console.log("Error updating user reputation", error)
+        return null
+      }
     }
-  }
+    return null
+  },
+  async getLeaderboard(limit?: number){
+    if(db){
+      try {
+        return db.select().from(users).orderBy(users.reputation).limit(limit || 10)
+      } catch (error) {
+        console.log("Error getting leaderboard", error)
+        return []
+      }
+    }
+    return []
+  },
+  async getProgram(id: number){
+    if(db){
+      try {
+        const result = await db.select().from(programs).where(eq(programs.id, id))
+        return result[0] || null
+      } catch (error) {
+        console.log("Error getting program", error)
+        return null
+      }
+    }
+    return memoryStorage.programs.get(id) || null
+  },
+  async createSubmission(submission: any){
+    if(db){
+      try {
+        const result = await db.insert(submissions).values(submission).returning()
+        return result[0]
+      } catch (error) {
+        console.log("Error creating submission", error)
+        return null
+      }
+    }
+    return null
+  },
+  async getSubmission(id: number){
+    if(db){
+      try {
+        const result = await db.select().from(submissions).where(eq(submissions.id, id))
+        return result[0] || null
+      } catch (error) {
+        console.log("Error getting submission", error)
+        return null
+      }
+    }
+    return null
+  },
+  async getSubmissionsByUser(userId: number){
+    if(db){
+      try {
+        return db.select().from(submissions).where(eq(submissions.userId, userId))
+      } catch (error) {
+        console.log("Error getting submissions by user", error)
+        return []
+      }
+    }
+    return []
+  },
+   async getSubmissionsByProgram(programId: number){
+    if(db){
+      try {
+        return db.select().from(submissions).where(eq(submissions.programId, programId))
+      } catch (error) {
+        console.log("Error getting submissions by program", error)
+        return []
+      }
+    }
+    return []
+  },
+  async updateSubmissionStatus(id: number, status: string, reward?: number){
+    if(db){
+      try {
+        const [submission] = await db.update(submissions).set({status: status, reward: reward}).where(eq(submissions.id, id)).returning()
+        return submission
+      } catch (error) {
+        console.log("Error updating submission status", error)
+        return null
+      }
+    }
+    return null
+  },
+  async getUserActivities(userId: number, limit?: number){
+    if(db){
+      try {
+        return db.select().from(activities).where(eq(activities.userId, userId)).limit(limit || 10)
+      } catch (error) {
+        console.log("Error getting user activities", error)
+        return []
+      }
+    }
+    return []
+  },
+  async createActivity(activity: any){
+    if(db){
+      try {
+        const [newActivity] = await db.insert(activities).values(activity).returning()
+        return newActivity
+      } catch (error) {
+        console.log("Error creating activity", error)
+        return null
+      }
+    }
+    return null
+  },
+  async getProgram(id: number){
+    if(db){
+      try {
+        const result = await db.select().from(programs).where(eq(programs.id, id))
+        return result[0] || null
+      } catch (error) {
+        console.log("Error getting program", error)
+        return null
+      }
+    }
+    return null
+  },
 };
