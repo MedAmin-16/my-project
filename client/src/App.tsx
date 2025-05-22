@@ -122,6 +122,7 @@ function Router() {
       <Route path="/about">
         {() => <AboutPage />}
       </Route>
+      <ProtectedRoute path="/wallet" component={WalletPage} />
       <Route path="/create-program" component={CreateProgramPage} />
       <Route path="/*" component={NotFound} /> {/* Added catch-all route */}
     </Switch>
@@ -130,6 +131,7 @@ function Router() {
 
 import AdminPage from "./pages/admin-page";
 import ForgotPasswordPage from "./pages/forgot-password-page";
+import WalletPage from "./pages/wallet-page";
 
 // Placeholder for FindProgramsPage component
 function FindProgramsPage() {
