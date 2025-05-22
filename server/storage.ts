@@ -136,18 +136,31 @@ function decrypt(text: string): string {
 export const storage = {
   async getUserByUsername(username: string) {
     try {
-      // Try PostgreSQL first
-      const result = await db.select().from(users).where(eq(users.username, username));
-      if (result && result[0]) {
-        return result[0];
-      }
-
-      // If not found in PostgreSQL, try Replit DB
-      const replitDbUser = await replitDb.get(`user_${username}`);
-      return replitDbUser || null;
-
+      const user = await replitDb.get(`user_${username}`);
+      return user || null;
     } catch (error) {
       console.error('Error getting user by username:', error);
+      return null;
+    }
+  },
+
+  async setVerificationToken(userId: number, token: string) {
+    try {
+      await replitDb.set(`verification_${token}`, userId);
+      return true;
+    } catch (error) {
+      console.error('Error setting verification token:', error);
+      return false;
+    }
+  },
+
+  async getUserByVerificationToken(token: string) {
+    try {
+      const userId = await replitDb.get(`verification_${token}`);
+      if (!userId) return null;
+      return await this.getUser(userId);
+    } catch (error) {
+      console.error('Error getting user by verification token:', error);
       return null;
     }
   },
@@ -232,6 +245,41 @@ export const storage = {
         return notification;
     },
   sessionStore: new MemoryStore({
-        checkPeriod: 86400000, // prune expired entries every 24h
-    }),
+    checkPeriod: 86400000, // prune expired entries every 24h
+  }),
+
+  async getAllPrograms() {
+    try {
+      const keys = await replitDb.list('program_');
+      const programs = await Promise.all(
+        keys.map(key => replitDb.get(key))
+      );
+      return programs.filter(p => p !== null);
+    } catch (error) {
+      console.error('Error getting all programs:', error);
+      return [];
+    }
+  },
+
+  async getPublicPrograms() {
+    try {
+      const programs = await this.getAllPrograms();
+      return programs.filter(p => p.isActive);
+    } catch (error) {
+      console.error('Error getting public programs:', error);
+      return [];
+    }
+  },
+
+  async createProgram(program: any) {
+    try {
+      const id = Date.now();
+      const newProgram = { ...program, id };
+      await replitDb.set(`program_${id}`, newProgram);
+      return newProgram;
+    } catch (error) {
+      console.error('Error creating program:', error);
+      throw error;
+    }
+  }
 };
