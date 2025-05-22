@@ -135,11 +135,14 @@ function decrypt(text: string): string {
 
 export const storage = {
   async getUserByUsername(username: string) {
+    let pgUser = null;
+    let replitUser = null;
+    
+    // Try PostgreSQL
     try {
-      // Try PostgreSQL first
       const result = await db.select().from(users).where(eq(users.username, username));
       if (result && result.length > 0) {
-        return result[0];
+        pgUser = result[0];
       }
     } catch (error) {
       console.error('PostgreSQL error:', error);
@@ -147,16 +150,39 @@ export const storage = {
 
     // Try ReplitDB
     try {
-      const replitDbUser = await replitDb.get(`user_${username}`);
-      if (replitDbUser) {
-        console.log('Found user in ReplitDB:', username);
-        return replitDbUser;
-      }
-      return null;
+      replitUser = await replitDb.get(`user_${username}`);
     } catch (error) {
       console.error('ReplitDB error:', error);
-      return null;
     }
+
+    // Return PostgreSQL user if found, otherwise ReplitDB user
+    return pgUser || replitUser || null;
+  },
+
+  async createUser(userData: any) {
+    let user = null;
+    
+    // Try PostgreSQL first
+    try {
+      const result = await db.insert(users).values(userData).returning();
+      if (result && result.length > 0) {
+        user = result[0];
+      }
+    } catch (error) {
+      console.error('PostgreSQL create error:', error);
+    }
+
+    // Always store in ReplitDB as backup
+    try {
+      const replitUser = { ...userData, id: user?.id || Date.now() };
+      await replitDb.set(`user_${userData.username}`, replitUser);
+      if (!user) user = replitUser;
+    } catch (error) {
+      console.error('ReplitDB create error:', error);
+      if (!user) throw error;
+    }
+
+    return user;
   },
 
   async setVerificationToken(userId: number, token: string) {
