@@ -136,11 +136,25 @@ function decrypt(text: string): string {
 export const storage = {
   async getUserByUsername(username: string) {
     try {
-      const user = await replitDb.get(`user_${username}`);
-      return user || null;
+      // Try PostgreSQL first
+      const result = await db.select().from(users).where(eq(users.username, username));
+      if (result && result.length > 0) {
+        return result[0];
+      }
+
+      // Try ReplitDB if not found in PostgreSQL
+      const replitDbUser = await replitDb.get(`user_${username}`);
+      return replitDbUser || null;
+
     } catch (error) {
       console.error('Error getting user by username:', error);
-      return null;
+      // If there's an error, try ReplitDB as fallback
+      try {
+        return await replitDb.get(`user_${username}`);
+      } catch (e) {
+        console.error('Fallback error:', e);
+        return null;
+      }
     }
   },
 
