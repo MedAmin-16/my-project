@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useAuth } from "@/hooks/use-auth";
@@ -32,14 +31,14 @@ export default function WalletPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ amount: Number(amount), method, destination }),
       });
-      
+
       if (!response.ok) throw new Error();
-      
+
       toast({
         title: "Success",
         description: "Withdrawal request submitted successfully",
       });
-      
+
       setAmount("");
       setDestination("");
     } catch (error) {
@@ -55,7 +54,7 @@ export default function WalletPage() {
     <div className="min-h-screen bg-deep-black relative">
       <MatrixBackground />
       <Navbar />
-      
+
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 relative z-10">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
           {/* Balance Card */}
@@ -63,6 +62,21 @@ export default function WalletPage() {
             <h2 className="text-xl font-mono font-bold text-light-gray mb-4">Wallet Balance</h2>
             <div className="text-3xl font-mono text-matrix">
               ${walletLoading ? "..." : wallet?.balance || 0}
+            </div>
+
+            {/* Payment Method Card */}
+            <div className="mt-6 p-4 bg-terminal/30 rounded-lg border border-matrix/30">
+              <div className="flex justify-between items-center mb-4">
+                <h3 className="text-sm font-mono text-light-gray">Payment Method</h3>
+                <span className="text-xs text-matrix">Virtual Card</span>
+              </div>
+              <div className="font-mono">
+                <div className="text-matrix text-lg mb-2">•••• •••• •••• 4242</div>
+                <div className="flex justify-between text-dim-gray text-sm">
+                  <span>CYBERHUNT USER</span>
+                  <span>12/25</span>
+                </div>
+              </div>
             </div>
           </div>
 
