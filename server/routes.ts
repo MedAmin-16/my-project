@@ -84,6 +84,27 @@ const adminRequestLog = new Map<string, number[]>();
 // Admin session storage
 const adminSessions = new Map<string, { email: string, loginTime: number }>();
 
+// Middleware to check admin session authentication
+function ensureAdminAuthenticated(req: Request, res: Response, next: NextFunction) {
+  const adminSessionId = req.session?.adminSessionId;
+  
+  if (!adminSessionId || !adminSessions.has(adminSessionId)) {
+    return res.status(401).json({ message: "Admin authentication required" });
+  }
+
+  const session = adminSessions.get(adminSessionId);
+  const sessionAge = Date.now() - session!.loginTime;
+  
+  // Check if session is older than 8 hours
+  if (sessionAge > 8 * 60 * 60 * 1000) {
+    adminSessions.delete(adminSessionId);
+    delete req.session.adminSessionId;
+    return res.status(401).json({ message: "Admin session expired" });
+  }
+
+  next();
+}
+
 // Admin credentials (in production, these should be hashed and stored securely)
 const ADMIN_CREDENTIALS = {
   email: process.env.ADMIN_EMAIL || "admin@cyberhunt.com",
@@ -625,6 +646,51 @@ function suggestSeverity(description: string, type: string): string {
   // Admin session verification endpoint
   app.get("/api/admin/verify", ensureAdminAuthenticated, (req, res) => {
     res.json({ message: "Admin session valid" });
+  });
+
+  // Admin stats endpoint
+  app.get("/api/admin/stats", ensureAdminAuthenticated, async (req, res) => {
+    try {
+      const users = await db.select().from(storage.users);
+      const programs = await db.select().from(storage.programs);
+      const submissions = await db.select().from(storage.submissions);
+
+      const stats = {
+        totalUsers: users.length,
+        activePrograms: programs.filter(p => p.status === 'active').length,
+        totalSubmissions: submissions.length,
+        pendingReviews: submissions.filter(s => s.status === 'pending').length
+      };
+
+      res.json(stats);
+    } catch (error) {
+      console.error('Error fetching admin stats:', error);
+      res.json({
+        totalUsers: 0,
+        activePrograms: 0,
+        totalSubmissions: 0,
+        pendingReviews: 0
+      });
+    }
+  });
+
+  // Admin users endpoint
+  app.get("/api/admin/users", ensureAdminAuthenticated, async (req, res) => {
+    try {
+      const users = await db.select().from(storage.users);
+      // Remove sensitive information before sending
+      const safeUsers = users.map(user => ({
+        id: user.id,
+        username: user.username,
+        email: user.email,
+        userType: user.userType,
+        createdAt: user.createdAt
+      }));
+      res.json(safeUsers);
+    } catch (error) {
+      console.error('Error fetching admin users:', error);
+      res.json([]);
+    }
   });
 
   // Admin stats endpoint

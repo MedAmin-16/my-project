@@ -45,9 +45,11 @@ export default function AdminDashboardPage() {
           credentials: 'include'
         });
         if (!response.ok) {
+          console.log("Admin verification failed, redirecting to login");
           navigate("/admin");
         }
       } catch (error) {
+        console.error("Admin verification error:", error);
         navigate("/admin");
       }
     };
