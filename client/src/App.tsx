@@ -123,8 +123,11 @@ function Router() {
       <Route path="/about">
         {() => <AboutPage />}
       </Route>
-      <ProtectedRoute path="/wallet" component={WalletPage} />
-      <Route path="/create-program" component={CreateProgramPage} />
+
+      {/* Admin Routes */}
+      <Route path="/admin" component={AdminLoginPage} />
+      <Route path="/admin/dashboard" component={AdminDashboardPage} />
+
       <Route path="/*" component={NotFound} /> {/* Added catch-all route */}
     </Switch>
   );
@@ -138,6 +141,16 @@ import HacktivityPage from "./pages/hacktivity-page";
 // Placeholder for FindProgramsPage component
 function FindProgramsPage() {
   return <h1>Find Programs Page</h1>;
+}
+
+// Placeholder for AdminLoginPage component
+function AdminLoginPage() {
+  return <h1>Admin Login Page</h1>;
+}
+
+// Placeholder for AdminDashboardPage component
+function AdminDashboardPage() {
+  return <h1>Admin Dashboard Page</h1>;
 }
 
 function App() {

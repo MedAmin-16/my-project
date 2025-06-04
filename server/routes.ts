@@ -81,6 +81,36 @@ function ensureAdmin(req: Request, res: Response, next: NextFunction) {
 // Track admin endpoint requests for rate limiting
 const adminRequestLog = new Map<string, number[]>();
 
+// Admin session storage
+const adminSessions = new Map<string, { email: string, loginTime: number }>();
+
+// Admin credentials (in production, these should be hashed and stored securely)
+const ADMIN_CREDENTIALS = {
+  email: process.env.ADMIN_EMAIL || "admin@cyberhunt.com",
+  password: process.env.ADMIN_PASSWORD || "AdminSecure123!"
+};
+
+// Middleware to check admin authentication
+function ensureAdminAuthenticated(req: Request, res: Response, next: NextFunction) {
+  const adminSessionId = req.session?.adminSessionId;
+  
+  if (!adminSessionId || !adminSessions.has(adminSessionId)) {
+    return res.status(401).json({ message: "Admin authentication required" });
+  }
+
+  const adminSession = adminSessions.get(adminSessionId);
+  if (!adminSession) {
+    return res.status(401).json({ message: "Invalid admin session" });
+  }
+
+  // Check if session is older than 2 hours
+  if (Date.now() - adminSession.loginTime > 2 * 60 * 60 * 1000) {
+    adminSessions.delete(adminSessionId);
+    return res.status(401).json({ message: "Admin session expired" });
+  }
+
+  next();
+}
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Setup authentication routes (/api/login, /api/register, etc.)
@@ -543,8 +573,83 @@ function suggestSeverity(description: string, type: string): string {
 
 
 
+  // Admin login endpoint
+  app.post("/api/admin/login", async (req, res) => {
+    try {
+      const { email, password } = req.body;
+
+      if (!email || !password) {
+        return res.status(400).json({ message: "Email and password are required" });
+      }
+
+      // Validate credentials
+      if (email !== ADMIN_CREDENTIALS.email || password !== ADMIN_CREDENTIALS.password) {
+        return res.status(401).json({ message: "Invalid admin credentials" });
+      }
+
+      // Create admin session
+      const adminSessionId = require('crypto').randomBytes(32).toString('hex');
+      adminSessions.set(adminSessionId, {
+        email,
+        loginTime: Date.now()
+      });
+
+      // Store session ID in user session
+      req.session.adminSessionId = adminSessionId;
+
+      res.json({ 
+        message: "Admin login successful",
+        sessionId: adminSessionId
+      });
+    } catch (error) {
+      console.error('Admin login error:', error);
+      res.status(500).json({ message: "Login failed" });
+    }
+  });
+
+  // Admin logout endpoint
+  app.post("/api/admin/logout", (req, res) => {
+    try {
+      const adminSessionId = req.session?.adminSessionId;
+      if (adminSessionId) {
+        adminSessions.delete(adminSessionId);
+        delete req.session.adminSessionId;
+      }
+      res.json({ message: "Admin logout successful" });
+    } catch (error) {
+      console.error('Admin logout error:', error);
+      res.status(500).json({ message: "Logout failed" });
+    }
+  });
+
+  // Admin session verification endpoint
+  app.get("/api/admin/verify", ensureAdminAuthenticated, (req, res) => {
+    res.json({ message: "Admin session valid" });
+  });
+
+  // Admin stats endpoint
+  app.get("/api/admin/stats", ensureAdminAuthenticated, async (req, res) => {
+    try {
+      const users = await storage.getAllUsers();
+      const programs = await storage.getAllPrograms();
+      
+      // Calculate stats
+      const stats = {
+        totalUsers: users.length,
+        activePrograms: programs.filter(p => p.status === 'active').length,
+        totalSubmissions: 0, // Would need to implement getSubmissionsCount
+        pendingReviews: 0     // Would need to implement getPendingReviewsCount
+      };
+
+      res.json(stats);
+    } catch (error) {
+      console.error('Error fetching admin stats:', error);
+      res.status(500).json({ message: "Failed to fetch admin stats" });
+    }
+  });
+
   //Admin endpoint example
-  app.get("/api/admin/users", ensureAdmin, async (req, res) => {
+  app.get("/api/admin/users", ensureAdminAuthenticated, async (req, res) => {
     try {
       const users = await storage.getAllUsers();
       res.json(users);
