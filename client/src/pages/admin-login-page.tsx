@@ -4,7 +4,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { Link, useLocation } from "wouter";
-import { Loader2, Shield, Eye, EyeOff, ArrowLeft } from "lucide-react";
+import { Loader2, Shield, Eye, EyeOff, ArrowLeft, Terminal, Lock } from "lucide-react";
 import MatrixBackground from "@/components/matrix-background";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
@@ -48,15 +48,15 @@ export default function AdminLoginPage() {
       }
 
       toast({
-        title: "Login successful",
-        description: "Welcome to the admin panel",
+        title: "Access Granted",
+        description: "Welcome to the cyber command center",
         variant: "default",
       });
 
       navigate("/admin/dashboard");
     } catch (error) {
       toast({
-        title: "Login failed",
+        title: "Access Denied",
         description: error instanceof Error ? error.message : "Invalid credentials",
         variant: "destructive",
       });
@@ -66,90 +66,155 @@ export default function AdminLoginPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4 relative">
+    <div className="min-h-screen bg-black flex items-center justify-center p-4 relative overflow-hidden">
       <MatrixBackground />
+      
+      {/* Back button */}
       <Link 
         to="/" 
-        className="absolute top-4 left-4 text-matrix hover:text-matrix-dark flex items-center gap-2 z-20"
+        className="absolute top-6 left-6 text-matrix hover:text-matrix/80 flex items-center gap-2 z-20 transition-colors duration-300"
       >
         <ArrowLeft className="h-5 w-5" />
-        <span className="text-sm">Back to Home</span>
+        <span className="text-sm font-mono">BACK_TO_HOME</span>
       </Link>
 
-      <div className="terminal-card w-full max-w-md p-6 rounded-lg relative overflow-hidden z-10">
-        <div className="terminal-header mb-6"></div>
+      {/* Main login container */}
+      <div className="w-full max-w-md relative z-10">
+        {/* Glowing orbs background */}
+        <div className="absolute -top-20 -left-20 w-40 h-40 bg-matrix/20 rounded-full blur-3xl animate-pulse"></div>
+        <div className="absolute -bottom-20 -right-20 w-40 h-40 bg-electric-blue/20 rounded-full blur-3xl animate-pulse"></div>
+        
+        {/* Login card */}
+        <div className="relative bg-black/90 backdrop-blur-sm border border-matrix/30 rounded-lg p-8 shadow-2xl">
+          {/* Animated border */}
+          <div className="absolute inset-0 bg-gradient-to-r from-matrix/0 via-matrix/50 to-matrix/0 rounded-lg opacity-30">
+            <div className="absolute inset-[1px] bg-black rounded-lg"></div>
+          </div>
+          
+          <div className="relative">
+            {/* Header section */}
+            <div className="text-center mb-8">
+              <div className="flex justify-center mb-6">
+                <div className="relative">
+                  <div className="absolute inset-0 bg-matrix/30 rounded-full blur-xl"></div>
+                  <div className="relative h-16 w-16 bg-black border-2 border-matrix rounded-full flex items-center justify-center">
+                    <Shield className="h-8 w-8 text-matrix" />
+                  </div>
+                </div>
+              </div>
+              
+              <h1 className="text-4xl font-mono font-bold text-matrix mb-2 tracking-wider">
+                CYBER HUNT
+              </h1>
+              <h2 className="text-2xl font-mono font-bold text-white mb-3 tracking-wide">
+                ADMIN PANEL
+              </h2>
+              <div className="flex items-center justify-center gap-2 text-matrix/70 text-sm font-mono">
+                <Lock className="h-4 w-4" />
+                <span>RESTRICTED_ACCESS_ONLY</span>
+              </div>
+            </div>
 
-        <div className="text-center mb-6">
-          <Shield className="h-12 w-12 text-matrix mx-auto mb-4" />
-          <h1 className="text-matrix text-3xl font-mono font-bold mb-2">
-            Admin_Panel
-          </h1>
-          <p className="text-dim-gray text-sm">
-            Restricted Access Only
-          </p>
+            {/* Login form */}
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+              {/* Email field */}
+              <div className="space-y-2">
+                <label className="block text-matrix text-sm font-mono tracking-wide">
+                  &gt; EMAIL_ADDRESS
+                </label>
+                <div className="relative">
+                  <input
+                    type="email"
+                    className="w-full bg-black/50 border border-matrix/30 rounded px-4 py-3 font-mono text-white placeholder-dim-gray focus:outline-none focus:border-matrix focus:ring-2 focus:ring-matrix/30 transition-all duration-300"
+                    placeholder="admin@cyberhunt.com"
+                    style={{ caretColor: '#0ee86d' }}
+                    {...form.register('email')}
+                    autoComplete="email"
+                  />
+                  <div className="absolute inset-0 border border-matrix/20 rounded pointer-events-none opacity-0 hover:opacity-100 transition-opacity duration-300"></div>
+                </div>
+                {form.formState.errors.email && (
+                  <div className="text-red-400 text-xs font-mono flex items-center gap-1">
+                    <span>&gt;</span>
+                    {form.formState.errors.email.message}
+                  </div>
+                )}
+              </div>
+
+              {/* Password field */}
+              <div className="space-y-2">
+                <label className="block text-matrix text-sm font-mono tracking-wide">
+                  &gt; PASSWORD
+                </label>
+                <div className="relative">
+                  <input
+                    type={showPassword ? "text" : "password"}
+                    className="w-full bg-black/50 border border-matrix/30 rounded px-4 py-3 pr-12 font-mono text-white placeholder-dim-gray focus:outline-none focus:border-matrix focus:ring-2 focus:ring-matrix/30 transition-all duration-300"
+                    placeholder="••••••••••••"
+                    style={{ caretColor: '#0ee86d' }}
+                    {...form.register('password')}
+                    autoComplete="current-password"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-dim-gray hover:text-matrix transition-colors duration-200"
+                  >
+                    {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                  </button>
+                  <div className="absolute inset-0 border border-matrix/20 rounded pointer-events-none opacity-0 hover:opacity-100 transition-opacity duration-300"></div>
+                </div>
+                {form.formState.errors.password && (
+                  <div className="text-red-400 text-xs font-mono flex items-center gap-1">
+                    <span>&gt;</span>
+                    {form.formState.errors.password.message}
+                  </div>
+                )}
+              </div>
+
+              {/* Login button */}
+              <div className="pt-4">
+                <Button
+                  type="submit"
+                  disabled={isLoading}
+                  className="w-full bg-matrix/10 hover:bg-matrix/20 border-2 border-matrix text-matrix font-mono text-lg py-3 rounded transition-all duration-300 hover:shadow-[0_0_20px_rgba(14,232,109,0.3)] disabled:opacity-50 disabled:cursor-not-allowed tracking-wider"
+                >
+                  {isLoading ? (
+                    <span className="flex items-center justify-center">
+                      <Loader2 className="mr-3 h-5 w-5 animate-spin" />
+                      AUTHENTICATING...
+                    </span>
+                  ) : (
+                    <span className="flex items-center justify-center">
+                      <Terminal className="mr-3 h-5 w-5" />
+                      INITIATE_LOGIN
+                    </span>
+                  )}
+                </Button>
+              </div>
+            </form>
+
+            {/* Footer */}
+            <div className="mt-8 text-center">
+              <p className="text-dim-gray text-xs font-mono">
+                UNAUTHORIZED_ACCESS_PROHIBITED
+              </p>
+              <div className="flex justify-center mt-2">
+                <div className="w-16 h-[1px] bg-gradient-to-r from-transparent via-matrix/50 to-transparent"></div>
+              </div>
+            </div>
+          </div>
         </div>
 
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-          <div className="space-y-1">
-            <label className="block text-xs font-mono text-dim-gray">&gt; Email:</label>
-            <input
-              type="email"
-              className="w-full bg-black/50 border border-primary/30 rounded px-3 py-2 font-mono focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary"
-              style={{ color: 'white', caretColor: '#00ff00' }}
-              {...form.register('email')}
-              autoComplete="email"
-            />
-            {form.formState.errors.email && (
-              <div className="text-alert-red text-xs">
-                {form.formState.errors.email.message}
-              </div>
-            )}
-          </div>
-
-          <div className="space-y-1">
-            <label className="block text-xs font-mono text-dim-gray">&gt; Password:</label>
-            <div className="relative">
-              <input
-                type={showPassword ? "text" : "password"}
-                className="w-full bg-black/50 border border-primary/30 rounded px-3 py-2 font-mono focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary pr-10"
-                style={{ color: 'white', caretColor: '#00ff00' }}
-                {...form.register('password')}
-                autoComplete="current-password"
-              />
-              <button
-                type="button"
-                onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-dim-gray hover:text-matrix"
-              >
-                {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-              </button>
-            </div>
-            {form.formState.errors.password && (
-              <div className="text-alert-red text-xs">
-                {form.formState.errors.password.message}
-              </div>
-            )}
-          </div>
-
-          <Button
-            type="submit"
-            disabled={isLoading}
-            className="w-full glow-button"
-          >
-            {isLoading ? (
-              <span className="flex items-center justify-center">
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                AUTHENTICATING...
-              </span>
-            ) : (
-              "ACCESS ADMIN PANEL"
-            )}
-          </Button>
-        </form>
-
-        <div className="absolute -bottom-10 -right-10 w-40 h-40 bg-matrix/5 rounded-full blur-3xl"></div>
-        <div className="absolute -top-10 -left-10 w-40 h-40 bg-electric-blue/5 rounded-full blur-3xl"></div>
+        {/* Scanning line effect */}
+        <div className="absolute inset-0 pointer-events-none">
+          <div className="absolute top-0 left-0 w-full h-[2px] bg-gradient-to-r from-transparent via-matrix/60 to-transparent animate-pulse"></div>
+        </div>
       </div>
+
+      {/* Additional matrix effects */}
+      <div className="absolute top-1/4 left-10 w-1 h-32 bg-gradient-to-b from-matrix/0 via-matrix/40 to-matrix/0 animate-pulse"></div>
+      <div className="absolute bottom-1/4 right-10 w-1 h-24 bg-gradient-to-b from-matrix/0 via-matrix/40 to-matrix/0 animate-pulse"></div>
     </div>
   );
 }
