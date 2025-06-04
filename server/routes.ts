@@ -84,27 +84,6 @@ const adminRequestLog = new Map<string, number[]>();
 // Admin session storage
 const adminSessions = new Map<string, { email: string, loginTime: number }>();
 
-// Middleware to check admin session authentication
-function ensureAdminAuthenticated(req: Request, res: Response, next: NextFunction) {
-  const adminSessionId = req.session?.adminSessionId;
-  
-  if (!adminSessionId || !adminSessions.has(adminSessionId)) {
-    return res.status(401).json({ message: "Admin authentication required" });
-  }
-
-  const session = adminSessions.get(adminSessionId);
-  const sessionAge = Date.now() - session!.loginTime;
-  
-  // Check if session is older than 8 hours
-  if (sessionAge > 8 * 60 * 60 * 1000) {
-    adminSessions.delete(adminSessionId);
-    delete req.session.adminSessionId;
-    return res.status(401).json({ message: "Admin session expired" });
-  }
-
-  next();
-}
-
 // Admin credentials (in production, these should be hashed and stored securely)
 const ADMIN_CREDENTIALS = {
   email: process.env.ADMIN_EMAIL || "admin@cyberhunt.com",
