@@ -2,6 +2,7 @@ import { Switch, Route, Redirect } from "wouter";
 import { queryClient } from "./lib/queryClient";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
+import { useState, useEffect } from "react";
 import NotFound from "@/pages/not-found";
 import AuthPage from "@/pages/auth-page";
 import LandingPage from "@/pages/landing-page";
@@ -26,10 +27,15 @@ import SecurityPage from "@/pages/security-page";
 import BadgesPage from "./pages/badges-page";
 import ActivitiesPage from "@/pages/activities-page";
 import AboutPage from "@/pages/about-page";
+import AdminLoginPage from "@/pages/admin-login-page";
+import AdminDashboardPage from "@/pages/admin-dashboard-page";
+import AdminPage from "./pages/admin-page";
+import ForgotPasswordPage from "./pages/forgot-password-page";
+import WalletPage from "./pages/wallet-page";
+import HacktivityPage from "./pages/hacktivity-page";
 import { ProtectedRoute } from "./lib/protected-route";
 import { AuthProvider, useAuth } from "@/hooks/use-auth";
 import { ThemeProvider } from "@/components/theme-provider";
-import { useLocation } from 'wouter';
 
 function Router() {
   const { user } = useAuth();
@@ -94,7 +100,7 @@ function Router() {
       <ProtectedRoute path="/leaderboard" component={LeaderboardPage} />
       <Route path="/auth" component={AuthPage} />
       <Route path="/forgot-password" component={ForgotPasswordPage} />
-      <Route path="/verify-email" element={<VerifyEmailPage />} />
+      <Route path="/verify-email" component={VerifyEmailPage} />
       <Route path="/terms-of-service">
         {() => <TermsOfServicePage />}
       </Route>
@@ -127,29 +133,14 @@ function Router() {
       <Route path="/admin" component={AdminLoginPage} />
       <Route path="/admin/dashboard" component={AdminDashboardPage} />
 
-      <Route path="/*" component={NotFound} /> {/* Added catch-all route */}
+      <Route path="/*" component={NotFound} />
     </Switch>
   );
 }
 
-import AdminPage from "./pages/admin-page";
-import ForgotPasswordPage from "./pages/forgot-password-page";
-import WalletPage from "./pages/wallet-page";
-import HacktivityPage from "./pages/hacktivity-page";
-
 // Placeholder for FindProgramsPage component
 function FindProgramsPage() {
   return <h1>Find Programs Page</h1>;
-}
-
-// Placeholder for AdminLoginPage component
-function AdminLoginPage() {
-  return <h1>Admin Login Page</h1>;
-}
-
-// Placeholder for AdminDashboardPage component
-function AdminDashboardPage() {
-  return <h1>Admin Dashboard Page</h1>;
 }
 
 function App() {
