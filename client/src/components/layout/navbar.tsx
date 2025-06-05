@@ -9,6 +9,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { ThemeToggle } from '@/components/ui/theme-toggle';
 
 export default function Navbar() {
   const { user, logoutMutation } = useAuth();
@@ -85,7 +86,9 @@ export default function Navbar() {
             </div>
           </div>
 
-          <div className="flex items-center">
+          {/* Right section */}
+          <div className="flex items-center space-x-4">
+            <ThemeToggle />
             <DropdownMenu>
               <DropdownMenuTrigger className="flex items-center space-x-2 text-light-gray hover:text-matrix focus:outline-none">
                 <div className="h-8 w-8 rounded-full bg-matrix/20 flex items-center justify-center border border-matrix/30">
@@ -143,7 +146,12 @@ export default function Navbar() {
       {mobileMenuOpen && (
         <div className="sm:hidden border-t border-matrix/30">
           <div className="px-2 pt-2 pb-3 space-y-1">
-            {navLinks.map((link) => (
+          <div className="flex flex-col space-y-3 mt-6">
+              <div className="flex items-center justify-between pb-2 border-b border-primary/20">
+                <span className="text-sm text-muted-foreground">Theme</span>
+                <ThemeToggle />
+              </div>
+              {navLinks.map((link) => (
               <Link key={link.path} href={link.path}>
                 <div
                   className={`block px-3 py-2 rounded-md text-base font-mono cursor-pointer ${
