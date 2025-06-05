@@ -573,8 +573,8 @@ function suggestSeverity(description: string, type: string): string {
 
 
 
-  // Admin login endpoint
-  app.post("/api/admin/login", async (req, res) => {
+  // Register admin login route before middleware setup
+  app.post("/api/admin/login", (req, res) => {
     try {
       const { email, password } = req.body;
 
@@ -587,19 +587,17 @@ function suggestSeverity(description: string, type: string): string {
         return res.status(401).json({ message: "Invalid admin credentials" });
       }
 
-      // Create admin session
-      const adminSessionId = require('crypto').randomBytes(32).toString('hex');
-      adminSessions.set(adminSessionId, {
+      // Generate admin token
+      const adminToken = require('crypto').randomBytes(32).toString('hex');
+      adminSessions.set(adminToken, {
         email,
         loginTime: Date.now()
       });
 
-      // Store session ID in user session
-      (req.session as any).adminSessionId = adminSessionId;
-
       res.json({ 
         message: "Admin login successful",
-        sessionId: adminSessionId
+        token: adminToken,
+        success: true
       });
     } catch (error) {
       console.error('Admin login error:', error);
