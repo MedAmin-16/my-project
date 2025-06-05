@@ -213,7 +213,7 @@ export default function AdminDashboardPage() {
         </div>
 
         {/* Admin Tabs */}
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
+        <div className="space-y-6">
           <div className="grid w-full grid-cols-4 bg-terminal border border-matrix/30 p-1">
             <button
               onClick={() => setActiveTab("overview")}
@@ -262,7 +262,7 @@ export default function AdminDashboardPage() {
               <div className="absolute inset-0 bg-gradient-to-br from-matrix/5 to-transparent"></div>
               <div className="relative z-10">
                 <h3 className="text-lg font-mono font-bold text-matrix mb-6 uppercase tracking-wider">
-                  >> Recent_Activity_Log
+                  {">> Recent_Activity_Log"}
                 </h3>
                 <div className="space-y-4">
                   <div className="flex items-center justify-between py-3 border-b border-matrix/20 group hover:bg-matrix/5 transition-all duration-300 px-2">
@@ -292,7 +292,7 @@ export default function AdminDashboardPage() {
               <div className="relative z-10">
                 <div className="flex items-center justify-between mb-6">
                   <h3 className="text-lg font-mono font-bold text-matrix uppercase tracking-wider">
-                    >> User_Management_Console
+                    {">> User_Management_Console"}
                   </h3>
                   <div className="flex items-center space-x-2">
                     <input
@@ -351,13 +351,13 @@ export default function AdminDashboardPage() {
               <div className="absolute inset-0 bg-gradient-to-br from-matrix/5 to-transparent"></div>
               <div className="relative z-10">
                 <h3 className="text-lg font-mono font-bold text-matrix mb-6 uppercase tracking-wider">
-                  >> Program_Management_Console
+                  {">> Program_Management_Console"}
                 </h3>
                 <div className="text-center py-12">
                   <div className="text-dim-gray font-mono text-lg">[INTERFACE_LOADING...]</div>
                   <div className="text-dim-gray font-mono text-sm mt-2">Program management interface coming soon...</div>
                   <div className="mt-6 text-matrix font-mono text-xs">
-                    >> Initializing security protocols...
+                    {">> Initializing security protocols..."}
                   </div>
                 </div>
               </div>
@@ -369,19 +369,19 @@ export default function AdminDashboardPage() {
               <div className="absolute inset-0 bg-gradient-to-br from-matrix/5 to-transparent"></div>
               <div className="relative z-10">
                 <h3 className="text-lg font-mono font-bold text-matrix mb-6 uppercase tracking-wider">
-                  >> System_Settings_Console
+                  {">> System_Settings_Console"}
                 </h3>
                 <div className="text-center py-12">
                   <div className="text-dim-gray font-mono text-lg">[SYSTEM_CONFIG_LOADING...]</div>
                   <div className="text-dim-gray font-mono text-sm mt-2">System settings interface coming soon...</div>
                   <div className="mt-6 text-matrix font-mono text-xs">
-                    >> Accessing system configuration...
+                    {">> Accessing system configuration..."}
                   </div>
                 </div>
               </div>
             </div>
           )}
-        </Tabs>
+        </div>
       </main>
     </div>
   );
