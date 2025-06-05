@@ -21,16 +21,8 @@ import {
   Edit,
   LogOut
 } from "lucide-react";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+// Removed Tabs components - using custom implementation
+// Using custom styled components instead of UI library components
 
 export default function AdminDashboardPage() {
   const [, navigate] = useLocation();
@@ -136,28 +128,29 @@ export default function AdminDashboardPage() {
       <MatrixBackground />
       
       {/* Admin Header */}
-      <div className="bg-black/80 border-b border-matrix/30 backdrop-blur-sm">
+      <div className="bg-terminal/80 border-b border-matrix/30 backdrop-blur-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             <div className="flex items-center space-x-4">
               <Shield className="h-8 w-8 text-matrix" />
-              <h1 className="text-xl font-mono font-bold text-light-gray">
-                Admin Dashboard
+              <h1 className="text-xl font-mono font-bold text-matrix">
+                ADMIN_PANEL
               </h1>
+              <div className="text-xs text-dim-gray font-mono tracking-wider">
+                [RESTRICTED_ACCESS]
+              </div>
             </div>
             <div className="flex items-center space-x-4">
-              <Link to="/" className="text-dim-gray hover:text-matrix text-sm font-mono">
-                View Site
+              <Link to="/" className="text-dim-gray hover:text-matrix text-sm font-mono uppercase tracking-wider">
+                &lt; Return to Site
               </Link>
-              <Button
+              <button
                 onClick={handleLogout}
-                variant="outline"
-                size="sm"
-                className="border-matrix/30 text-matrix hover:bg-matrix/10"
+                className="bg-terminal border border-matrix/30 text-matrix hover:bg-matrix/10 px-4 py-2 text-sm font-mono uppercase tracking-wider transition-all duration-300 hover:shadow-[0_0_10px_rgba(14,232,109,0.3)]"
               >
-                <LogOut className="h-4 w-4 mr-2" />
+                <LogOut className="h-4 w-4 mr-2 inline" />
                 Logout
-              </Button>
+              </button>
             </div>
           </div>
         </div>
@@ -166,212 +159,228 @@ export default function AdminDashboardPage() {
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 relative z-10">
         {/* Stats Overview */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-          <Card className="terminal-card border-matrix/30">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-dim-gray text-sm font-mono">Total Users</p>
-                  <p className="text-2xl font-mono font-bold text-light-gray">
-                    {stats.totalUsers || 0}
-                  </p>
-                </div>
-                <Users className="h-8 w-8 text-matrix" />
+          <div className="bg-terminal border border-matrix/30 p-6 relative overflow-hidden group hover:shadow-[0_0_20px_rgba(14,232,109,0.2)] transition-all duration-300">
+            <div className="absolute inset-0 bg-gradient-to-br from-matrix/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+            <div className="flex items-center justify-between relative z-10">
+              <div>
+                <p className="text-dim-gray text-sm font-mono uppercase tracking-wider">[Total_Users]</p>
+                <p className="text-2xl font-mono font-bold text-matrix">
+                  {String(stats.totalUsers || 0).padStart(3, '0')}
+                </p>
               </div>
-            </CardContent>
-          </Card>
+              <Users className="h-8 w-8 text-matrix/70" />
+            </div>
+          </div>
 
-          <Card className="terminal-card border-matrix/30">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-dim-gray text-sm font-mono">Active Programs</p>
-                  <p className="text-2xl font-mono font-bold text-light-gray">
-                    {stats.activePrograms || 0}
-                  </p>
-                </div>
-                <Bug className="h-8 w-8 text-matrix" />
+          <div className="bg-terminal border border-matrix/30 p-6 relative overflow-hidden group hover:shadow-[0_0_20px_rgba(14,232,109,0.2)] transition-all duration-300">
+            <div className="absolute inset-0 bg-gradient-to-br from-matrix/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+            <div className="flex items-center justify-between relative z-10">
+              <div>
+                <p className="text-dim-gray text-sm font-mono uppercase tracking-wider">[Active_Programs]</p>
+                <p className="text-2xl font-mono font-bold text-matrix">
+                  {String(stats.activePrograms || 0).padStart(3, '0')}
+                </p>
               </div>
-            </CardContent>
-          </Card>
+              <Bug className="h-8 w-8 text-matrix/70" />
+            </div>
+          </div>
 
-          <Card className="terminal-card border-matrix/30">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-dim-gray text-sm font-mono">Total Submissions</p>
-                  <p className="text-2xl font-mono font-bold text-light-gray">
-                    {stats.totalSubmissions || 0}
-                  </p>
-                </div>
-                <Activity className="h-8 w-8 text-matrix" />
+          <div className="bg-terminal border border-matrix/30 p-6 relative overflow-hidden group hover:shadow-[0_0_20px_rgba(14,232,109,0.2)] transition-all duration-300">
+            <div className="absolute inset-0 bg-gradient-to-br from-matrix/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+            <div className="flex items-center justify-between relative z-10">
+              <div>
+                <p className="text-dim-gray text-sm font-mono uppercase tracking-wider">[Total_Submissions]</p>
+                <p className="text-2xl font-mono font-bold text-matrix">
+                  {String(stats.totalSubmissions || 0).padStart(3, '0')}
+                </p>
               </div>
-            </CardContent>
-          </Card>
+              <Activity className="h-8 w-8 text-matrix/70" />
+            </div>
+          </div>
 
-          <Card className="terminal-card border-matrix/30">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-dim-gray text-sm font-mono">Pending Reviews</p>
-                  <p className="text-2xl font-mono font-bold text-light-gray">
-                    {stats.pendingReviews || 0}
-                  </p>
-                </div>
-                <AlertTriangle className="h-8 w-8 text-matrix" />
+          <div className="bg-terminal border border-matrix/30 p-6 relative overflow-hidden group hover:shadow-[0_0_20px_rgba(14,232,109,0.2)] transition-all duration-300">
+            <div className="absolute inset-0 bg-gradient-to-br from-matrix/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+            <div className="flex items-center justify-between relative z-10">
+              <div>
+                <p className="text-dim-gray text-sm font-mono uppercase tracking-wider">[Pending_Reviews]</p>
+                <p className="text-2xl font-mono font-bold text-matrix">
+                  {String(stats.pendingReviews || 0).padStart(3, '0')}
+                </p>
               </div>
-            </CardContent>
-          </Card>
+              <AlertTriangle className="h-8 w-8 text-matrix/70" />
+            </div>
+          </div>
         </div>
 
         {/* Admin Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="grid w-full grid-cols-4 bg-black/30 border border-primary/20">
-            <TabsTrigger 
-              value="overview" 
-              className="data-[state=active]:bg-primary/20 data-[state=active]:text-matrix"
+          <div className="grid w-full grid-cols-4 bg-terminal border border-matrix/30 p-1">
+            <button
+              onClick={() => setActiveTab("overview")}
+              className={`font-mono uppercase tracking-wider py-3 px-6 transition-all duration-300 ${
+                activeTab === "overview" 
+                  ? "bg-matrix/20 text-matrix border border-matrix/50 shadow-[0_0_10px_rgba(14,232,109,0.3)]" 
+                  : "text-dim-gray hover:text-matrix hover:bg-matrix/10"
+              }`}
             >
-              Overview
-            </TabsTrigger>
-            <TabsTrigger 
-              value="users"
-              className="data-[state=active]:bg-primary/20 data-[state=active]:text-matrix"
+              [Overview]
+            </button>
+            <button
+              onClick={() => setActiveTab("users")}
+              className={`font-mono uppercase tracking-wider py-3 px-6 transition-all duration-300 ${
+                activeTab === "users" 
+                  ? "bg-matrix/20 text-matrix border border-matrix/50 shadow-[0_0_10px_rgba(14,232,109,0.3)]" 
+                  : "text-dim-gray hover:text-matrix hover:bg-matrix/10"
+              }`}
             >
-              Users
-            </TabsTrigger>
-            <TabsTrigger 
-              value="programs"
-              className="data-[state=active]:bg-primary/20 data-[state=active]:text-matrix"
+              [Users]
+            </button>
+            <button
+              onClick={() => setActiveTab("programs")}
+              className={`font-mono uppercase tracking-wider py-3 px-6 transition-all duration-300 ${
+                activeTab === "programs" 
+                  ? "bg-matrix/20 text-matrix border border-matrix/50 shadow-[0_0_10px_rgba(14,232,109,0.3)]" 
+                  : "text-dim-gray hover:text-matrix hover:bg-matrix/10"
+              }`}
             >
-              Programs
-            </TabsTrigger>
-            <TabsTrigger 
-              value="settings"
-              className="data-[state=active]:bg-primary/20 data-[state=active]:text-matrix"
+              [Programs]
+            </button>
+            <button
+              onClick={() => setActiveTab("settings")}
+              className={`font-mono uppercase tracking-wider py-3 px-6 transition-all duration-300 ${
+                activeTab === "settings" 
+                  ? "bg-matrix/20 text-matrix border border-matrix/50 shadow-[0_0_10px_rgba(14,232,109,0.3)]" 
+                  : "text-dim-gray hover:text-matrix hover:bg-matrix/10"
+              }`}
             >
-              Settings
-            </TabsTrigger>
-          </TabsList>
+              [Settings]
+            </button>
+          </div>
 
-          <TabsContent value="overview">
-            <Card className="terminal-card border-matrix/30">
-              <CardContent className="p-6">
-                <h3 className="text-lg font-mono font-bold text-light-gray mb-4">
-                  Recent Activity
+          {activeTab === "overview" && (
+            <div className="bg-terminal border border-matrix/30 p-6 relative overflow-hidden">
+              <div className="absolute inset-0 bg-gradient-to-br from-matrix/5 to-transparent"></div>
+              <div className="relative z-10">
+                <h3 className="text-lg font-mono font-bold text-matrix mb-6 uppercase tracking-wider">
+                  >> Recent_Activity_Log
                 </h3>
                 <div className="space-y-4">
-                  <div className="flex items-center justify-between py-2 border-b border-matrix/20">
-                    <span className="text-dim-gray font-mono">New user registration</span>
-                    <span className="text-matrix text-sm">2 hours ago</span>
+                  <div className="flex items-center justify-between py-3 border-b border-matrix/20 group hover:bg-matrix/5 transition-all duration-300 px-2">
+                    <span className="text-dim-gray font-mono">[INFO] New user registration</span>
+                    <span className="text-matrix text-sm font-mono">2h_ago</span>
                   </div>
-                  <div className="flex items-center justify-between py-2 border-b border-matrix/20">
-                    <span className="text-dim-gray font-mono">Bug submission approved</span>
-                    <span className="text-matrix text-sm">4 hours ago</span>
+                  <div className="flex items-center justify-between py-3 border-b border-matrix/20 group hover:bg-matrix/5 transition-all duration-300 px-2">
+                    <span className="text-dim-gray font-mono">[SUCCESS] Bug submission approved</span>
+                    <span className="text-matrix text-sm font-mono">4h_ago</span>
                   </div>
-                  <div className="flex items-center justify-between py-2 border-b border-matrix/20">
-                    <span className="text-dim-gray font-mono">New program created</span>
-                    <span className="text-matrix text-sm">1 day ago</span>
+                  <div className="flex items-center justify-between py-3 border-b border-matrix/20 group hover:bg-matrix/5 transition-all duration-300 px-2">
+                    <span className="text-dim-gray font-mono">[INFO] New program created</span>
+                    <span className="text-matrix text-sm font-mono">1d_ago</span>
+                  </div>
+                  <div className="flex items-center justify-between py-3 border-b border-matrix/20 group hover:bg-matrix/5 transition-all duration-300 px-2">
+                    <span className="text-dim-gray font-mono">[SYSTEM] Database backup completed</span>
+                    <span className="text-matrix text-sm font-mono">2d_ago</span>
                   </div>
                 </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
+              </div>
+            </div>
+          )}
 
-          <TabsContent value="users">
-            <Card className="terminal-card border-matrix/30">
-              <CardContent className="p-6">
-                <div className="flex items-center justify-between mb-4">
-                  <h3 className="text-lg font-mono font-bold text-light-gray">
-                    User Management
+          {activeTab === "users" && (
+            <div className="bg-terminal border border-matrix/30 p-6 relative overflow-hidden">
+              <div className="absolute inset-0 bg-gradient-to-br from-matrix/5 to-transparent"></div>
+              <div className="relative z-10">
+                <div className="flex items-center justify-between mb-6">
+                  <h3 className="text-lg font-mono font-bold text-matrix uppercase tracking-wider">
+                    >> User_Management_Console
                   </h3>
                   <div className="flex items-center space-x-2">
-                    <Input
-                      placeholder="Search users..."
+                    <input
+                      placeholder="[SEARCH_USERS...]"
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
-                      className="w-64 bg-black/50 border-matrix/30"
+                      className="w-64 bg-deep-black/80 border border-matrix/30 text-matrix font-mono px-4 py-2 focus:border-matrix focus:shadow-[0_0_10px_rgba(14,232,109,0.3)] outline-none"
                     />
-                    <Button variant="outline" size="icon">
+                    <button className="bg-terminal border border-matrix/30 text-matrix hover:bg-matrix/10 p-2 transition-all duration-300 hover:shadow-[0_0_10px_rgba(14,232,109,0.3)]">
                       <Search className="h-4 w-4" />
-                    </Button>
+                    </button>
                   </div>
                 </div>
                 
-                <div className="space-y-2">
+                <div className="space-y-1">
                   {usersLoading ? (
                     <div className="text-center py-8">
-                      <div className="text-dim-gray font-mono">Loading users...</div>
+                      <div className="text-dim-gray font-mono">[LOADING_USERS...]</div>
                     </div>
                   ) : users.length === 0 ? (
                     <div className="text-center py-8">
-                      <div className="text-dim-gray font-mono">No users found</div>
+                      <div className="text-dim-gray font-mono">[NO_USERS_FOUND]</div>
                     </div>
                   ) : (
                     users.map((user: any) => (
-                      <div key={user.id} className="flex items-center justify-between py-3 border-b border-matrix/20">
-                        <div className="flex items-center space-x-3">
-                          <User className="h-5 w-5 text-matrix" />
+                      <div key={user.id} className="flex items-center justify-between py-4 border-b border-matrix/20 group hover:bg-matrix/5 transition-all duration-300 px-2">
+                        <div className="flex items-center space-x-4">
+                          <User className="h-5 w-5 text-matrix/70" />
                           <div>
-                            <div className="text-light-gray font-mono">{user.username}</div>
-                            <div className="text-dim-gray text-sm">{user.email}</div>
+                            <div className="text-matrix font-mono">{user.username}</div>
+                            <div className="text-dim-gray text-sm font-mono">{user.email}</div>
                           </div>
                         </div>
-                        <div className="flex items-center space-x-2">
-                          <span className={`text-xs px-2 py-1 rounded ${
-                            user.userType === 'company' ? 'bg-blue-500/20 text-blue-400' : 'bg-matrix/20 text-matrix'
+                        <div className="flex items-center space-x-3">
+                          <span className={`text-xs px-3 py-1 font-mono uppercase tracking-wider border ${
+                            user.userType === 'company' 
+                              ? 'bg-blue-500/10 text-blue-400 border-blue-400/30' 
+                              : 'bg-matrix/10 text-matrix border-matrix/30'
                           }`}>
-                            {user.userType}
+                            [{user.userType}]
                           </span>
-                          <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                              <Button variant="ghost" size="icon">
-                                <MoreVertical className="h-4 w-4" />
-                              </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent>
-                              <DropdownMenuItem>
-                                <Edit className="h-4 w-4 mr-2" />
-                                Edit
-                              </DropdownMenuItem>
-                              <DropdownMenuItem className="text-red-400">
-                                <Trash className="h-4 w-4 mr-2" />
-                                Delete
-                              </DropdownMenuItem>
-                            </DropdownMenuContent>
-                          </DropdownMenu>
+                          <button className="text-dim-gray hover:text-matrix transition-colors duration-300">
+                            <MoreVertical className="h-4 w-4" />
+                          </button>
                         </div>
                       </div>
                     ))
                   )}
                 </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
+              </div>
+            </div>
+          )}
 
-          <TabsContent value="programs">
-            <Card className="terminal-card border-matrix/30">
-              <CardContent className="p-6">
-                <h3 className="text-lg font-mono font-bold text-light-gray mb-4">
-                  Program Management
+          {activeTab === "programs" && (
+            <div className="bg-terminal border border-matrix/30 p-6 relative overflow-hidden">
+              <div className="absolute inset-0 bg-gradient-to-br from-matrix/5 to-transparent"></div>
+              <div className="relative z-10">
+                <h3 className="text-lg font-mono font-bold text-matrix mb-6 uppercase tracking-wider">
+                  >> Program_Management_Console
                 </h3>
-                <div className="text-center py-8">
-                  <div className="text-dim-gray font-mono">Program management interface coming soon...</div>
+                <div className="text-center py-12">
+                  <div className="text-dim-gray font-mono text-lg">[INTERFACE_LOADING...]</div>
+                  <div className="text-dim-gray font-mono text-sm mt-2">Program management interface coming soon...</div>
+                  <div className="mt-6 text-matrix font-mono text-xs">
+                    >> Initializing security protocols...
+                  </div>
                 </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
+              </div>
+            </div>
+          )}
 
-          <TabsContent value="settings">
-            <Card className="terminal-card border-matrix/30">
-              <CardContent className="p-6">
-                <h3 className="text-lg font-mono font-bold text-light-gray mb-4">
-                  System Settings
+          {activeTab === "settings" && (
+            <div className="bg-terminal border border-matrix/30 p-6 relative overflow-hidden">
+              <div className="absolute inset-0 bg-gradient-to-br from-matrix/5 to-transparent"></div>
+              <div className="relative z-10">
+                <h3 className="text-lg font-mono font-bold text-matrix mb-6 uppercase tracking-wider">
+                  >> System_Settings_Console
                 </h3>
-                <div className="text-center py-8">
-                  <div className="text-dim-gray font-mono">System settings interface coming soon...</div>
+                <div className="text-center py-12">
+                  <div className="text-dim-gray font-mono text-lg">[SYSTEM_CONFIG_LOADING...]</div>
+                  <div className="text-dim-gray font-mono text-sm mt-2">System settings interface coming soon...</div>
+                  <div className="mt-6 text-matrix font-mono text-xs">
+                    >> Accessing system configuration...
+                  </div>
                 </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
+              </div>
+            </div>
+          )}
         </Tabs>
       </main>
     </div>
