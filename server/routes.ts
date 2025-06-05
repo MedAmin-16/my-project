@@ -113,6 +113,48 @@ function ensureAdminAuthenticated(req: Request, res: Response, next: NextFunctio
 }
 
 export async function registerRoutes(app: Express): Promise<Server> {
+  // Register admin login route BEFORE auth middleware setup to avoid session issues
+  app.post("/api/admin/login", (req, res) => {
+    console.log('Admin login route hit with body:', req.body);
+    try {
+      const { email, password } = req.body;
+      console.log('Received credentials:', { email, password: password ? '***' : 'missing' });
+
+      if (!email || !password) {
+        console.log('Missing email or password');
+        return res.status(400).json({ message: "Email and password are required" });
+      }
+
+      console.log('Expected credentials:', { 
+        email: ADMIN_CREDENTIALS.email, 
+        password: ADMIN_CREDENTIALS.password ? '***' : 'missing' 
+      });
+
+      // Validate credentials
+      if (email !== ADMIN_CREDENTIALS.email || password !== ADMIN_CREDENTIALS.password) {
+        console.log('Invalid credentials provided');
+        return res.status(401).json({ message: "Invalid admin credentials" });
+      }
+
+      // Generate admin token
+      const adminToken = require('crypto').randomBytes(32).toString('hex');
+      adminSessions.set(adminToken, {
+        email,
+        loginTime: Date.now()
+      });
+
+      console.log('Admin login successful');
+      res.json({ 
+        message: "Admin login successful",
+        token: adminToken,
+        success: true
+      });
+    } catch (error) {
+      console.error('Admin login error:', error);
+      res.status(500).json({ message: "Login failed" });
+    }
+  });
+
   // Setup authentication routes (/api/login, /api/register, etc.)
   setupAuth(app);
 
@@ -573,37 +615,7 @@ function suggestSeverity(description: string, type: string): string {
 
 
 
-  // Register admin login route before middleware setup
-  app.post("/api/admin/login", (req, res) => {
-    try {
-      const { email, password } = req.body;
 
-      if (!email || !password) {
-        return res.status(400).json({ message: "Email and password are required" });
-      }
-
-      // Validate credentials
-      if (email !== ADMIN_CREDENTIALS.email || password !== ADMIN_CREDENTIALS.password) {
-        return res.status(401).json({ message: "Invalid admin credentials" });
-      }
-
-      // Generate admin token
-      const adminToken = require('crypto').randomBytes(32).toString('hex');
-      adminSessions.set(adminToken, {
-        email,
-        loginTime: Date.now()
-      });
-
-      res.json({ 
-        message: "Admin login successful",
-        token: adminToken,
-        success: true
-      });
-    } catch (error) {
-      console.error('Admin login error:', error);
-      res.status(500).json({ message: "Login failed" });
-    }
-  });
 
   // Admin logout endpoint
   app.post("/api/admin/logout", (req, res) => {
