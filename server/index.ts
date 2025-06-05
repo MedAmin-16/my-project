@@ -5,6 +5,7 @@ import helmet from 'helmet';
 import rateLimit from 'express-rate-limit';
 import cookieParser from 'cookie-parser';
 import session from 'express-session';
+import { randomBytes } from 'crypto';
 
 const app = express();
 
@@ -89,7 +90,7 @@ app.post("/api/admin/login", (req, res) => {
       return res.status(401).json({ message: "Invalid admin credentials" });
     }
 
-    const adminToken = require('crypto').randomBytes(32).toString('hex');
+    const adminToken = randomBytes(32).toString('hex');
     adminSessions.set(adminToken, {
       email,
       loginTime: Date.now()
