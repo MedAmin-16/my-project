@@ -122,6 +122,45 @@ function ensureAdminAuthenticated(req: Request, res: Response, next: NextFunctio
 }
 
 export async function registerRoutes(app: Express): Promise<Server> {
+  // Admin login route - the official admin login implementation
+  app.post("/api/admin/login", (req, res) => {
+    console.log('Admin login attempt:', req.body);
+    try {
+      const { email, password } = req.body;
+
+      if (!email || !password) {
+        console.log('Missing email or password');
+        return res.status(400).json({ message: "Email and password are required" });
+      }
+
+      // Validate credentials
+      if (email !== ADMIN_CREDENTIALS.email || password !== ADMIN_CREDENTIALS.password) {
+        console.log('Invalid credentials provided');
+        return res.status(401).json({ message: "Invalid admin credentials" });
+      }
+
+      // Get admin sessions from the shared storage
+      const { getAdminSessions } = require('./index');
+      adminSessions = getAdminSessions();
+
+      // Generate admin token
+      const adminToken = require('crypto').randomBytes(32).toString('hex');
+      adminSessions.set(adminToken, {
+        email,
+        loginTime: Date.now()
+      });
+
+      console.log('Admin login successful, token created');
+      res.json({ 
+        message: "Admin login successful",
+        token: adminToken,
+        success: true
+      });
+    } catch (error) {
+      console.error('Admin login error:', error);
+      res.status(500).json({ message: "Login failed" });
+    }
+  });
 
   // Setup authentication routes (/api/login, /api/register, etc.)
   setupAuth(app);
@@ -588,11 +627,16 @@ function suggestSeverity(description: string, type: string): string {
   // Admin logout endpoint
   app.post("/api/admin/logout", (req, res) => {
     try {
-      const adminSessionId = (req.session as any)?.adminSessionId;
-      if (adminSessionId) {
-        adminSessions.delete(adminSessionId);
-        delete (req.session as any).adminSessionId;
+      const authHeader = req.headers.authorization;
+      const token = authHeader?.split(' ')[1];
+      
+      if (token) {
+        // Get admin sessions from the shared storage
+        const { getAdminSessions } = require('./index');
+        const sessions = getAdminSessions();
+        sessions.delete(token);
       }
+      
       res.json({ message: "Admin logout successful" });
     } catch (error) {
       console.error('Admin logout error:', error);

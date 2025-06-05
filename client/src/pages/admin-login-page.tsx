@@ -52,6 +52,11 @@ export default function AdminLoginPage() {
         throw new Error(result.message || "Login failed");
       }
 
+      // Store the admin token in localStorage for API calls
+      if (result.token) {
+        localStorage.setItem('adminToken', result.token);
+      }
+
       toast({
         title: "Access Granted",
         description: "Welcome to the cyber command center",

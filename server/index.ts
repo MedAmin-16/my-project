@@ -69,49 +69,13 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 
-// Admin login route BEFORE session middleware to avoid conflicts
-const adminCredentials = {
-  email: process.env.ADMIN_EMAIL || "admin@cyberhunt.com",
-  password: process.env.ADMIN_PASSWORD || "AdminSecure123!"
-};
-
+// Admin sessions storage that will be shared with routes.ts
 const adminSessions = new Map<string, { email: string, loginTime: number }>();
 
-// Export function to get admin sessions
+// Export function to get admin sessions for routes.ts
 export function getAdminSessions() {
   return adminSessions;
 }
-
-app.post("/api/admin/login", (req, res) => {
-  console.log('Admin login attempt:', req.body);
-  try {
-    const { email, password } = req.body;
-
-    if (!email || !password) {
-      return res.status(400).json({ message: "Email and password are required" });
-    }
-
-    if (email !== adminCredentials.email || password !== adminCredentials.password) {
-      return res.status(401).json({ message: "Invalid admin credentials" });
-    }
-
-    const adminToken = randomBytes(32).toString('hex');
-    adminSessions.set(adminToken, {
-      email,
-      loginTime: Date.now()
-    });
-
-    console.log('Admin login successful');
-    res.json({ 
-      message: "Admin login successful",
-      token: adminToken,
-      success: true
-    });
-  } catch (error) {
-    console.error('Admin login error:', error);
-    res.status(500).json({ message: "Login failed" });
-  }
-});
 
 // Add session middleware first
 app.use(session({

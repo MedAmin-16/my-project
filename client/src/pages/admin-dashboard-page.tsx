@@ -57,14 +57,28 @@ export default function AdminDashboardPage() {
     checkAdminAuth();
   }, [navigate]);
 
+  // Get admin token from localStorage
+  const getAuthHeaders = () => {
+    const token = localStorage.getItem('adminToken');
+    return token ? { 'Authorization': `Bearer ${token}` } : {};
+  };
+
   // Fetch admin stats
   const { data: stats = {}, isLoading: statsLoading } = useQuery({
     queryKey: ["/api/admin/stats"],
     queryFn: async () => {
       const response = await fetch("/api/admin/stats", {
+        headers: getAuthHeaders(),
         credentials: 'include'
       });
-      if (!response.ok) throw new Error('Failed to fetch stats');
+      if (!response.ok) {
+        if (response.status === 401) {
+          localStorage.removeItem('adminToken');
+          navigate("/admin");
+          throw new Error('Admin session expired');
+        }
+        throw new Error('Failed to fetch stats');
+      }
       return response.json();
     }
   });
@@ -74,9 +88,17 @@ export default function AdminDashboardPage() {
     queryKey: ["/api/admin/users"],
     queryFn: async () => {
       const response = await fetch("/api/admin/users", {
+        headers: getAuthHeaders(),
         credentials: 'include'
       });
-      if (!response.ok) throw new Error('Failed to fetch users');
+      if (!response.ok) {
+        if (response.status === 401) {
+          localStorage.removeItem('adminToken');
+          navigate("/admin");
+          throw new Error('Admin session expired');
+        }
+        throw new Error('Failed to fetch users');
+      }
       return response.json();
     }
   });
@@ -85,11 +107,15 @@ export default function AdminDashboardPage() {
     try {
       await fetch("/api/admin/logout", {
         method: "POST",
+        headers: getAuthHeaders(),
         credentials: 'include'
       });
+      localStorage.removeItem('adminToken');
       navigate("/admin");
     } catch (error) {
       console.error("Logout failed:", error);
+      localStorage.removeItem('adminToken');
+      navigate("/admin");
     }
   };
 
