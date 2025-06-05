@@ -3,7 +3,9 @@ import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { setupAuth } from "./auth";
 import { z } from "zod";
+import { randomBytes } from "crypto";
 import { insertSubmissionSchema, insertProgramSchema } from "@shared/schema";
+import { getAdminSessions } from "./index";
 import { sendWelcomeEmail, sendAchievementEmail, sendSubmissionStatusEmail } from "./email-service";
 import multer from "multer";
 import path from "path";
@@ -100,7 +102,6 @@ function ensureAdminAuthenticated(req: Request, res: Response, next: NextFunctio
   }
 
   // Get admin sessions from the module that exports it
-  const { getAdminSessions } = require('./index');
   adminSessions = getAdminSessions();
   
   if (!adminSessions.has(token)) {
@@ -140,11 +141,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       // Get admin sessions from the shared storage
-      const { getAdminSessions } = require('./index');
       adminSessions = getAdminSessions();
 
       // Generate admin token
-      const adminToken = require('crypto').randomBytes(32).toString('hex');
+      const adminToken = randomBytes(32).toString('hex');
       adminSessions.set(adminToken, {
         email,
         loginTime: Date.now()
@@ -632,7 +632,6 @@ function suggestSeverity(description: string, type: string): string {
       
       if (token) {
         // Get admin sessions from the shared storage
-        const { getAdminSessions } = require('./index');
         const sessions = getAdminSessions();
         sessions.delete(token);
       }
