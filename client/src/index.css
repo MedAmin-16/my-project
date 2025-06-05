@@ -6,7 +6,6 @@
 
 @layer base {
   :root {
-    /* Dark mode (default) */
     --background: 0 0% 7%;
     --foreground: 0 0% 98%;
     
@@ -44,67 +43,19 @@
     --chart-5: 275 100% 76%;
   }
 
-  .light {
-    /* Light mode */
-    --background: 0 0% 100%;
-    --foreground: 0 0% 3.9%;
-    
-    --card: 0 0% 100%;
-    --card-foreground: 0 0% 3.9%;
-    
-    --popover: 0 0% 100%;
-    --popover-foreground: 0 0% 3.9%;
-    
-    --primary: 120 100% 50%;
-    --primary-foreground: 0 0% 98%;
-    
-    --secondary: 120 5% 96%;
-    --secondary-foreground: 0 0% 9%;
-    
-    --muted: 120 5% 96%;
-    --muted-foreground: 0 0% 45%;
-    
-    --accent: 210 100% 55%;
-    --accent-foreground: 0 0% 9%;
-    
-    --destructive: 0 84% 60%;
-    --destructive-foreground: 0 0% 98%;
-    
-    --border: 120 30% 82%;
-    --input: 120 30% 82%;
-    --ring: 120 100% 50%;
-
-    --chart-1: 120 100% 50%;
-    --chart-2: 210 100% 55%;
-    --chart-3: 0 84% 60%;
-    --chart-4: 45 100% 56%;
-    --chart-5: 275 100% 76%;
-  }
-
   * {
     @apply border-border;
   }
 
   body {
     @apply font-sans antialiased bg-background text-foreground;
-    position: relative;
-    overflow-x: hidden;
-  }
-
-  body:not(.light) {
     background-image: 
       radial-gradient(rgba(0, 255, 0, 0.05) 1px, transparent 1px),
       radial-gradient(rgba(0, 255, 0, 0.05) 1px, transparent 1px);
     background-size: 50px 50px;
     background-position: 0 0, 25px 25px;
-  }
-
-  .light body {
-    background-image: 
-      radial-gradient(rgba(0, 255, 0, 0.02) 1px, transparent 1px),
-      radial-gradient(rgba(0, 255, 0, 0.02) 1px, transparent 1px);
-    background-size: 50px 50px;
-    background-position: 0 0, 25px 25px;
+    position: relative;
+    overflow-x: hidden;
   }
 
   /* Terminal/cyberpunk specific styles */
@@ -126,7 +77,8 @@
   }
 
   .terminal-input {
-    @apply bg-background/50 border border-primary/30 rounded px-3 py-2 font-mono focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary text-foreground;
+    @apply bg-black/50 border border-primary/30 rounded px-3 py-2 font-mono focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary;
+    color: white;
     caret-color: #00ff00;
     text-shadow: 0 0 5px rgba(0, 255, 0, 0.3);
   }
@@ -183,18 +135,6 @@
   
   .bg-terminal {
     background-color: #0c0c0c;
-  }
-
-  .light .bg-deep-black {
-    background-color: #f8f9fa;
-  }
-  
-  .light .bg-surface {
-    background-color: #ffffff;
-  }
-  
-  .light .bg-terminal {
-    background-color: #f5f5f5;
   }
   
   .text-matrix {
