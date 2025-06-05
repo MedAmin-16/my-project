@@ -77,6 +77,11 @@ const adminCredentials = {
 
 const adminSessions = new Map<string, { email: string, loginTime: number }>();
 
+// Export function to get admin sessions
+export function getAdminSessions() {
+  return adminSessions;
+}
+
 app.post("/api/admin/login", (req, res) => {
   console.log('Admin login attempt:', req.body);
   try {

@@ -81,31 +81,40 @@ function ensureAdmin(req: Request, res: Response, next: NextFunction) {
 // Track admin endpoint requests for rate limiting
 const adminRequestLog = new Map<string, number[]>();
 
-// Admin session storage
-const adminSessions = new Map<string, { email: string, loginTime: number }>();
-
 // Admin credentials (in production, these should be hashed and stored securely)
 const ADMIN_CREDENTIALS = {
   email: process.env.ADMIN_EMAIL || "admin@cyberhunt.com",
   password: process.env.ADMIN_PASSWORD || "AdminSecure123!"
 };
 
+// Import admin sessions from index.ts to share the same storage
+let adminSessions: Map<string, { email: string, loginTime: number }>;
+
 // Middleware to check admin authentication
 function ensureAdminAuthenticated(req: Request, res: Response, next: NextFunction) {
-  const adminSessionId = (req.session as any)?.adminSessionId;
+  const authHeader = req.headers.authorization;
+  const token = authHeader?.split(' ')[1]; // Extract Bearer token
   
-  if (!adminSessionId || !adminSessions.has(adminSessionId)) {
+  if (!token) {
     return res.status(401).json({ message: "Admin authentication required" });
   }
 
-  const adminSession = adminSessions.get(adminSessionId);
+  // Get admin sessions from the module that exports it
+  const { getAdminSessions } = require('./index');
+  adminSessions = getAdminSessions();
+  
+  if (!adminSessions.has(token)) {
+    return res.status(401).json({ message: "Invalid admin session" });
+  }
+
+  const adminSession = adminSessions.get(token);
   if (!adminSession) {
     return res.status(401).json({ message: "Invalid admin session" });
   }
 
   // Check if session is older than 2 hours
   if (Date.now() - adminSession.loginTime > 2 * 60 * 60 * 1000) {
-    adminSessions.delete(adminSessionId);
+    adminSessions.delete(token);
     return res.status(401).json({ message: "Admin session expired" });
   }
 
@@ -113,47 +122,6 @@ function ensureAdminAuthenticated(req: Request, res: Response, next: NextFunctio
 }
 
 export async function registerRoutes(app: Express): Promise<Server> {
-  // Register admin login route BEFORE auth middleware setup to avoid session issues
-  app.post("/api/admin/login", (req, res) => {
-    console.log('Admin login route hit with body:', req.body);
-    try {
-      const { email, password } = req.body;
-      console.log('Received credentials:', { email, password: password ? '***' : 'missing' });
-
-      if (!email || !password) {
-        console.log('Missing email or password');
-        return res.status(400).json({ message: "Email and password are required" });
-      }
-
-      console.log('Expected credentials:', { 
-        email: ADMIN_CREDENTIALS.email, 
-        password: ADMIN_CREDENTIALS.password ? '***' : 'missing' 
-      });
-
-      // Validate credentials
-      if (email !== ADMIN_CREDENTIALS.email || password !== ADMIN_CREDENTIALS.password) {
-        console.log('Invalid credentials provided');
-        return res.status(401).json({ message: "Invalid admin credentials" });
-      }
-
-      // Generate admin token
-      const adminToken = require('crypto').randomBytes(32).toString('hex');
-      adminSessions.set(adminToken, {
-        email,
-        loginTime: Date.now()
-      });
-
-      console.log('Admin login successful');
-      res.json({ 
-        message: "Admin login successful",
-        token: adminToken,
-        success: true
-      });
-    } catch (error) {
-      console.error('Admin login error:', error);
-      res.status(500).json({ message: "Login failed" });
-    }
-  });
 
   // Setup authentication routes (/api/login, /api/register, etc.)
   setupAuth(app);
