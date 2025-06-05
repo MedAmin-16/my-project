@@ -32,7 +32,7 @@ import AdminDashboardPage from "@/pages/admin-dashboard-page";
 import AdminPage from "./pages/admin-page";
 import ForgotPasswordPage from "./pages/forgot-password-page";
 import WalletPage from "./pages/wallet-page";
-import HacktivityPage from "./pages/hacktivity-page";
+import HacktivityPage from "@/pages/hacktivity-page";
 import { ProtectedRoute } from "./lib/protected-route";
 import { AuthProvider, useAuth } from "@/hooks/use-auth";
 import { ThemeProvider } from "@/components/theme-provider";
@@ -145,7 +145,7 @@ function FindProgramsPage() {
 
 function App() {
   return (
-    <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
+    <ThemeProvider defaultTheme="dark" storageKey="cyberhunt-theme">
       <QueryClientProvider client={queryClient}>
         <AuthProvider>
           <Router />

@@ -1,4 +1,6 @@
-
+The code is modified to update the admin dashboard to use theme classes properly and update grid cards to use theme classes.
+```
+```replit_final_file
 import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Link, useLocation } from "wouter";
@@ -124,11 +126,11 @@ export default function AdminDashboardPage() {
   };
 
   return (
-    <div className="min-h-screen bg-deep-black">
+    <div className="min-h-screen bg-background text-foreground">
       <MatrixBackground />
-      
+
       {/* Admin Header */}
-      <div className="bg-terminal/80 border-b border-matrix/30 backdrop-blur-sm">
+      <div className="bg-card border-b border-border backdrop-blur-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             <div className="flex items-center space-x-4">
@@ -306,7 +308,7 @@ export default function AdminDashboardPage() {
                     </button>
                   </div>
                 </div>
-                
+
                 <div className="space-y-1">
                   {usersLoading ? (
                     <div className="text-center py-8">
