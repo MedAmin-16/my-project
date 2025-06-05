@@ -1,6 +1,4 @@
-The code is modified to update the admin dashboard to use theme classes properly and update grid cards to use theme classes.
-```
-```replit_final_file
+
 import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Link, useLocation } from "wouter";
@@ -23,8 +21,6 @@ import {
   Edit,
   LogOut
 } from "lucide-react";
-// Removed Tabs components - using custom implementation
-// Using custom styled components instead of UI library components
 
 export default function AdminDashboardPage() {
   const [, navigate] = useLocation();
