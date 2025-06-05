@@ -3,7 +3,6 @@ import { ArrowRight, Shield, Bug, Trophy, Lock } from "lucide-react";
 import MatrixBackground from "@/components/matrix-background";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/use-auth";
-import { ThemeToggle } from '@/components/ui/theme-toggle';
 
 export default function LandingPage() {
   const { user } = useAuth();
@@ -29,7 +28,6 @@ export default function LandingPage() {
               <a href="#programs" className="text-dim-gray hover:text-matrix font-mono text-sm">Programs</a>
             </nav>
             <div className="flex items-center space-x-4">
-              <ThemeToggle />
               <Link href="/auth">
                 <Button variant="outline" className="border-matrix/50 text-matrix hover:bg-matrix/10 font-mono text-sm">
                   Login
