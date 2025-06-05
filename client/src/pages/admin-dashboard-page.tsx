@@ -41,15 +41,27 @@ export default function AdminDashboardPage() {
   useEffect(() => {
     const checkAdminAuth = async () => {
       try {
+        const token = localStorage.getItem('adminToken');
+        if (!token) {
+          console.log("No admin token found, redirecting to login");
+          navigate("/admin");
+          return;
+        }
+
         const response = await fetch("/api/admin/verify", {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          },
           credentials: 'include'
         });
         if (!response.ok) {
           console.log("Admin verification failed, redirecting to login");
+          localStorage.removeItem('adminToken');
           navigate("/admin");
         }
       } catch (error) {
         console.error("Admin verification error:", error);
+        localStorage.removeItem('adminToken');
         navigate("/admin");
       }
     };
