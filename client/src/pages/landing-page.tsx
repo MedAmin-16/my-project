@@ -2,6 +2,7 @@ import { Link, Redirect } from "wouter";
 import { ArrowRight, Shield, Bug, Trophy, Lock } from "lucide-react";
 import MatrixBackground from "@/components/matrix-background";
 import { Button } from "@/components/ui/button";
+import { ThemeToggle } from "@/components/theme-toggle";
 import { useAuth } from "@/hooks/use-auth";
 
 export default function LandingPage() {
@@ -28,6 +29,7 @@ export default function LandingPage() {
               <a href="#programs" className="text-dim-gray hover:text-matrix font-mono text-sm">Programs</a>
             </nav>
             <div className="flex items-center space-x-4">
+              <ThemeToggle />
               <Link href="/auth">
                 <Button variant="outline" className="border-matrix/50 text-matrix hover:bg-matrix/10 font-mono text-sm">
                   Login

@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useAuth } from "@/hooks/use-auth";
 import { Link, useLocation } from "wouter";
 import { Menu, ChevronDown } from "lucide-react";
+import { ThemeToggle } from "@/components/theme-toggle";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -85,7 +86,8 @@ export default function Navbar() {
             </div>
           </div>
 
-          <div className="flex items-center">
+          <div className="flex items-center space-x-4">
+            <ThemeToggle />
             <DropdownMenu>
               <DropdownMenuTrigger className="flex items-center space-x-2 text-light-gray hover:text-matrix focus:outline-none">
                 <div className="h-8 w-8 rounded-full bg-matrix/20 flex items-center justify-center border border-matrix/30">

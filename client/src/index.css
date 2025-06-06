@@ -6,6 +6,7 @@
 
 @layer base {
   :root {
+    /* Dark theme (default) */
     --background: 0 0% 7%;
     --foreground: 0 0% 98%;
     
@@ -43,12 +44,49 @@
     --chart-5: 275 100% 76%;
   }
 
+  .light {
+    /* Light theme */
+    --background: 0 0% 100%;
+    --foreground: 0 0% 3.9%;
+    
+    --card: 0 0% 100%;
+    --card-foreground: 0 0% 3.9%;
+    
+    --popover: 0 0% 100%;
+    --popover-foreground: 0 0% 3.9%;
+    
+    --primary: 120 100% 50%;
+    --primary-foreground: 0 0% 100%;
+    
+    --secondary: 120 10% 95%;
+    --secondary-foreground: 0 0% 9%;
+    
+    --muted: 120 10% 95%;
+    --muted-foreground: 0 0% 45%;
+    
+    --accent: 210 100% 55%;
+    --accent-foreground: 0 0% 100%;
+    
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 98%;
+    
+    --border: 120 100% 30% / 0.2;
+    --input: 120 100% 30% / 0.2;
+    --ring: 120 100% 50%;
+
+    --chart-1: 120 100% 50%;
+    --chart-2: 210 100% 55%;
+    --chart-3: 0 84% 60%;
+    --chart-4: 45 100% 56%;
+    --chart-5: 275 100% 76%;
+  }
+
   * {
     @apply border-border;
   }
 
   body {
-    @apply font-sans antialiased bg-background text-foreground;
+    @apply font-sans antialiased bg-background text-foreground transition-colors duration-300;
     background-image: 
       radial-gradient(rgba(0, 255, 0, 0.05) 1px, transparent 1px),
       radial-gradient(rgba(0, 255, 0, 0.05) 1px, transparent 1px);
@@ -56,6 +94,12 @@
     background-position: 0 0, 25px 25px;
     position: relative;
     overflow-x: hidden;
+  }
+
+  .light body {
+    background-image: 
+      radial-gradient(rgba(0, 255, 0, 0.1) 1px, transparent 1px),
+      radial-gradient(rgba(0, 255, 0, 0.1) 1px, transparent 1px);
   }
 
   /* Terminal/cyberpunk specific styles */
@@ -163,6 +207,27 @@
   
   .text-warning-yellow {
     color: #ffc107;
+  }
+
+  /* Light mode overrides */
+  .light .bg-deep-black {
+    background-color: #ffffff;
+  }
+  
+  .light .bg-surface {
+    background-color: #f8f9fa;
+  }
+  
+  .light .bg-terminal {
+    background-color: #f5f5f5;
+  }
+  
+  .light .text-light-gray {
+    color: #333333;
+  }
+  
+  .light .text-dim-gray {
+    color: #666666;
   }
   
   .animate-matrix-fall {
