@@ -27,6 +27,8 @@ import SecurityPage from "@/pages/security-page";
 import BadgesPage from "./pages/badges-page";
 import ActivitiesPage from "@/pages/activities-page";
 import AboutPage from "@/pages/about-page";
+import AdminCompanyWalletsPage from "@/pages/admin-company-wallets-page";
+import CompanyWalletPage from "@/pages/company-wallet-page";
 import AdminLoginPage from "@/pages/admin-login-page";
 import AdminDashboardPage from "@/pages/admin-dashboard-page";
 import AdminPage from "./pages/admin-page";
@@ -101,6 +103,8 @@ function Router() {
       <ProtectedRoute path="/badges" component={BadgesPage} />
       <ProtectedRoute path="/activities" component={ActivitiesPage} />
       <ProtectedRoute path="/wallet" component={WalletComponent} />
+      <ProtectedRoute path="/company/wallet" component={CompanyWalletPage} />
+      <ProtectedRoute path="/admin/company-wallets" component={AdminCompanyWalletsPage} />
       <Route path="/auth" component={AuthPage} />
       <Route path="/forgot-password" component={ForgotPasswordPage} />
       <Route path="/verify-email" component={VerifyEmailPage} />

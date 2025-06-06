@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Link, useLocation } from "wouter";
@@ -126,7 +125,7 @@ export default function AdminDashboardPage() {
   return (
     <div className="min-h-screen bg-deep-black">
       <MatrixBackground />
-      
+
       {/* Admin Header */}
       <div className="bg-terminal/80 border-b border-matrix/30 backdrop-blur-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -158,7 +157,31 @@ export default function AdminDashboardPage() {
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 relative z-10">
         {/* Stats Overview */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+        
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                <div 
+                  className="bg-dark-bg/50 border border-matrix/20 rounded p-6 hover:bg-matrix/5 transition-all duration-300 cursor-pointer group"
+                  onClick={() => window.location.href = '/admin/company-wallets'}
+                >
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="text-matrix text-2xl">💰</div>
+                    <div className="text-right">
+                      <div className="text-2xl font-bold text-matrix">Wallets</div>
+                      <div className="text-xs text-dim-gray">Company Funds</div>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="bg-dark-bg/50 border border-matrix/20 rounded p-6 hover:bg-matrix/5 transition-all duration-300 cursor-pointer group">
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="text-matrix text-2xl">👥</div>
+                    <div className="text-right">
+                      <div className="text-2xl font-bold text-matrix">{stats.totalUsers}</div>
+                      <div className="text-xs text-dim-gray">Total Users</div>
+                    </div>
+                  </div>
+                </div>
+
           <div className="bg-terminal border border-matrix/30 p-6 relative overflow-hidden group hover:shadow-[0_0_20px_rgba(14,232,109,0.2)] transition-all duration-300">
             <div className="absolute inset-0 bg-gradient-to-br from-matrix/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
             <div className="flex items-center justify-between relative z-10">
@@ -306,7 +329,7 @@ export default function AdminDashboardPage() {
                     </button>
                   </div>
                 </div>
-                
+
                 <div className="space-y-1">
                   {usersLoading ? (
                     <div className="text-center py-8">

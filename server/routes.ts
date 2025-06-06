@@ -595,6 +595,34 @@ function suggestSeverity(description: string, type: string): string {
     }
   });
 
+  // Company wallet endpoints
+  app.get("/api/company/wallet", ensureCompanyUser, async (req, res) => {
+    try {
+      const companyId = req.user!.id;
+      let wallet = await storage.getCompanyWallet(companyId);
+      
+      if (!wallet) {
+        wallet = await storage.createCompanyWallet(companyId);
+      }
+      
+      res.json(wallet);
+    } catch (error) {
+      console.error('Error fetching company wallet:', error);
+      res.status(500).json({ message: "Failed to fetch wallet" });
+    }
+  });
+
+  app.get("/api/company/transactions", ensureCompanyUser, async (req, res) => {
+    try {
+      const companyId = req.user!.id;
+      const transactions = await storage.getCompanyTransactions(companyId);
+      res.json(transactions);
+    } catch (error) {
+      console.error('Error fetching company transactions:', error);
+      res.status(500).json({ message: "Failed to fetch transactions" });
+    }
+  });
+
   app.get("/api/user", ensureAuthenticated, async (req, res) => {
     res.json(req.user);
   });
@@ -682,6 +710,53 @@ function suggestSeverity(description: string, type: string): string {
     } catch (error) {
       console.error('Error fetching admin users:', error);
       res.json([]);
+    }
+  });
+
+  // Admin company wallet endpoints
+  app.get("/api/admin/company-wallets", ensureAdminAuthenticated, async (req, res) => {
+    try {
+      const companyWallets = await storage.getAllCompanyWallets();
+      res.json(companyWallets);
+    } catch (error) {
+      console.error('Error fetching company wallets:', error);
+      res.status(500).json({ message: "Failed to fetch company wallets" });
+    }
+  });
+
+  app.get("/api/admin/companies", ensureAdminAuthenticated, async (req, res) => {
+    try {
+      const companies = await storage.getAllCompanies();
+      res.json(companies);
+    } catch (error) {
+      console.error('Error fetching companies:', error);
+      res.status(500).json({ message: "Failed to fetch companies" });
+    }
+  });
+
+  app.post("/api/admin/add-payment", ensureAdminAuthenticated, async (req, res) => {
+    try {
+      const { companyId, amount, note } = req.body;
+
+      if (!companyId || !amount || amount <= 0) {
+        return res.status(400).json({ message: "Company ID and positive amount are required" });
+      }
+
+      // Update company wallet balance
+      await storage.updateCompanyWalletBalance(companyId, amount);
+
+      // Create transaction record
+      await storage.createCompanyTransaction({
+        companyId,
+        amount,
+        type: 'manual',
+        note: note || 'Manual payment added by admin'
+      });
+
+      res.json({ message: "Payment added successfully" });
+    } catch (error) {
+      console.error('Error adding payment:', error);
+      res.status(500).json({ message: "Failed to add payment" });
     }
   });
 

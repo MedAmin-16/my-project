@@ -113,19 +113,19 @@ export default function CompanyDashboardPage() {
   const handleLogout = async () => {
     try {
       await logoutMutation.mutateAsync();
-      
+
       // Clear all cookies
       document.cookie.split(';').forEach(c => {
         document.cookie = c.trim().split('=')[0] + '=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/';
       });
-      
+
       // Clear stored data
       localStorage.clear();
       sessionStorage.clear();
-      
+
       // Clear any cached queries
       queryClient.clear();
-      
+
       // Redirect to auth page
       window.location.href = '/auth';
     } catch (error) {
@@ -530,7 +530,8 @@ export default function CompanyDashboardPage() {
                             <span className={`inline-flex text-xs px-2 py-0.5 rounded-full ${
                               submission.status === "approved" ? "bg-green-900/20 text-green-500" :
                               submission.status === "rejected" ? "bg-red-900/20 text-red-500" :
-                              "bg-yellow-900/20 text-yellow-500"
+                              submission.status === "yellow" ? "bg-yellow-900/20 text-yellow-500" :
+                              "bg-blue-900/20 text-blue-500"
                             }`}>
                               {submission.status === "approved" ? "Approved" : 
                                submission.status === "rejected" ? "Rejected" : "Pending"}
