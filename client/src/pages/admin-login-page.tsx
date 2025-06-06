@@ -75,13 +75,13 @@ export default function AdminLoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-black flex items-center justify-center p-4 relative overflow-hidden">
+    <div className="min-h-screen bg-deep-black flex items-center justify-center p-4 relative overflow-hidden">
       <MatrixBackground />
       
       {/* Back button */}
       <Link 
         to="/" 
-        className="absolute top-6 left-6 text-green-400 hover:text-green-300 flex items-center gap-2 z-20 transition-colors duration-300"
+        className="absolute top-6 left-6 text-matrix hover:text-matrix/80 flex items-center gap-2 z-20 transition-colors duration-300"
       >
         <ArrowLeft className="h-5 w-5" />
         <span className="text-sm font-mono">BACK_TO_HOME</span>
@@ -90,14 +90,14 @@ export default function AdminLoginPage() {
       {/* Main login container */}
       <div className="w-full max-w-md relative z-10">
         {/* Glowing effects */}
-        <div className="absolute -top-20 -left-20 w-40 h-40 bg-green-400/20 rounded-full blur-3xl animate-pulse"></div>
-        <div className="absolute -bottom-20 -right-20 w-40 h-40 bg-cyan-400/20 rounded-full blur-3xl animate-pulse"></div>
+        <div className="absolute -top-20 -left-20 w-40 h-40 bg-matrix/20 rounded-full blur-3xl animate-pulse"></div>
+        <div className="absolute -bottom-20 -right-20 w-40 h-40 bg-matrix/10 rounded-full blur-3xl animate-pulse"></div>
         
         {/* Login card */}
-        <div className="relative bg-black/90 backdrop-blur-sm border border-green-400/30 rounded-lg p-8 shadow-2xl">
+        <div className="relative bg-terminal/90 backdrop-blur-sm border border-matrix/30 rounded-lg p-8 shadow-2xl">
           {/* Animated border effect */}
-          <div className="absolute inset-0 bg-gradient-to-r from-green-400/0 via-green-400/20 to-green-400/0 rounded-lg">
-            <div className="absolute inset-[1px] bg-black/90 rounded-lg"></div>
+          <div className="absolute inset-0 bg-gradient-to-r from-matrix/0 via-matrix/20 to-matrix/0 rounded-lg">
+            <div className="absolute inset-[1px] bg-terminal/90 rounded-lg"></div>
           </div>
           
           <div className="relative z-10">
@@ -105,20 +105,20 @@ export default function AdminLoginPage() {
             <div className="text-center mb-8">
               <div className="flex justify-center mb-6">
                 <div className="relative">
-                  <div className="absolute inset-0 bg-green-400/30 rounded-full blur-xl"></div>
-                  <div className="relative h-16 w-16 bg-black border-2 border-green-400 rounded-full flex items-center justify-center">
-                    <Shield className="h-8 w-8 text-green-400" />
+                  <div className="absolute inset-0 bg-matrix/30 rounded-full blur-xl"></div>
+                  <div className="relative h-16 w-16 bg-terminal border-2 border-matrix rounded-full flex items-center justify-center">
+                    <Shield className="h-8 w-8 text-matrix" />
                   </div>
                 </div>
               </div>
               
-              <h1 className="text-4xl font-mono font-bold text-green-400 mb-2 tracking-wider">
+              <h1 className="text-4xl font-mono font-bold text-matrix mb-2 tracking-wider">
                 CYBER HUNT
               </h1>
-              <h2 className="text-2xl font-mono font-bold text-white mb-3 tracking-wide">
+              <h2 className="text-2xl font-mono font-bold text-light-gray mb-3 tracking-wide">
                 ADMIN PANEL
               </h2>
-              <div className="flex items-center justify-center gap-2 text-green-400/70 text-sm font-mono">
+              <div className="flex items-center justify-center gap-2 text-matrix/70 text-sm font-mono">
                 <Lock className="h-4 w-4" />
                 <span>RESTRICTED_ACCESS_ONLY</span>
               </div>
@@ -128,22 +128,22 @@ export default function AdminLoginPage() {
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
               {/* Email field */}
               <div className="space-y-2">
-                <label className="block text-green-400 text-sm font-mono tracking-wide">
+                <label className="block text-matrix text-sm font-mono tracking-wide">
                   &gt; EMAIL_ADDRESS
                 </label>
                 <div className="relative">
                   <input
                     type="email"
-                    className="w-full bg-black/50 border border-green-400/30 rounded px-4 py-3 font-mono text-white placeholder-gray-500 focus:outline-none focus:border-green-400 focus:ring-2 focus:ring-green-400/30 transition-all duration-300"
+                    className="w-full bg-terminal/50 border border-matrix/30 rounded px-4 py-3 font-mono text-light-gray placeholder-dim-gray focus:outline-none focus:border-matrix focus:ring-2 focus:ring-matrix/30 transition-all duration-300"
                     placeholder="admin@cyberhunt.com"
-                    style={{ caretColor: '#10b981' }}
+                    style={{ caretColor: '#00ff00' }}
                     {...register('email')}
                     autoComplete="email"
                   />
-                  <div className="absolute inset-0 border border-green-400/20 rounded pointer-events-none opacity-0 hover:opacity-100 transition-opacity duration-300"></div>
+                  <div className="absolute inset-0 border border-matrix/20 rounded pointer-events-none opacity-0 hover:opacity-100 transition-opacity duration-300"></div>
                 </div>
                 {errors.email && (
-                  <div className="text-red-400 text-xs font-mono flex items-center gap-1">
+                  <div className="text-alert-red text-xs font-mono flex items-center gap-1">
                     <span>&gt;</span>
                     {errors.email.message}
                   </div>
@@ -152,28 +152,28 @@ export default function AdminLoginPage() {
 
               {/* Password field */}
               <div className="space-y-2">
-                <label className="block text-green-400 text-sm font-mono tracking-wide">
+                <label className="block text-matrix text-sm font-mono tracking-wide">
                   &gt; PASSWORD
                 </label>
                 <div className="relative">
                   <input
                     type={showPassword ? "text" : "password"}
-                    className="w-full bg-black/50 border border-green-400/30 rounded px-4 py-3 pr-12 font-mono text-white placeholder-gray-500 focus:outline-none focus:border-green-400 focus:ring-2 focus:ring-green-400/30 transition-all duration-300"
+                    className="w-full bg-terminal/50 border border-matrix/30 rounded px-4 py-3 pr-12 font-mono text-light-gray placeholder-dim-gray focus:outline-none focus:border-matrix focus:ring-2 focus:ring-matrix/30 transition-all duration-300"
                     placeholder="••••••••••••"
-                    style={{ caretColor: '#10b981' }}
+                    style={{ caretColor: '#00ff00' }}
                     {...register('password')}
                     autoComplete="current-password"
                   />
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-green-400 transition-colors duration-200"
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-dim-gray hover:text-matrix transition-colors duration-200"
                   >
                     {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                   </button>
                 </div>
                 {errors.password && (
-                  <div className="text-red-400 text-xs font-mono flex items-center gap-1">
+                  <div className="text-alert-red text-xs font-mono flex items-center gap-1">
                     <span>&gt;</span>
                     {errors.password.message}
                   </div>
@@ -185,7 +185,7 @@ export default function AdminLoginPage() {
                 <Button
                   type="submit"
                   disabled={isLoading}
-                  className="w-full bg-green-400/10 hover:bg-green-400/20 border-2 border-green-400 text-green-400 font-mono text-lg py-3 rounded transition-all duration-300 hover:shadow-[0_0_20px_rgba(16,185,129,0.3)] disabled:opacity-50 disabled:cursor-not-allowed tracking-wider"
+                  className="w-full bg-matrix/10 hover:bg-matrix/20 border-2 border-matrix text-matrix font-mono text-lg py-3 rounded transition-all duration-300 hover:shadow-[0_0_20px_rgba(0,255,0,0.3)] disabled:opacity-50 disabled:cursor-not-allowed tracking-wider"
                 >
                   {isLoading ? (
                     <span className="flex items-center justify-center">
