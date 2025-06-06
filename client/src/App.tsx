@@ -104,6 +104,7 @@ function Router() {
       <ProtectedRoute path="/activities" component={ActivitiesPage} />
       <ProtectedRoute path="/wallet" component={WalletComponent} />
       <ProtectedRoute path="/company/wallet" component={CompanyWalletPage} />
+      <ProtectedRoute path="/company/wallet" component={CompanyWalletPage} />
       <ProtectedRoute path="/admin/company-wallets" component={AdminCompanyWalletsPage} />
       <Route path="/auth" component={AuthPage} />
       <Route path="/forgot-password" component={ForgotPasswordPage} />

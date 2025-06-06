@@ -225,7 +225,10 @@ export default function CompanyDashboardPage() {
               </CardContent>
             </Card>
 
-            <Card className="bg-black border border-matrix/20">
+            <Card 
+              className="bg-black border border-matrix/20 hover:border-matrix cursor-pointer transition-colors"
+              onClick={() => setLocation("/company/wallet")}
+            >
               <CardHeader className="pb-2">
                 <CardTitle className="text-sm font-medium text-dim-gray">
                   Total Payout
@@ -237,7 +240,7 @@ export default function CompanyDashboardPage() {
                   <span className="text-2xl font-bold">${stats.totalPayout.toLocaleString()}</span>
                 </div>
                 <p className="text-xs text-dim-gray mt-2">
-                  Avg. ${stats.totalPayout > 0 ? (stats.totalPayout / (stats.approvedSubmissions || 1)).toFixed(0) : 0} per vulnerability
+                  💼 Click to view wallet
                 </p>
               </CardContent>
             </Card>
@@ -360,13 +363,22 @@ export default function CompanyDashboardPage() {
                   </div>
                 )}
 
-                <Button 
-                  onClick={handleCreateProgram}
-                  className="w-full mt-4 glow-button"
-                >
-                  <PlusCircle className="mr-2 h-4 w-4" />
-                  Create New Program
-                </Button>
+                <div className="space-y-2 mt-4">
+                  <Button 
+                    onClick={handleCreateProgram}
+                    className="w-full glow-button"
+                  >
+                    <PlusCircle className="mr-2 h-4 w-4" />
+                    Create New Program
+                  </Button>
+                  <Button 
+                    onClick={() => setLocation("/company/wallet")}
+                    variant="outline"
+                    className="w-full border-matrix/30 hover:bg-matrix/20 hover:text-matrix"
+                  >
+                    💼 My Wallet
+                  </Button>
+                </div>
               </CardContent>
             </Card>
           </div>
