@@ -458,7 +458,7 @@ export default function CompanyDashboardPage() {
               ))}
             </div>
           ) : (
-            <div className="text-center py-12 bg-black/30 border border-dashed border-matrix/20 rounded-lg">
+            <div className="text-center py-12 terminal-card bg-terminal/50 border border-dashed border-matrix/30 rounded-lg">
               <Shield className="h-12 w-12 text-dim-gray mx-auto mb-4" />
               <h3 className="text-lg font-medium">No programs yet</h3>
               <p className="text-dim-gray text-sm mt-2 max-w-md mx-auto">
@@ -574,7 +574,7 @@ export default function CompanyDashboardPage() {
               </div>
             </div>
           ) : (
-            <div className="text-center py-12 bg-black/30 border border-dashed border-matrix/20 rounded-lg">
+            <div className="text-center py-12 terminal-card bg-terminal/50 border border-dashed border-matrix/30 rounded-lg">
               <BugIcon className="h-12 w-12 text-dim-gray mx-auto mb-4" />
               <h3 className="text-lg font-medium">No submissions yet</h3>
               <p className="text-dim-gray text-sm mt-2 max-w-md mx-auto">
