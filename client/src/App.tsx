@@ -128,6 +128,7 @@ function Router() {
       <Route path="/about">
         {() => <AboutPage />}
       </Route>
+      <Route path="/create-program" component={CreateProgramPage} />
 
       {/* Admin Routes */}
       <Route path="/admin" component={AdminLoginPage} />
