@@ -4,6 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Link, useLocation } from "wouter";
 import Navbar from "@/components/layout/navbar";
 import MatrixBackground from "@/components/matrix-background";
+import { ThemeToggle } from "@/components/theme-toggle";
 import {
   Users,
   Shield,
@@ -141,6 +142,7 @@ export default function AdminDashboardPage() {
               </div>
             </div>
             <div className="flex items-center space-x-4">
+              <ThemeToggle />
               <Link to="/" className="text-dim-gray hover:text-matrix text-sm font-mono uppercase tracking-wider">
                 &lt; Return to Site
               </Link>
