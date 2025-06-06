@@ -98,6 +98,8 @@ function Router() {
       <ProtectedRoute path="/profile/:id" component={ProfilePage} />
       <ProtectedRoute path="/settings" component={SettingsPage} />
       <ProtectedRoute path="/leaderboard" component={LeaderboardPage} />
+      <ProtectedRoute path="/badges" component={BadgesPage} />
+      <ProtectedRoute path="/activities" component={ActivitiesPage} />
       <ProtectedRoute path="/wallet" component={WalletComponent} />
       <Route path="/auth" component={AuthPage} />
       <Route path="/forgot-password" component={ForgotPasswordPage} />
