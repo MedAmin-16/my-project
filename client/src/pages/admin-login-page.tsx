@@ -78,17 +78,14 @@ export default function AdminLoginPage() {
     <div className="min-h-screen bg-deep-black flex items-center justify-center p-4 relative overflow-hidden">
       <MatrixBackground />
       
-      {/* Top navigation */}
-      <div className="absolute top-6 left-6 right-6 flex justify-between items-center z-20">
-        <Link 
-          to="/" 
-          className="text-matrix hover:text-matrix/80 flex items-center gap-2 transition-colors duration-300"
-        >
-          <ArrowLeft className="h-5 w-5" />
-          <span className="text-sm font-mono">BACK_TO_HOME</span>
-        </Link>
-        <ThemeToggle />
-      </div>
+      {/* Back button */}
+      <Link 
+        to="/" 
+        className="absolute top-6 left-6 text-matrix hover:text-matrix/80 flex items-center gap-2 z-20 transition-colors duration-300"
+      >
+        <ArrowLeft className="h-5 w-5" />
+        <span className="text-sm font-mono">BACK_TO_HOME</span>
+      </Link>
 
       {/* Main login container */}
       <div className="w-full max-w-md relative z-10">
