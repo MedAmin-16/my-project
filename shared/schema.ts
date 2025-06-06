@@ -200,3 +200,41 @@ export const insertWithdrawalSchema = createInsertSchema(withdrawals).pick({
 
 export type Withdrawal = typeof withdrawals.$inferSelect;
 export type InsertWithdrawal = z.infer<typeof insertWithdrawalSchema>;
+
+// Company Wallets table
+export const companyWallets = pgTable("company_wallets", {
+  id: serial("id").primaryKey(),
+  companyId: integer("company_id").notNull().references(() => users.id),
+  balance: integer("balance").notNull().default(0),
+  totalPaid: integer("total_paid").notNull().default(0),
+  lastUpdated: timestamp("last_updated").defaultNow()
+});
+
+export const insertCompanyWalletSchema = createInsertSchema(companyWallets).pick({
+  companyId: true,
+  balance: true,
+  totalPaid: true
+});
+
+export type CompanyWallet = typeof companyWallets.$inferSelect;
+export type InsertCompanyWallet = z.infer<typeof insertCompanyWalletSchema>;
+
+// Company Transactions table
+export const companyTransactions = pgTable("company_transactions", {
+  id: serial("id").primaryKey(),
+  companyId: integer("company_id").notNull().references(() => users.id),
+  amount: integer("amount").notNull(),
+  type: text("type").notNull(), // manual, automated
+  note: text("note"),
+  createdAt: timestamp("created_at").defaultNow()
+});
+
+export const insertCompanyTransactionSchema = createInsertSchema(companyTransactions).pick({
+  companyId: true,
+  amount: true,
+  type: true,
+  note: true
+});
+
+export type CompanyTransaction = typeof companyTransactions.$inferSelect;
+export type InsertCompanyTransaction = z.infer<typeof insertCompanyTransactionSchema>;

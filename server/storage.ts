@@ -1,7 +1,7 @@
 import { drizzle } from 'drizzle-orm/postgres-js';
 import postgres from 'postgres';
-import { users, programs, submissions, activities, notifications, wallets, transactions, type User, type InsertUser } from '@shared/schema';
-import { eq, and } from 'drizzle-orm';
+import { users, programs, submissions, activities, notifications, wallets, transactions, type User, type InsertUser, type Program, type InsertProgram, type Submission, type InsertSubmission, type Activity, type InsertActivity, type Notification, type InsertNotification, type Wallet, type Transaction, type InsertTransaction, type Withdrawal, type InsertWithdrawal, type CompanyWallet, type InsertCompanyWallet, type CompanyTransaction, type InsertCompanyTransaction, companyWallets, companyTransactions } from '@shared/schema';
+import { eq, sql, desc } from 'drizzle-orm';
 import createMemoryStore from "memorystore";
 import session from "express-session";
 import { encrypt, decrypt } from "./crypto-utils";
@@ -526,5 +526,133 @@ export const storage = {
       }
     }
     return null;
+  },
+
+  async getUserWithdrawals(userId: number) {
+    if (db) {
+      try {
+        const userWallet = await this.getWalletByUserId(userId);
+        if (!userWallet) return [];
+        return db.select().from(withdrawals).where(eq(withdrawals.walletId, userWallet.id));
+      } catch (error) {
+        console.error('Error getting user withdrawals:', error);
+        return [];
+      }
+    }
+    return [];
+  },
+
+  // Company Wallet Methods
+  async getCompanyWallet(companyId: number) {
+    if(db){
+        try {
+            const [wallet] = await db.select().from(companyWallets).where(eq(companyWallets.companyId, companyId));
+            return wallet || null;
+        } catch (error) {
+            console.error('Error getting company wallet:', error);
+            return null;
+        }
+    }
+    return null
+  },
+
+  async createCompanyWallet(companyId: number) {
+    if(db){
+        try {
+            const [wallet] = await db.insert(companyWallets).values({
+                companyId,
+                balance: 0,
+                totalPaid: 0
+            }).returning();
+            return wallet;
+        } catch (error) {
+            console.error('Error creating company wallet:', error);
+            return null;
+        }
+    }
+    return null
+  },
+
+  async updateCompanyWalletBalance(companyId: number, amount: number) {
+    if(db){
+        try {
+            const wallet = await this.getCompanyWallet(companyId);
+            if (!wallet) {
+                await this.createCompanyWallet(companyId);
+            }
+
+            await db.update(companyWallets)
+                .set({
+                    balance: sql`${companyWallets.balance} + ${amount}`,
+                    totalPaid: sql`${companyWallets.totalPaid} + ${amount}`,
+                    lastUpdated: new Date()
+                })
+                .where(eq(companyWallets.companyId, companyId));
+        } catch (error) {
+            console.error('Error updating company wallet balance:', error);
+        }
+    }
+
+  },
+
+  async getAllCompanyWallets() {
+    if(db){
+        try {
+            return db.select({
+                id: companyWallets.id,
+                companyId: companyWallets.companyId,
+                balance: companyWallets.balance,
+                totalPaid: companyWallets.totalPaid,
+                lastUpdated: companyWallets.lastUpdated,
+                companyName: users.companyName,
+                email: users.email
+            }).from(companyWallets)
+                .leftJoin(users, eq(companyWallets.companyId, users.id))
+                .where(eq(users.userType, 'company'));
+        } catch (error) {
+            console.error('Error getting all company wallets:', error);
+            return [];
+        }
+    }
+    return []
+  },
+
+  async createCompanyTransaction(data: InsertCompanyTransaction) {
+      if(db){
+          try {
+              const [transaction] = await db.insert(companyTransactions).values(data).returning();
+              return transaction;
+          } catch (error) {
+              console.error('Error creating company transaction:', error);
+              return null;
+          }
+      }
+      return null
+  },
+
+  async getCompanyTransactions(companyId: number) {
+    if(db){
+        try {
+            return db.select().from(companyTransactions)
+                .where(eq(companyTransactions.companyId, companyId))
+                .orderBy(desc(companyTransactions.createdAt));
+        } catch (error) {
+            console.error('Error getting company transactions:', error);
+            return [];
+        }
+    }
+    return []
+  },
+
+  async getAllCompanies() {
+    if(db){
+        try {
+            return db.select().from(users).where(eq(users.userType, 'company'));
+        } catch (error) {
+            console.error('Error getting all companies:', error);
+            return [];
+        }
+    }
+    return []
   }
 };
