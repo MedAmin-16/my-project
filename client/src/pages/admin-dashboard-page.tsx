@@ -82,8 +82,11 @@ export default function AdminDashboardPage() {
         }
         throw new Error('Failed to fetch stats');
       }
-      return response.json();
-    }
+      const data = await response.json();
+      return data || {};
+    },
+    retry: false,
+    refetchOnWindowFocus: false
   });
 
   // Fetch users data

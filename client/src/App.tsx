@@ -144,6 +144,7 @@ function Router() {
       {/* Admin Routes */}
       <Route path="/admin" component={AdminLoginPage} />
       <Route path="/admin/dashboard" component={AdminDashboardPage} />
+      
 
       <Route path="/*" component={NotFound} />
     </Switch>
