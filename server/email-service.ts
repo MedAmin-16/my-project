@@ -320,6 +320,104 @@ export async function sendAchievementEmail(userId: number, achievementTitle: str
   }
 }
 
+// Send withdrawal completion confirmation email
+export async function sendWithdrawalCompletedEmail(withdrawal: any): Promise<boolean> {
+  try {
+    // Get user details using the withdrawal data
+    const user = await storage.getUser(withdrawal.userId);
+    if (!user || !user.email || !user.isEmailVerified) return false;
+
+    const baseUrl = process.env.BASE_URL || 'http://localhost:3000';
+
+    // Format the withdrawal method for display
+    const methodDisplay = withdrawal.method === 'paypal' ? 'PayPal' : 
+                         withdrawal.method === 'wise' ? 'Wise' : 
+                         withdrawal.method === 'crypto' ? 'Cryptocurrency' : 
+                         withdrawal.method.charAt(0).toUpperCase() + withdrawal.method.slice(1);
+
+    // Email content
+    const emailContent = {
+      from: '"CyberHunt" <payments@cyberhunt.com>',
+      to: user.email,
+      subject: 'Withdrawal Completed - Payment Sent Successfully',
+      text: `Hello ${user.username},
+
+Great news! Your withdrawal request has been completed and the payment has been sent successfully.
+
+PAYMENT DETAILS:
+- Amount: $${withdrawal.amount}
+- Method: ${methodDisplay}
+- Destination: ${withdrawal.destination}
+- Date: ${new Date().toLocaleDateString()}
+
+The funds should arrive in your account within the standard processing time for ${methodDisplay} transfers.
+
+If you have any questions about this payment, please contact our support team.
+
+Thank you for being part of the CyberHunt community!
+
+The CyberHunt Team`,
+      html: getEmailTemplate('Payment Sent Successfully! 💰', `
+        <p>Hello <strong>${user.username}</strong>,</p>
+        <p>Great news! Your withdrawal request has been completed and the payment has been sent successfully.</p>
+        
+        <div style="background-color: #111; padding: 20px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #00ff00;">
+          <h3 style="color: #00ff00; margin-top: 0;">Payment Details</h3>
+          <table style="width: 100%; color: #cccccc;">
+            <tr><td style="padding: 5px 0;"><strong>Amount:</strong></td><td style="padding: 5px 0;">$${withdrawal.amount}</td></tr>
+            <tr><td style="padding: 5px 0;"><strong>Method:</strong></td><td style="padding: 5px 0;">${methodDisplay}</td></tr>
+            <tr><td style="padding: 5px 0;"><strong>Destination:</strong></td><td style="padding: 5px 0;">${withdrawal.destination}</td></tr>
+            <tr><td style="padding: 5px 0;"><strong>Date:</strong></td><td style="padding: 5px 0;">${new Date().toLocaleDateString()}</td></tr>
+          </table>
+        </div>
+
+        <p style="background-color: #1a1a1a; padding: 15px; border-radius: 5px; border-left: 3px solid #00ff00;">
+          💡 <strong>Processing Time:</strong> The funds should arrive in your account within the standard processing time for ${methodDisplay} transfers.
+        </p>
+
+        <div style="text-align: center; margin: 30px 0;">
+          <a href="${baseUrl}/wallet" style="background-color: #00ff00; color: #000000; padding: 12px 24px; text-decoration: none; border-radius: 4px; font-weight: bold; display: inline-block;">View Wallet History</a>
+        </div>
+
+        <p>If you have any questions about this payment, please contact our support team.</p>
+        <p style="margin-top: 20px;">Thank you for being part of the CyberHunt community!</p>
+      `),
+    };
+
+    if (!sendGridApiKey) {
+      console.error('SendGrid API key is not configured');
+      return false;
+    }
+
+    // Send email using SendGrid
+    try {
+      const response = await sgMail.send(emailContent);
+      console.log(`Withdrawal completion email sent successfully to ${user.email}`, response[0].statusCode);
+      
+      // Create notification for the user
+      await storage.createNotification({
+        type: 'system',
+        message: `Your withdrawal of $${withdrawal.amount} has been completed and sent to your ${methodDisplay} account.`,
+        link: '/wallet',
+        userId: user.id,
+        relatedId: withdrawal.id
+      });
+
+      return true;
+    } catch (error: any) {
+      console.error('Failed to send withdrawal completion email:', error);
+      if (error.response) {
+        console.error(error.response.body);
+      }
+      return false;
+    }
+
+  } catch (error) {
+    console.error('Failed to send withdrawal completion email:', error);
+    return false;
+  }
+}
+
 // Send a welcome email after verification
 export async function sendWelcomeEmail(userId: number): Promise<boolean> {
   try {

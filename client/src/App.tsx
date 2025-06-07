@@ -38,6 +38,7 @@ import HacktivityPage from "./pages/hacktivity-page";
 import { ProtectedRoute } from "./lib/protected-route";
 import { AuthProvider, useAuth } from "@/hooks/use-auth";
 import { ThemeProvider } from "@/components/theme-provider";
+import AdminWithdrawalsPage from "@/pages/admin-withdrawals-page";
 
 function Router() {
   const { user } = useAuth();
@@ -106,6 +107,8 @@ function Router() {
       <ProtectedRoute path="/company/wallet" component={CompanyWalletPage} />
       <ProtectedRoute path="/company/wallet" component={CompanyWalletPage} />
       <ProtectedRoute path="/admin/company-wallets" component={AdminCompanyWalletsPage} />
+      <ProtectedRoute path="/admin/withdrawals" component={AdminWithdrawalsPage} />
+      <ProtectedRoute path="/admin" component={AdminDashboardPage} />
       <Route path="/auth" component={AuthPage} />
       <Route path="/forgot-password" component={ForgotPasswordPage} />
       <Route path="/verify-email" component={VerifyEmailPage} />
