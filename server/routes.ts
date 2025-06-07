@@ -6,7 +6,7 @@ import { z } from "zod";
 import { randomBytes } from "crypto";
 import { insertSubmissionSchema, insertProgramSchema } from "@shared/schema";
 import { getAdminSessions } from "./index";
-import { sendWelcomeEmail, sendAchievementEmail, sendSubmissionStatusEmail } from "./email-service";
+import { sendWelcomeEmail, sendAchievementEmail, sendSubmissionStatusEmail, sendWithdrawalCompletedEmail } from "./email-service";
 import multer from "multer";
 import path from "path";
 const upload = multer({
@@ -834,6 +834,51 @@ export async function registerWalletRoutes(app: Express): Promise<void> {
   app.get("/api/withdrawals", ensureAuthenticated, async (req, res) => {
     const withdrawals = await storage.getUserWithdrawals(req.user!.id);
     return res.json(withdrawals);
+  });
+
+  // Admin endpoint to update withdrawal status
+  app.patch("/api/admin/withdrawals/:id/status", ensureAdminAuthenticated, async (req, res) => {
+    try {
+      const withdrawalId = parseInt(req.params.id);
+      const { status, notes } = req.body;
+
+      if (!status || !['pending', 'approved', 'rejected', 'completed'].includes(status)) {
+        return res.status(400).json({ message: "Invalid status. Must be 'pending', 'approved', 'rejected', or 'completed'" });
+      }
+
+      // Update withdrawal status
+      const updatedWithdrawal = await storage.updateWithdrawalStatus(withdrawalId, status, notes);
+
+      if (!updatedWithdrawal) {
+        return res.status(404).json({ message: "Withdrawal not found" });
+      }
+
+      // If status is completed, send confirmation email automatically
+      if (status === 'completed') {
+        const success = await sendWithdrawalCompletedEmail(updatedWithdrawal);
+        if (success) {
+          console.log(`Withdrawal completion email sent for withdrawal ID: ${withdrawalId}`);
+        } else {
+          console.error(`Failed to send withdrawal completion email for withdrawal ID: ${withdrawalId}`);
+        }
+      }
+
+      res.json(updatedWithdrawal);
+    } catch (error) {
+      console.error('Error updating withdrawal status:', error);
+      res.status(500).json({ message: "Failed to update withdrawal status" });
+    }
+  });
+
+  // Get all withdrawals for admin
+  app.get("/api/admin/withdrawals", ensureAdminAuthenticated, async (req, res) => {
+    try {
+      const withdrawals = await storage.getAllWithdrawals();
+      res.json(withdrawals);
+    } catch (error) {
+      console.error('Error fetching withdrawals:', error);
+      res.status(500).json({ message: "Failed to fetch withdrawals" });
+    }
   });
 }
 

@@ -1,7 +1,7 @@
 import { drizzle } from 'drizzle-orm/postgres-js';
 import postgres from 'postgres';
 import { users, programs, submissions, activities, notifications, wallets, transactions, type User, type InsertUser, type Program, type InsertProgram, type Submission, type InsertSubmission, type Activity, type InsertActivity, type Notification, type InsertNotification, type Wallet, type Transaction, type InsertTransaction, type Withdrawal, type InsertWithdrawal, type CompanyWallet, type InsertCompanyWallet, type CompanyTransaction, type InsertCompanyTransaction, companyWallets, companyTransactions } from '@shared/schema';
-import { eq, sql, desc } from 'drizzle-orm';
+import { and, eq, desc, sql } from "drizzle-orm";
 import createMemoryStore from "memorystore";
 import session from "express-session";
 import { encrypt, decrypt } from "./crypto-utils";
@@ -179,6 +179,92 @@ export const storage = {
     }
     return [];
   },
+
+  async updateWithdrawalStatus(withdrawalId: number, status: string, notes?: string) {
+    if (db) {
+      try {
+        const updateData: any = { 
+          status, 
+          updatedAt: new Date() 
+        };
+
+        if (notes) {
+          updateData.notes = notes;
+        }
+
+        const [withdrawal] = await db
+          .update(withdrawals)
+          .set(updateData)
+          .where(eq(withdrawals.id, withdrawalId))
+          .returning();
+        return withdrawal;
+      } catch (error) {
+        console.error('Error updating withdrawal status:', error);
+        return null;
+      }
+    }
+    return null;
+  },
+
+  async getAllWithdrawals() {
+    if (db) {
+      try {
+        return db.select({
+          id: withdrawals.id,
+          amount: withdrawals.amount,
+          method: withdrawals.method,
+          destination: withdrawals.destination,
+          status: withdrawals.status,
+          notes: withdrawals.notes,
+          createdAt: withdrawals.createdAt,
+          updatedAt: withdrawals.updatedAt,
+          walletId: withdrawals.walletId,
+          userId: wallets.userId,
+          username: users.username,
+          email: users.email
+        })
+        .from(withdrawals)
+        .leftJoin(wallets, eq(withdrawals.walletId, wallets.id))
+        .leftJoin(users, eq(wallets.userId, users.id))
+        .orderBy(desc(withdrawals.createdAt));
+      } catch (error) {
+        console.error('Error getting all withdrawals:', error);
+        return [];
+      }
+    }
+    return [];
+  },
+
+  async getWithdrawalById(withdrawalId: number) {
+    if (db) {
+      try {
+        const [withdrawal] = await db.select({
+          id: withdrawals.id,
+          amount: withdrawals.amount,
+          method: withdrawals.method,
+          destination: withdrawals.destination,
+          status: withdrawals.status,
+          notes: withdrawals.notes,
+          createdAt: withdrawals.createdAt,
+          updatedAt: withdrawals.updatedAt,
+          walletId: withdrawals.walletId,
+          userId: wallets.userId,
+          username: users.username,
+          email: users.email
+        })
+        .from(withdrawals)
+        .leftJoin(wallets, eq(withdrawals.walletId, wallets.id))
+        .leftJoin(users, eq(wallets.userId, users.id))
+        .where(eq(withdrawals.id, withdrawalId));
+        return withdrawal;
+      } catch (error) {
+        console.error('Error getting withdrawal by ID:', error);
+        return null;
+      }
+    }
+    return null;
+  },
+
   async getUserByUsername(username: string) {
     if (db) {
       try {
@@ -540,6 +626,91 @@ export const storage = {
       }
     }
     return [];
+  },
+
+  async updateWithdrawalStatus(withdrawalId: number, status: string, notes?: string) {
+    if (db) {
+      try {
+        const updateData: any = { 
+          status, 
+          updatedAt: new Date() 
+        };
+
+        if (notes) {
+          updateData.notes = notes;
+        }
+
+        const [withdrawal] = await db
+          .update(withdrawals)
+          .set(updateData)
+          .where(eq(withdrawals.id, withdrawalId))
+          .returning();
+        return withdrawal;
+      } catch (error) {
+        console.error('Error updating withdrawal status:', error);
+        return null;
+      }
+    }
+    return null;
+  },
+
+  async getAllWithdrawals() {
+    if (db) {
+      try {
+        return db.select({
+          id: withdrawals.id,
+          amount: withdrawals.amount,
+          method: withdrawals.method,
+          destination: withdrawals.destination,
+          status: withdrawals.status,
+          notes: withdrawals.notes,
+          createdAt: withdrawals.createdAt,
+          updatedAt: withdrawals.updatedAt,
+          walletId: withdrawals.walletId,
+          userId: wallets.userId,
+          username: users.username,
+          email: users.email
+        })
+        .from(withdrawals)
+        .leftJoin(wallets, eq(withdrawals.walletId, wallets.id))
+        .leftJoin(users, eq(wallets.userId, users.id))
+        .orderBy(desc(withdrawals.createdAt));
+      } catch (error) {
+        console.error('Error getting all withdrawals:', error);
+        return [];
+      }
+    }
+    return [];
+  },
+
+  async getWithdrawalById(withdrawalId: number) {
+    if (db) {
+      try {
+        const [withdrawal] = await db.select({
+          id: withdrawals.id,
+          amount: withdrawals.amount,
+          method: withdrawals.method,
+          destination: withdrawals.destination,
+          status: withdrawals.status,
+          notes: withdrawals.notes,
+          createdAt: withdrawals.createdAt,
+          updatedAt: withdrawals.updatedAt,
+          walletId: withdrawals.walletId,
+          userId: wallets.userId,
+          username: users.username,
+          email: users.email
+        })
+        .from(withdrawals)
+        .leftJoin(wallets, eq(withdrawals.walletId, wallets.id))
+        .leftJoin(users, eq(wallets.userId, users.id))
+        .where(eq(withdrawals.id, withdrawalId));
+        return withdrawal;
+      } catch (error) {
+        console.error('Error getting withdrawal by ID:', error);
+        return null;
+      }
+    }
+    return null;
   },
 
   // Company Wallet Methods

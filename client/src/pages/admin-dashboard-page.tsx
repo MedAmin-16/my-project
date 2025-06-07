@@ -157,7 +157,7 @@ export default function AdminDashboardPage() {
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 relative z-10">
         {/* Stats Overview */}
-        
+
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                 <div 
                   className="bg-dark-bg/50 border border-matrix/20 rounded p-6 hover:bg-matrix/5 transition-all duration-300 cursor-pointer group"
