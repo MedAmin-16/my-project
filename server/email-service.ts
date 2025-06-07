@@ -17,6 +17,38 @@ export function generateVerificationToken(): string {
   return randomBytes(32).toString('hex');
 }
 
+// General email sending function using SendGrid templates
+export async function sendTemplatedEmail(
+  to: string,
+  templateId: string,
+  dynamicData: Record<string, any>,
+  from: string = 'notifications@cyberhunt.com'
+): Promise<boolean> {
+  try {
+    if (!sendGridApiKey) {
+      console.error('SendGrid API key is not configured');
+      return false;
+    }
+
+    const msg = {
+      to,
+      from,
+      templateId,
+      dynamic_template_data: dynamicData,
+    };
+
+    const response = await sgMail.send(msg);
+    console.log(`Email sent successfully to ${to} using template ${templateId}`, response[0].statusCode);
+    return true;
+  } catch (error: any) {
+    console.error('Failed to send templated email:', error);
+    if (error.response) {
+      console.error(error.response.body);
+    }
+    return false;
+  }
+}
+
 // Send a verification email
 export async function sendVerificationEmail(userId: number, userEmail: string, username: string): Promise<string> {
   try {
@@ -29,30 +61,26 @@ export async function sendVerificationEmail(userId: number, userEmail: string, u
     // Create the verification link
     const confirm_link = `https://cyberhunt.com.tn/confirm?token=${token}`;
 
-    if (!sendGridApiKey) {
-      console.error('SendGrid API key is not configured');
-      return '';
-    }
-
-    const msg = {
-      to: userEmail,
-      from: 'verification@cyberhunt.com', // Replace with your verified sender
-      templateId: 'YOUR_TEMPLATE_ID', // Replace with your template ID
-      dynamic_template_data: {
+    // Use your SendGrid verification template
+    const success = await sendTemplatedEmail(
+      userEmail,
+      'YOUR_VERIFICATION_TEMPLATE_ID', // Replace with your actual template ID
+      {
         username: username,
         confirm_link: confirm_link,
       },
-    };
+      'verification@cyberhunt.com'
+    );
 
-    await sgMail.send(msg);
-    console.log(`Verification email sent to ${userEmail}`);
-    return token;
+    if (success) {
+      console.log(`Verification email sent to ${userEmail}`);
+      return token;
+    } else {
+      throw new Error('Failed to send verification email');
+    }
 
   } catch (error: any) {
     console.error('Failed to send verification email:', error);
-    if (error.response) {
-      console.error(error.response.body)
-    }
     throw error;
   }
 }
@@ -102,88 +130,41 @@ export async function sendNotificationEmail(notification: NotificationEmailData)
 
     // Create base URL
     const baseUrl = process.env.BASE_URL || 'http://localhost:3000';
-
-    // Default link to notifications page if none provided
     const actionUrl = notification.link ? `${baseUrl}${notification.link}` : `${baseUrl}/dashboard`;
 
-    // Content based on notification type
-    let subject = 'CyberHunt Notification';
-    let content = '';
+    // Map notification types to template IDs and prepare dynamic data
+    let templateId = '';
+    let dynamicData: Record<string, any> = {
+      username: user.username,
+      message: notification.message,
+      action_url: actionUrl,
+      base_url: baseUrl,
+    };
 
     switch(notification.type) {
       case 'new_submission':
-        subject = 'New Submission on CyberHunt';
-        content = `
-          <p>Hello <strong>${user.username}</strong>,</p>
-          <p>You have a new bug submission to review.</p>
-          <p>${notification.message}</p>
-          <div style="text-align: center; margin: 30px 0;">
-            <a href="${actionUrl}" style="background-color: #00ff00; color: #000000; padding: 12px 24px; text-decoration: none; border-radius: 4px; font-weight: bold; display: inline-block;">View Submission</a>
-          </div>
-        `;
+        templateId = 'YOUR_NEW_SUBMISSION_TEMPLATE_ID'; // Replace with your actual template ID
         break;
 
       case 'status_change':
-        subject = 'Submission Status Update';
-        content = `
-          <p>Hello <strong>${user.username}</strong>,</p>
-          <p>There has been a change to one of your submissions:</p>
-          <p>${notification.message}</p>
-          <div style="text-align: center; margin: 30px 0;">
-            <a href="${actionUrl}" style="background-color: #00ff00; color: #000000; padding: 12px 24px; text-decoration: none; border-radius: 4px; font-weight: bold; display: inline-block;">View Details</a>
-          </div>
-        `;
+        templateId = 'YOUR_STATUS_CHANGE_TEMPLATE_ID'; // Replace with your actual template ID
         break;
 
       case 'achievement':
-        subject = 'You\'ve Earned an Achievement on CyberHunt!';
-        content = `
-          <p>Hello <strong>${user.username}</strong>,</p>
-          <p>Congratulations! You've reached a new milestone:</p>
-          <p style="font-size: 18px; text-align: center; color: #00ff00; padding: 15px; background-color: #111111; border-radius: 5px;">${notification.message}</p>
-          <div style="text-align: center; margin: 30px 0;">
-            <a href="${actionUrl}" style="background-color: #00ff00; color: #000000; padding: 12px 24px; text-decoration: none; border-radius: 4px; font-weight: bold; display: inline-block;">See Your Achievements</a>
-          </div>
-        `;
+        templateId = 'YOUR_ACHIEVEMENT_TEMPLATE_ID'; // Replace with your actual template ID
         break;
 
       default: // system
-        subject = 'CyberHunt System Notification';
-        content = `
-          <p>Hello <strong>${user.username}</strong>,</p>
-          <p>${notification.message}</p>
-          <div style="text-align: center; margin: 30px 0;">
-            <a href="${actionUrl}" style="background-color: #00ff00; color: #000000; padding: 12px 24px; text-decoration: none; border-radius: 4px; font-weight: bold; display: inline-block;">Go to Dashboard</a>
-          </div>
-        `;
+        templateId = 'YOUR_SYSTEM_NOTIFICATION_TEMPLATE_ID'; // Replace with your actual template ID
     }
 
-    // Email content with template
-    const emailContent = {
-      from: '"CyberHunt" <notifications@cyberhunt.com>',
-      to: user.email,
-      subject,
-      text: `${subject}\n\nHello ${user.username},\n\n${notification.message}\n\nCheck it out here: ${actionUrl}\n\nThe CyberHunt Team`,
-      html: getEmailTemplate(subject, content),
-    };
-
-    if (!sendGridApiKey) {
-      console.error('SendGrid API key is not configured');
+    if (!templateId) {
+      console.error(`No template ID configured for notification type: ${notification.type}`);
       return false;
     }
 
-    // Send email using SendGrid
-    try {
-      const response = await sgMail.send(emailContent);
-      console.log(`Notification email sent successfully to ${user.email}`, response[0].statusCode);
-      return true;
-    } catch (error: any) {
-      console.error('Failed to send notification email:', error);
-      if (error.response) {
-        console.error(error.response.body);
-      }
-      return false;
-    }
+    return await sendTemplatedEmail(user.email, templateId, dynamicData);
+
   } catch (error) {
     console.error('Failed to send notification email:', error);
     return false;
@@ -210,46 +191,26 @@ export async function sendSubmissionStatusEmail(submission: Submission, message:
 
     const createdNotification = await storage.createNotification(notificationData);
 
-    // Direct email sending without using the notification email function
+    // Use templated email function
     const baseUrl = process.env.BASE_URL || 'http://localhost:3000';
-    const linkPath = notificationData.link;
-    const actionUrl = linkPath ? `${baseUrl}${linkPath}` : `${baseUrl}/dashboard`;
+    const actionUrl = `${baseUrl}/submissions/${submission.id}`;
 
-    const subject = 'Submission Status Update';
-    const content = `
-      <p>Hello <strong>${user.username}</strong>,</p>
-      <p>There has been a change to one of your submissions:</p>
-      <p>${notificationData.message}</p>
-      <div style="text-align: center; margin: 30px 0;">
-        <a href="${actionUrl}" style="background-color: #00ff00; color: #000000; padding: 12px 24px; text-decoration: none; border-radius: 4px; font-weight: bold; display: inline-block;">View Details</a>
-      </div>
-    `;
-
-    const emailContent = {
-      from: '"CyberHunt" <notifications@cyberhunt.com>',
-      to: user.email,
-      subject,
-      text: `${subject}\n\nHello ${user.username},\n\n${notificationData.message}\n\nCheck it out here: ${actionUrl}\n\nThe CyberHunt Team`,
-      html: getEmailTemplate(subject, content),
+    const dynamicData = {
+      username: user.username,
+      program_name: program.name,
+      submission_title: submission.title,
+      status: submission.status,
+      message: message,
+      action_url: actionUrl,
+      base_url: baseUrl,
     };
 
-    if (!sendGridApiKey) {
-      console.error('SendGrid API key is not configured');
-      return false;
-    }
+    return await sendTemplatedEmail(
+      user.email,
+      'YOUR_SUBMISSION_STATUS_TEMPLATE_ID', // Replace with your actual template ID
+      dynamicData
+    );
 
-    // Send email using SendGrid
-    try{
-        const response = await sgMail.send(emailContent);
-        console.log(`Submission status email sent successfully to ${user.email}`, response[0].statusCode);
-        return true;
-    } catch(error: any){
-        console.error('Failed to send submission status email:', error);
-        if (error.response) {
-            console.error(error.response.body);
-        }
-        return false;
-    }
   } catch (error) {
     console.error('Failed to send submission status email:', error);
     return false;
@@ -274,45 +235,22 @@ export async function sendAchievementEmail(userId: number, achievementTitle: str
 
     const createdNotification = await storage.createNotification(notificationData);
 
-    // Direct email sending without using the notification email function
+    // Use templated email function
     const baseUrl = process.env.BASE_URL || 'http://localhost:3000';
-    const linkPath = notificationData.link;
-    const actionUrl = linkPath ? `${baseUrl}${linkPath}` : `${baseUrl}/dashboard`;
 
-    const subject = 'You\'ve Earned an Achievement on CyberHunt!';
-    const content = `
-      <p>Hello <strong>${user.username}</strong>,</p>
-      <p>Congratulations! You've reached a new milestone:</p>
-      <p style="font-size: 18px; text-align: center; color: #00ff00; padding: 15px; background-color: #111111; border-radius: 5px;">${notificationData.message}</p>
-      <div style="text-align: center; margin: 30px 0;">
-        <a href="${actionUrl}" style="background-color: #00ff00; color: #000000; padding: 12px 24px; text-decoration: none; border-radius: 4px; font-weight: bold; display: inline-block;">See Your Achievements</a>
-      </div>
-    `;
-
-    const emailContent = {
-      from: '"CyberHunt" <notifications@cyberhunt.com>',
-      to: user.email,
-      subject,
-      text: `${subject}\n\nHello ${user.username},\n\n${notificationData.message}\n\nCheck it out here: ${actionUrl}\n\nThe CyberHunt Team`,
-      html: getEmailTemplate(subject, content),
+    const dynamicData = {
+      username: user.username,
+      achievement_title: achievementTitle,
+      achievement_description: description,
+      action_url: `${baseUrl}/dashboard`,
+      base_url: baseUrl,
     };
-    if (!sendGridApiKey) {
-        console.error('SendGrid API key is not configured');
-        return false;
-      }
 
-      // Send email using SendGrid
-    try {
-        const response = await sgMail.send(emailContent);
-        console.log(`Achievement email sent successfully to ${user.email}`, response[0].statusCode);
-        return true;
-    } catch (error: any){
-        console.error('Failed to send achievement email:', error);
-        if (error.response) {
-            console.error(error.response.body);
-        }
-        return false;
-    }
+    return await sendTemplatedEmail(
+      user.email,
+      'YOUR_ACHIEVEMENT_TEMPLATE_ID', // Replace with your actual template ID
+      dynamicData
+    );
 
   } catch (error) {
     console.error('Failed to send achievement email:', error);
@@ -335,65 +273,24 @@ export async function sendWithdrawalCompletedEmail(withdrawal: any): Promise<boo
                          withdrawal.method === 'crypto' ? 'Cryptocurrency' : 
                          withdrawal.method.charAt(0).toUpperCase() + withdrawal.method.slice(1);
 
-    // Email content
-    const emailContent = {
-      from: '"CyberHunt" <payments@cyberhunt.com>',
-      to: user.email,
-      subject: 'Withdrawal Completed - Payment Sent Successfully',
-      text: `Hello ${user.username},
-
-Great news! Your withdrawal request has been completed and the payment has been sent successfully.
-
-PAYMENT DETAILS:
-- Amount: $${withdrawal.amount}
-- Method: ${methodDisplay}
-- Destination: ${withdrawal.destination}
-- Date: ${new Date().toLocaleDateString()}
-
-The funds should arrive in your account within the standard processing time for ${methodDisplay} transfers.
-
-If you have any questions about this payment, please contact our support team.
-
-Thank you for being part of the CyberHunt community!
-
-The CyberHunt Team`,
-      html: getEmailTemplate('Payment Sent Successfully! 💰', `
-        <p>Hello <strong>${user.username}</strong>,</p>
-        <p>Great news! Your withdrawal request has been completed and the payment has been sent successfully.</p>
-        
-        <div style="background-color: #111; padding: 20px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #00ff00;">
-          <h3 style="color: #00ff00; margin-top: 0;">Payment Details</h3>
-          <table style="width: 100%; color: #cccccc;">
-            <tr><td style="padding: 5px 0;"><strong>Amount:</strong></td><td style="padding: 5px 0;">$${withdrawal.amount}</td></tr>
-            <tr><td style="padding: 5px 0;"><strong>Method:</strong></td><td style="padding: 5px 0;">${methodDisplay}</td></tr>
-            <tr><td style="padding: 5px 0;"><strong>Destination:</strong></td><td style="padding: 5px 0;">${withdrawal.destination}</td></tr>
-            <tr><td style="padding: 5px 0;"><strong>Date:</strong></td><td style="padding: 5px 0;">${new Date().toLocaleDateString()}</td></tr>
-          </table>
-        </div>
-
-        <p style="background-color: #1a1a1a; padding: 15px; border-radius: 5px; border-left: 3px solid #00ff00;">
-          💡 <strong>Processing Time:</strong> The funds should arrive in your account within the standard processing time for ${methodDisplay} transfers.
-        </p>
-
-        <div style="text-align: center; margin: 30px 0;">
-          <a href="${baseUrl}/wallet" style="background-color: #00ff00; color: #000000; padding: 12px 24px; text-decoration: none; border-radius: 4px; font-weight: bold; display: inline-block;">View Wallet History</a>
-        </div>
-
-        <p>If you have any questions about this payment, please contact our support team.</p>
-        <p style="margin-top: 20px;">Thank you for being part of the CyberHunt community!</p>
-      `),
+    const dynamicData = {
+      username: user.username,
+      amount: withdrawal.amount,
+      method: methodDisplay,
+      destination: withdrawal.destination,
+      date: new Date().toLocaleDateString(),
+      action_url: `${baseUrl}/wallet`,
+      base_url: baseUrl,
     };
 
-    if (!sendGridApiKey) {
-      console.error('SendGrid API key is not configured');
-      return false;
-    }
+    const success = await sendTemplatedEmail(
+      user.email,
+      'YOUR_WITHDRAWAL_COMPLETED_TEMPLATE_ID', // Replace with your actual template ID
+      dynamicData,
+      'payments@cyberhunt.com'
+    );
 
-    // Send email using SendGrid
-    try {
-      const response = await sgMail.send(emailContent);
-      console.log(`Withdrawal completion email sent successfully to ${user.email}`, response[0].statusCode);
-      
+    if (success) {
       // Create notification for the user
       await storage.createNotification({
         type: 'system',
@@ -402,15 +299,9 @@ The CyberHunt Team`,
         userId: user.id,
         relatedId: withdrawal.id
       });
-
-      return true;
-    } catch (error: any) {
-      console.error('Failed to send withdrawal completion email:', error);
-      if (error.response) {
-        console.error(error.response.body);
-      }
-      return false;
     }
+
+    return success;
 
   } catch (error) {
     console.error('Failed to send withdrawal completion email:', error);
@@ -430,92 +321,50 @@ export async function sendWelcomeEmail(userId: number): Promise<boolean> {
     const programs = await storage.getPublicPrograms();
     const topPrograms = programs.slice(0, 3);
 
-    // Create program recommendations HTML
-    let programRecommendations = '';
-    if (topPrograms.length > 0) {
-      programRecommendations = `
-        <p style="margin-top: 20px; font-weight: bold; color: #00ff00;">Recommended Programs to Start With:</p>
-        <div style="background-color: #111; padding: 15px; border-radius: 5px; margin-top: 10px;">
-          ${topPrograms.map(program => `
-            <div style="margin-bottom: 15px; padding-bottom: 15px; border-bottom: 1px solid #333;">
-              <p style="font-weight: bold; margin-bottom: 5px;">${program.name}</p>
-              <p style="margin-bottom: 5px; font-size: 14px;">${program.description}</p>
-              <a href="${baseUrl}/programs/${program.id}" style="color: #00ff00; text-decoration: none; font-size: 14px;">View Details →</a>
-            </div>
-          `).join('')}
-        </div>
-      `;
-    }
-
-    // Email content
-    const emailContent = {
-      from: '"CyberHunt" <welcome@cyberhunt.com>',
-      to: user.email,
-      subject: 'Welcome to CyberHunt - Your Account is Verified!',
-      text: `Hello ${user.username},
-
-Welcome to CyberHunt! Your account has been successfully verified.
-
-You are now part of an elite community of cybersecurity professionals working to make the digital world safer.
-
-GETTING STARTED GUIDE:
-1. Explore Available Programs - Browse through the list of active bug bounty programs and find those that match your skills.
-2. Submit Vulnerability Reports - Use our detailed submission form to report security issues you discover.
-3. Track Your Progress - Monitor your submission statuses and rewards through your personalized dashboard.
-4. Climb the Leaderboard - Earn reputation points for successful submissions and become a top-ranked hacker.
-
-${topPrograms.length > 0 ? `RECOMMENDED PROGRAMS TO START WITH:
-${topPrograms.map(program => `- ${program.name}: ${program.description.substring(0, 100)}${program.description.length > 100 ? '...' : ''}`).join('\n')}
-` : ''}
-NEED HELP?
-If you have any questions or need assistance, visit our FAQ section or reach out to the support team.
-
-Get started now by visiting: ${baseUrl}/dashboard
-
-Happy hunting!
-
-The CyberHunt Team`,
-      html: getEmailTemplate('Welcome to CyberHunt!', `
-        <p>Hello <strong>${user.username}</strong>,</p>
-        <p>Welcome to CyberHunt! Your account has been successfully verified.</p>
-        <p>You are now part of an elite community of cybersecurity professionals working to make the digital world safer.</p>
-        <div style="text-align: center; margin: 30px 0;">
-          <a href="${baseUrl}/dashboard" style="background-color: #00ff00; color: #000000; padding: 12px 24px; text-decoration: none; border-radius: 4px; font-weight: bold; display: inline-block;">Access Your Dashboard</a>
-        </div>
-        <p style="margin-top: 25px; font-weight: bold; color: #00ff00;">Getting Started Guide:</p>
-        <ol style="color: #cccccc; margin-left: 20px;">
-          <li style="margin-bottom: 8px;"><strong>Explore Available Programs</strong> - Browse through the list of active bug bounty programs and find those that match your skills.</li>
-          <li style="margin-bottom: 8px;"><strong>Submit Vulnerability Reports</strong> - Use our detailed submission form to report security issues you discover.</li>
-          <li style="margin-bottom: 8px;"><strong>Track Your Progress</strong> - Monitor your submission statuses and rewards through your personalized dashboard.</li>
-          <li style="margin-bottom: 8px;"><strong>Climb the Leaderboard</strong> - Earn reputation points for successful submissions and become a top-ranked hacker.</li>
-        </ol>
-        ${programRecommendations}
-        <p style="margin-top: 25px; font-weight: bold; color: #00ff00;">Need Help?</p>
-        <p>If you have any questions or need assistance, visit our <a href="${baseUrl}/faq" style="color: #00ff00;">FAQ section</a> or reach out to the support team.</p>
-        <p style="margin-top: 15px;">Happy hunting!</p>
-      `),
+    const dynamicData = {
+      username: user.username,
+      dashboard_url: `${baseUrl}/dashboard`,
+      base_url: baseUrl,
+      recommended_programs: topPrograms.map(program => ({
+        name: program.name,
+        description: program.description,
+        url: `${baseUrl}/programs/${program.id}`
+      })),
     };
 
-    if (!sendGridApiKey) {
-        console.error('SendGrid API key is not configured');
-        return false;
-    }
-
-    // Send email using SendGrid
-    try{
-      const response = await sgMail.send(emailContent);
-      console.log(`Welcome email sent successfully to ${user.email}`, response[0].statusCode);
-      return true;
-    } catch(error: any){
-        console.error('Failed to send welcome email:', error);
-        if (error.response) {
-            console.error(error.response.body);
-        }
-        return false;
-    }
+    return await sendTemplatedEmail(
+      user.email,
+      'YOUR_WELCOME_TEMPLATE_ID', // Replace with your actual template ID
+      dynamicData,
+      'welcome@cyberhunt.com'
+    );
 
   } catch (error) {
     console.error('Failed to send welcome email:', error);
+    return false;
+  }
+}
+
+// Send password reset email
+export async function sendPasswordResetEmail(userEmail: string, username: string, resetToken: string): Promise<boolean> {
+  try {
+    const resetLink = `${process.env.BASE_URL || 'http://localhost:3000'}/reset-password?token=${resetToken}`;
+
+    const dynamicData = {
+      username: username,
+      reset_link: resetLink,
+      base_url: process.env.BASE_URL || 'http://localhost:3000',
+    };
+
+    return await sendTemplatedEmail(
+      userEmail,
+      'YOUR_PASSWORD_RESET_TEMPLATE_ID', // Replace with your actual template ID
+      dynamicData,
+      'security@cyberhunt.com'
+    );
+
+  } catch (error) {
+    console.error('Failed to send password reset email:', error);
     return false;
   }
 }
