@@ -685,15 +685,15 @@ function suggestSeverity(description: string, type: string): string {
       // Get basic stats without requiring user data for now
       const stats = {
         totalUsers: 0, // Will be implemented when user storage is available
-        activePrograms: programs.filter(p => p.status === 'active').length,
+        activePrograms: programs ? programs.filter(p => p.status === 'active').length : 0,
         totalSubmissions: 0, // Will be implemented when submission data is available
         pendingReviews: 0
       };
 
-      res.json(stats);
+      res.status(200).json(stats);
     } catch (error) {
       console.error('Error fetching admin stats:', error);
-      res.json({
+      res.status(200).json({
         totalUsers: 0,
         activePrograms: 0,
         totalSubmissions: 0,
