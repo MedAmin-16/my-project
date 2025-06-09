@@ -6,6 +6,7 @@ import rateLimit from 'express-rate-limit';
 import cookieParser from 'cookie-parser';
 import session from 'express-session';
 import { randomBytes } from 'crypto';
+import bcrypt from "bcrypt";
 
 const app = express();
 

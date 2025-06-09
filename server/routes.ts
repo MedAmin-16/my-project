@@ -83,78 +83,173 @@ function ensureAdmin(req: Request, res: Response, next: NextFunction) {
 // Track admin endpoint requests for rate limiting
 const adminRequestLog = new Map<string, number[]>();
 
-// Admin credentials (in production, these should be hashed and stored securely)
+import bcrypt from 'bcrypt';
+import rateLimit from 'express-rate-limit';
+
+// Secure admin credentials with bcrypt hashing
 const ADMIN_CREDENTIALS = {
   email: process.env.ADMIN_EMAIL || "admin@cyberhunt.com",
-  password: process.env.ADMIN_PASSWORD || "AdminSecure123!"
+  // In production, this should be a pre-hashed password
+  passwordHash: process.env.ADMIN_PASSWORD_HASH || bcrypt.hashSync(process.env.ADMIN_PASSWORD || "AdminSecure123!", 12)
 };
 
-// Import admin sessions from index.ts to share the same storage
-let adminSessions: Map<string, { email: string, loginTime: number }>;
+// Admin-specific rate limiting
+const adminLoginLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 3, // Only 3 attempts per IP
+  skipSuccessfulRequests: true,
+  message: { message: "Too many admin login attempts. Try again in 15 minutes." },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
 
-// Middleware to check admin authentication
+const adminApiLimiter = rateLimit({
+  windowMs: 60 * 1000, // 1 minute
+  max: 60, // 60 requests per minute for admin APIs
+  message: { message: "Admin API rate limit exceeded" }
+});
+
+// Enhanced admin session storage with additional security metadata
+interface AdminSession {
+  email: string;
+  loginTime: number;
+  ipAddress: string;
+  userAgent: string;
+  lastActivity: number;
+}
+
+// Import admin sessions from index.ts to share the same storage
+let adminSessions: Map<string, AdminSession>;
+
+// Enhanced admin authentication middleware with comprehensive security
 function ensureAdminAuthenticated(req: Request, res: Response, next: NextFunction) {
+  const clientIP = req.ip || req.connection.remoteAddress || 'unknown';
+  const userAgent = req.headers['user-agent'] || 'unknown';
   const authHeader = req.headers.authorization;
-  const token = authHeader?.split(' ')[1]; // Extract Bearer token
   
-  if (!token) {
+  // Check for proper Authorization header format
+  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    console.warn(`Admin access denied: Missing/invalid auth header from IP ${clientIP} at ${new Date().toISOString()}`);
     return res.status(401).json({ message: "Admin authentication required" });
+  }
+
+  const token = authHeader.split(' ')[1];
+  
+  // Validate token format (should be 64 hex characters)
+  if (!token || !/^[a-f0-9]{64}$/.test(token)) {
+    console.warn(`Invalid admin token format from IP ${clientIP} at ${new Date().toISOString()}`);
+    return res.status(401).json({ message: "Invalid session format" });
   }
 
   // Get admin sessions from the module that exports it
   adminSessions = getAdminSessions();
   
   if (!adminSessions.has(token)) {
+    console.warn(`Admin session not found for token from IP ${clientIP} at ${new Date().toISOString()}`);
     return res.status(401).json({ message: "Invalid admin session" });
   }
 
-  const adminSession = adminSessions.get(token);
-  if (!adminSession) {
-    return res.status(401).json({ message: "Invalid admin session" });
-  }
+  const adminSession = adminSessions.get(token)!;
 
-  // Check if session is older than 2 hours
-  if (Date.now() - adminSession.loginTime > 2 * 60 * 60 * 1000) {
+  // Check session expiration (2 hours)
+  const sessionAge = Date.now() - adminSession.loginTime;
+  if (sessionAge > 2 * 60 * 60 * 1000) {
     adminSessions.delete(token);
+    console.warn(`Admin session expired for ${adminSession.email} from IP ${clientIP}`);
     return res.status(401).json({ message: "Admin session expired" });
   }
+
+  // Check for session inactivity (30 minutes)
+  const inactivityTime = Date.now() - adminSession.lastActivity;
+  if (inactivityTime > 30 * 60 * 1000) {
+    adminSessions.delete(token);
+    console.warn(`Admin session inactive for ${adminSession.email} from IP ${clientIP}`);
+    return res.status(401).json({ message: "Session expired due to inactivity" });
+  }
+
+  // Verify IP address consistency (optional but recommended)
+  if (adminSession.ipAddress !== clientIP) {
+    console.warn(`Admin IP mismatch: Session IP ${adminSession.ipAddress}, Request IP ${clientIP} for ${adminSession.email}`);
+    // Uncomment to enforce IP consistency:
+    // adminSessions.delete(token);
+    // return res.status(401).json({ message: "Session security violation" });
+  }
+
+  // Update last activity
+  adminSession.lastActivity = Date.now();
+  adminSessions.set(token, adminSession);
 
   next();
 }
 
 export async function registerRoutes(app: Express): Promise<Server> {
-  // Admin login route - the official admin login implementation
-  app.post("/api/admin/login", (req, res) => {
-    console.log('Admin login attempt:', req.body);
+  // Admin login route with comprehensive security
+  app.post("/api/admin/login", adminLoginLimiter, async (req, res) => {
+    const clientIP = req.ip || req.connection.remoteAddress || 'unknown';
+    const userAgent = req.headers['user-agent'] || 'unknown';
+    
+    console.log(`Admin login attempt from IP: ${clientIP}, User-Agent: ${userAgent.substring(0, 100)}`);
+    
     try {
       const { email, password } = req.body;
 
+      // Input validation
       if (!email || !password) {
-        console.log('Missing email or password');
+        console.warn(`Admin login failed: Missing credentials from IP ${clientIP}`);
         return res.status(400).json({ message: "Email and password are required" });
       }
 
-      // Validate credentials
-      if (email !== ADMIN_CREDENTIALS.email || password !== ADMIN_CREDENTIALS.password) {
-        console.log('Invalid credentials provided');
+      // Email format validation
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(email)) {
+        console.warn(`Admin login failed: Invalid email format from IP ${clientIP}`);
+        return res.status(400).json({ message: "Invalid email format" });
+      }
+
+      // Validate credentials with timing-safe comparison
+      const emailMatch = email === ADMIN_CREDENTIALS.email;
+      const passwordMatch = await bcrypt.compare(password, ADMIN_CREDENTIALS.passwordHash);
+
+      if (!emailMatch || !passwordMatch) {
+        console.warn(`Admin login failed: Invalid credentials for ${email} from IP ${clientIP}`);
         return res.status(401).json({ message: "Invalid admin credentials" });
       }
 
-      // Get admin sessions from the shared storage
+      // Check for existing sessions and invalidate old ones
       adminSessions = getAdminSessions();
-
-      // Generate admin token
-      const adminToken = randomBytes(32).toString('hex');
-      adminSessions.set(adminToken, {
-        email,
-        loginTime: Date.now()
+      const existingSessions = Array.from(adminSessions.entries()).filter(
+        ([, session]) => session.email === email
+      );
+      
+      // Clean up old sessions (only allow one active session per admin)
+      existingSessions.forEach(([token]) => {
+        adminSessions.delete(token);
       });
 
-      console.log('Admin login successful, token created');
+      // Generate secure admin token
+      const adminToken = randomBytes(32).toString('hex');
+      
+      // Store session with security metadata
+      adminSessions.set(adminToken, {
+        email,
+        loginTime: Date.now(),
+        ipAddress: clientIP,
+        userAgent,
+        lastActivity: Date.now()
+      });
+
+      console.log(`Admin login successful for ${email} from IP ${clientIP}`);
+      
+      // Set secure headers
+      res.setHeader('X-Content-Type-Options', 'nosniff');
+      res.setHeader('X-Frame-Options', 'DENY');
+      res.setHeader('X-XSS-Protection', '1; mode=block');
+      
       res.json({ 
         message: "Admin login successful",
         token: adminToken,
-        success: true
+        success: true,
+        expiresIn: 7200 // 2 hours
       });
     } catch (error) {
       console.error('Admin login error:', error);
@@ -162,19 +257,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Admin verify endpoint
-  app.get("/api/admin/verify", ensureAdminAuthenticated, (req, res) => {
+  // Admin verify endpoint with rate limiting
+  app.get("/api/admin/verify", adminApiLimiter, ensureAdminAuthenticated, (req, res) => {
     res.json({ message: "Admin authenticated", success: true });
   });
 
-  // Admin logout endpoint
-  app.post("/api/admin/logout", ensureAdminAuthenticated, (req, res) => {
+  // Admin logout endpoint with secure cleanup
+  app.post("/api/admin/logout", adminApiLimiter, ensureAdminAuthenticated, (req, res) => {
     const authHeader = req.headers.authorization;
     const token = authHeader?.split(' ')[1];
     
     if (token) {
       adminSessions = getAdminSessions();
+      const session = adminSessions.get(token);
       adminSessions.delete(token);
+      
+      if (session) {
+        console.log(`Admin logout: ${session.email} from IP ${req.ip}`);
+      }
     }
     
     res.json({ message: "Logged out successfully" });
@@ -694,8 +794,11 @@ function suggestSeverity(description: string, type: string): string {
     res.json({ message: "Admin session valid" });
   });
 
-  // Admin stats endpoint
-  app.get("/api/admin/stats", ensureAdminAuthenticated, async (req, res) => {
+  // Admin stats endpoint with security
+  app.get("/api/admin/stats", adminApiLimiter, ensureAdminAuthenticated, async (req, res) => {
+    // Add security headers
+    res.setHeader('X-Content-Type-Options', 'nosniff');
+    res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, private');
     try {
       // Use storage methods instead of direct db access
       const programs = await storage.getAllPrograms();
@@ -721,7 +824,7 @@ function suggestSeverity(description: string, type: string): string {
   });
 
   // Admin users endpoint
-  app.get("/api/admin/users", ensureAdminAuthenticated, async (req, res) => {
+  app.get("/api/admin/users", adminApiLimiter, ensureAdminAuthenticated, async (req, res) => {
     try {
       // Return empty array for now - user management can be implemented later
       res.json([]);
