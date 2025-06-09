@@ -234,9 +234,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Store session with additional security metadata
       adminSessions.set(adminToken, {
         email: sanitizedEmail,
-        loginTime: Date.now(),
-        ipAddress: clientIP,
-        userAgent: req.headers['user-agent'] || 'unknown'
+        loginTime: Date.now()
       });
 
       // Clear failed attempts on successful login

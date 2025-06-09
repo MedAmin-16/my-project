@@ -19,14 +19,7 @@ export function AdminRoute() {
       }
 
       try {
-        let parsedTokenData;
-        try {
-          parsedTokenData = JSON.parse(tokenData);
-        } catch {
-          // Handle legacy token format
-          parsedTokenData = { token: tokenData, expiresAt: Date.now() + 3600000 };
-        }
-
+        const parsedTokenData = JSON.parse(tokenData);
         const { token, expiresAt } = parsedTokenData;
 
         // Check token expiration
@@ -56,6 +49,7 @@ export function AdminRoute() {
         if (response.ok) {
           setIsAuthenticated(true);
         } else {
+          console.log("Admin verification failed, redirecting to login");
           localStorage.removeItem('adminToken');
           setIsAuthenticated(false);
         }
@@ -69,13 +63,19 @@ export function AdminRoute() {
     };
 
     checkAuth();
-    
-    // Set up periodic token validation
-    const interval = setInterval(checkAuth, 5 * 60 * 1000); // Check every 5 minutes
-    
-    return () => clearInterval(interval);
   }, []);
 
-  // Always show login page first, let it handle the redirect logic
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-deep-black flex items-center justify-center">
+        <div className="text-matrix font-mono">Authenticating...</div>
+      </div>
+    );
+  }
+
+  if (isAuthenticated) {
+    return <AdminDashboardPage />;
+  }
+
   return <AdminLoginPage />;
 }
