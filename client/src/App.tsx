@@ -34,6 +34,7 @@ import AdminDashboardPage from "@/pages/admin-dashboard-page";
 import AdminPage from "./pages/admin-page";
 import { AdminRoute } from "@/components/admin-route";
 import SimpleAdminLogin from "@/pages/simple-admin-login";
+import ForceAdmin from "@/pages/force-admin";
 import ForgotPasswordPage from "./pages/forgot-password-page";
 import WalletPage from "./pages/wallet-page";
 import HacktivityPage from "./pages/hacktivity-page";
@@ -144,7 +145,9 @@ function Router() {
       <Route path="/create-program" component={CreateProgramPage} />
 
       {/* Admin Routes */}
-      <Route path="/admin" component={SimpleAdminLogin} />
+      <Route path="/admin">
+        {() => <ForceAdmin />}
+      </Route>
       <Route path="/admin/dashboard" component={AdminDashboardPage} />
       
 
