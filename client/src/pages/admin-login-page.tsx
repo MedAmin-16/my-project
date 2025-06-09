@@ -22,30 +22,7 @@ export default function AdminLoginPage() {
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
 
-  // Check if already authenticated admin
-  useEffect(() => {
-    const checkExistingAuth = async () => {
-      const token = localStorage.getItem('adminToken');
-      if (token) {
-        try {
-          const response = await fetch("/api/admin/verify", {
-            headers: {
-              'Authorization': `Bearer ${token}`
-            },
-            credentials: 'include'
-          });
-          if (response.ok) {
-            navigate("/admin/dashboard");
-          } else {
-            localStorage.removeItem('adminToken');
-          }
-        } catch (error) {
-          localStorage.removeItem('adminToken');
-        }
-      }
-    };
-    checkExistingAuth();
-  }, [navigate]);
+
 
   const {
     register,
