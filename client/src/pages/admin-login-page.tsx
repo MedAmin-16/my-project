@@ -128,6 +128,19 @@ export default function AdminLoginPage() {
           expiresAt: Date.now() + (result.expiresIn * 1000 || 3600000) // 1 hour default
         };
         localStorage.setItem('adminToken', JSON.stringify(tokenData));
+        
+        // Verify the token immediately after storing
+        const verifyResponse = await fetch("/api/admin/verify", {
+          headers: {
+            'Authorization': `Bearer ${result.token}`,
+            'X-Requested-With': 'XMLHttpRequest'
+          },
+          credentials: 'include'
+        });
+        
+        if (!verifyResponse.ok) {
+          throw new Error("Token verification failed");
+        }
       } else {
         throw new Error("Invalid token received");
       }
