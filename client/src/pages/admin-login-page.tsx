@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -21,6 +21,31 @@ export default function AdminLoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
+
+  // Check if already authenticated admin
+  useEffect(() => {
+    const checkExistingAuth = async () => {
+      const token = localStorage.getItem('adminToken');
+      if (token) {
+        try {
+          const response = await fetch("/api/admin/verify", {
+            headers: {
+              'Authorization': `Bearer ${token}`
+            },
+            credentials: 'include'
+          });
+          if (response.ok) {
+            navigate("/admin/dashboard");
+          } else {
+            localStorage.removeItem('adminToken');
+          }
+        } catch (error) {
+          localStorage.removeItem('adminToken');
+        }
+      }
+    };
+    checkExistingAuth();
+  }, [navigate]);
 
   const {
     register,
