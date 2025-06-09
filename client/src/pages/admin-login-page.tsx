@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -17,10 +16,43 @@ const adminLoginSchema = z.object({
 type AdminLoginFormValues = z.infer<typeof adminLoginSchema>;
 
 export default function AdminLoginPage() {
-  const [location, navigate] = useLocation();
+  const [, navigate] = useLocation();
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
+
+  // Check if already authenticated on mount
+  useEffect(() => {
+    const checkExistingAuth = async () => {
+      const tokenData = localStorage.getItem('adminToken');
+      if (!tokenData) return;
+
+      try {
+        const parsedTokenData = JSON.parse(tokenData);
+        const { token, expiresAt } = parsedTokenData;
+
+        if (token && expiresAt && Date.now() < expiresAt && /^[a-f0-9]{64}$/i.test(token)) {
+          const response = await fetch("/api/admin/verify", {
+            headers: {
+              'Authorization': `Bearer ${token}`,
+              'X-Requested-With': 'XMLHttpRequest'
+            },
+            credentials: 'include'
+          });
+
+          if (response.ok) {
+            console.log("Already authenticated, redirecting to dashboard");
+            navigate("/admin/dashboard");
+          }
+        }
+      } catch (error) {
+        console.error('Auth check error:', error);
+        localStorage.removeItem('adminToken');
+      }
+    };
+
+    checkExistingAuth();
+  }, [navigate]);
 
   // Debug logging
   useEffect(() => {
@@ -126,7 +158,7 @@ export default function AdminLoginPage() {
   return (
     <div className="min-h-screen bg-deep-black flex items-center justify-center p-4 relative overflow-hidden">
       <MatrixBackground />
-      
+
       {/* Back button */}
       <Link 
         to="/" 
@@ -141,14 +173,14 @@ export default function AdminLoginPage() {
         {/* Glowing effects */}
         <div className="absolute -top-20 -left-20 w-40 h-40 bg-matrix/20 rounded-full blur-3xl animate-pulse"></div>
         <div className="absolute -bottom-20 -right-20 w-40 h-40 bg-matrix/10 rounded-full blur-3xl animate-pulse"></div>
-        
+
         {/* Login card */}
         <div className="relative bg-terminal/90 backdrop-blur-sm border border-matrix/30 rounded-lg p-8 shadow-2xl">
           {/* Animated border effect */}
           <div className="absolute inset-0 bg-gradient-to-r from-matrix/0 via-matrix/20 to-matrix/0 rounded-lg">
             <div className="absolute inset-[1px] bg-terminal/90 rounded-lg"></div>
           </div>
-          
+
           <div className="relative z-10">
             {/* Header section */}
             <div className="text-center mb-8">
@@ -160,7 +192,7 @@ export default function AdminLoginPage() {
                   </div>
                 </div>
               </div>
-              
+
               <h1 className="text-4xl font-mono font-bold text-matrix mb-2 tracking-wider">
                 CYBER HUNT
               </h1>
