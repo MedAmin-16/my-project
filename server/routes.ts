@@ -162,6 +162,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Admin verify endpoint
+  app.get("/api/admin/verify", ensureAdminAuthenticated, (req, res) => {
+    res.json({ message: "Admin authenticated", success: true });
+  });
+
+  // Admin logout endpoint
+  app.post("/api/admin/logout", ensureAdminAuthenticated, (req, res) => {
+    const authHeader = req.headers.authorization;
+    const token = authHeader?.split(' ')[1];
+    
+    if (token) {
+      adminSessions = getAdminSessions();
+      adminSessions.delete(token);
+    }
+    
+    res.json({ message: "Logged out successfully" });
+  });
+
   // Setup authentication routes (/api/login, /api/register, etc.)
   setupAuth(app);
 

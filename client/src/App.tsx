@@ -32,6 +32,7 @@ import CompanyWalletPage from "@/pages/company-wallet-page";
 import AdminLoginPage from "@/pages/admin-login-page";
 import AdminDashboardPage from "@/pages/admin-dashboard-page";
 import AdminPage from "./pages/admin-page";
+import { AdminRoute } from "@/components/admin-route";
 import ForgotPasswordPage from "./pages/forgot-password-page";
 import WalletPage from "./pages/wallet-page";
 import HacktivityPage from "./pages/hacktivity-page";
@@ -142,7 +143,7 @@ function Router() {
       <Route path="/create-program" component={CreateProgramPage} />
 
       {/* Admin Routes */}
-      <Route path="/admin" component={AdminLoginPage} />
+      <Route path="/admin" component={AdminRoute} />
       <Route path="/admin/dashboard" component={AdminDashboardPage} />
       
 
