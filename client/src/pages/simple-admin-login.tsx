@@ -1,5 +1,4 @@
-
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -16,18 +15,11 @@ const adminLoginSchema = z.object({
 
 type AdminLoginFormValues = z.infer<typeof adminLoginSchema>;
 
-export default function AdminLoginPage() {
-  const [location, navigate] = useLocation();
+export default function SimpleAdminLogin() {
+  const [, navigate] = useLocation();
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
-
-  // Debug logging
-  useEffect(() => {
-    console.log("AdminLoginPage mounted, current location:", location);
-  }, [location]);
-
-
 
   const {
     register,
