@@ -111,7 +111,7 @@ function Router() {
       <ProtectedRoute path="/company/wallet" component={CompanyWalletPage} />
       <ProtectedRoute path="/admin/company-wallets" component={AdminCompanyWalletsPage} />
       <ProtectedRoute path="/admin/withdrawals" component={AdminWithdrawalsPage} />
-      <ProtectedRoute path="/admin" component={AdminDashboardPage} />
+      <Route path="/admin" component={AdminLoginPage} />
       <Route path="/auth" component={AuthPage} />
       <Route path="/forgot-password" component={ForgotPasswordPage} />
       <Route path="/verify-email" component={VerifyEmailPage} />
@@ -149,7 +149,7 @@ function Router() {
         {() => <ForceAdmin />}
       </Route>
       <Route path="/admin/dashboard" component={AdminDashboardPage} />
-      
+
 
       <Route path="/*" component={NotFound} />
     </Switch>
