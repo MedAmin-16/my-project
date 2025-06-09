@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -16,43 +17,10 @@ const adminLoginSchema = z.object({
 type AdminLoginFormValues = z.infer<typeof adminLoginSchema>;
 
 export default function AdminLoginPage() {
-  const [, navigate] = useLocation();
+  const [location, navigate] = useLocation();
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
-
-  // Check if already authenticated on mount
-  useEffect(() => {
-    const checkExistingAuth = async () => {
-      const tokenData = localStorage.getItem('adminToken');
-      if (!tokenData) return;
-
-      try {
-        const parsedTokenData = JSON.parse(tokenData);
-        const { token, expiresAt } = parsedTokenData;
-
-        if (token && expiresAt && Date.now() < expiresAt && /^[a-f0-9]{64}$/i.test(token)) {
-          const response = await fetch("/api/admin/verify", {
-            headers: {
-              'Authorization': `Bearer ${token}`,
-              'X-Requested-With': 'XMLHttpRequest'
-            },
-            credentials: 'include'
-          });
-
-          if (response.ok) {
-            console.log("Already authenticated, redirecting to dashboard");
-            navigate("/admin/dashboard");
-          }
-        }
-      } catch (error) {
-        console.error('Auth check error:', error);
-        localStorage.removeItem('adminToken');
-      }
-    };
-
-    checkExistingAuth();
-  }, [navigate]);
 
   // Debug logging
   useEffect(() => {
@@ -76,79 +44,25 @@ export default function AdminLoginPage() {
   const onSubmit = async (data: AdminLoginFormValues) => {
     setIsLoading(true);
     try {
-      // Input validation and sanitization
-      const sanitizedData = {
-        email: data.email.trim().toLowerCase(),
-        password: data.password.trim()
-      };
-
-      // Client-side validation
-      if (!sanitizedData.email || !sanitizedData.password) {
-        throw new Error("All fields are required");
-      }
-
-      if (sanitizedData.email.length > 254 || sanitizedData.password.length > 128) {
-        throw new Error("Invalid input length");
-      }
-
-      // Email format validation
-      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-      if (!emailRegex.test(sanitizedData.email)) {
-        throw new Error("Invalid email format");
-      }
-
       const response = await fetch("/api/admin/login", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "X-Requested-With": "XMLHttpRequest", // CSRF protection
         },
         credentials: "include",
-        body: JSON.stringify(sanitizedData),
+        body: JSON.stringify(data),
       });
 
       const result = await response.json();
 
       if (!response.ok) {
-        // Enhanced error handling without exposing sensitive info
-        let errorMessage = "Authentication failed";
-        if (response.status === 429) {
-          errorMessage = "Too many attempts. Please try again later.";
-        } else if (response.status === 401) {
-          errorMessage = "Invalid credentials";
-        }
-        throw new Error(errorMessage);
+        throw new Error(result.message || "Login failed");
       }
 
-      // Validate token format before storing
-      if (result.token && /^[a-f0-9]{64}$/i.test(result.token)) {
-        // Store with expiration time
-        const tokenData = {
-          token: result.token,
-          expiresAt: Date.now() + (result.expiresIn * 1000 || 3600000) // 1 hour default
-        };
-        localStorage.setItem('adminToken', JSON.stringify(tokenData));
-        
-        // Verify the token immediately after storing
-        const verifyResponse = await fetch("/api/admin/verify", {
-          headers: {
-            'Authorization': `Bearer ${result.token}`,
-            'X-Requested-With': 'XMLHttpRequest'
-          },
-          credentials: 'include'
-        });
-        
-        if (!verifyResponse.ok) {
-          throw new Error("Token verification failed");
-        }
-      } else {
-        throw new Error("Invalid token received");
+      // Store the admin token in localStorage for API calls
+      if (result.token) {
+        localStorage.setItem('adminToken', result.token);
       }
-
-      // Clear form data for security
-      document.querySelectorAll('input[type="password"]').forEach((input: any) => {
-        input.value = '';
-      });
 
       toast({
         title: "Access Granted",
@@ -157,10 +71,9 @@ export default function AdminLoginPage() {
 
       navigate("/admin/dashboard");
     } catch (error) {
-      console.error('Login error:', error); // Log for debugging
       toast({
         title: "Access Denied",
-        description: error instanceof Error ? error.message : "Authentication failed",
+        description: error instanceof Error ? error.message : "Invalid credentials",
         variant: "destructive",
       });
     } finally {
@@ -171,7 +84,7 @@ export default function AdminLoginPage() {
   return (
     <div className="min-h-screen bg-deep-black flex items-center justify-center p-4 relative overflow-hidden">
       <MatrixBackground />
-
+      
       {/* Back button */}
       <Link 
         to="/" 
@@ -186,14 +99,14 @@ export default function AdminLoginPage() {
         {/* Glowing effects */}
         <div className="absolute -top-20 -left-20 w-40 h-40 bg-matrix/20 rounded-full blur-3xl animate-pulse"></div>
         <div className="absolute -bottom-20 -right-20 w-40 h-40 bg-matrix/10 rounded-full blur-3xl animate-pulse"></div>
-
+        
         {/* Login card */}
         <div className="relative bg-terminal/90 backdrop-blur-sm border border-matrix/30 rounded-lg p-8 shadow-2xl">
           {/* Animated border effect */}
           <div className="absolute inset-0 bg-gradient-to-r from-matrix/0 via-matrix/20 to-matrix/0 rounded-lg">
             <div className="absolute inset-[1px] bg-terminal/90 rounded-lg"></div>
           </div>
-
+          
           <div className="relative z-10">
             {/* Header section */}
             <div className="text-center mb-8">
@@ -205,7 +118,7 @@ export default function AdminLoginPage() {
                   </div>
                 </div>
               </div>
-
+              
               <h1 className="text-4xl font-mono font-bold text-matrix mb-2 tracking-wider">
                 CYBER HUNT
               </h1>

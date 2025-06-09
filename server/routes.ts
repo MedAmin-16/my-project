@@ -9,15 +9,6 @@ import { getAdminSessions } from "./index";
 import { sendWelcomeEmail, sendAchievementEmail, sendSubmissionStatusEmail, sendWithdrawalCompletedEmail } from "./email-service";
 import multer from "multer";
 import path from "path";
-
-// Extend Request type for admin user
-declare global {
-  namespace Express {
-    interface Request {
-      adminUser?: string;
-    }
-  }
-}
 const upload = multer({
   storage: multer.diskStorage({
     destination: './uploads',
@@ -92,9 +83,6 @@ function ensureAdmin(req: Request, res: Response, next: NextFunction) {
 // Track admin endpoint requests for rate limiting
 const adminRequestLog = new Map<string, number[]>();
 
-// Track admin login attempts for enhanced security
-const adminLoginAttempts = new Map<string, number[]>();
-
 // Admin credentials (in production, these should be hashed and stored securely)
 const ADMIN_CREDENTIALS = {
   email: process.env.ADMIN_EMAIL || "admin@cyberhunt.com",
@@ -104,28 +92,19 @@ const ADMIN_CREDENTIALS = {
 // Import admin sessions from index.ts to share the same storage
 let adminSessions: Map<string, { email: string, loginTime: number }>;
 
-// Enhanced admin authentication middleware with security measures
+// Middleware to check admin authentication
 function ensureAdminAuthenticated(req: Request, res: Response, next: NextFunction) {
   const authHeader = req.headers.authorization;
   const token = authHeader?.split(' ')[1]; // Extract Bearer token
   
   if (!token) {
-    // Log suspicious activity
-    console.warn(`Unauthorized admin access attempt from IP ${req.ip} at ${new Date().toISOString()}`);
     return res.status(401).json({ message: "Admin authentication required" });
-  }
-
-  // Validate token format (must be 64 hex characters)
-  if (!/^[a-f0-9]{64}$/i.test(token)) {
-    console.warn(`Invalid admin token format from IP ${req.ip} at ${new Date().toISOString()}`);
-    return res.status(401).json({ message: "Invalid session format" });
   }
 
   // Get admin sessions from the module that exports it
   adminSessions = getAdminSessions();
   
   if (!adminSessions.has(token)) {
-    console.warn(`Invalid admin token used from IP ${req.ip} at ${new Date().toISOString()}`);
     return res.status(401).json({ message: "Invalid admin session" });
   }
 
@@ -134,132 +113,52 @@ function ensureAdminAuthenticated(req: Request, res: Response, next: NextFunctio
     return res.status(401).json({ message: "Invalid admin session" });
   }
 
-  // Check if session is older than 1 hour (reduced from 2 hours)
-  if (Date.now() - adminSession.loginTime > 60 * 60 * 1000) {
+  // Check if session is older than 2 hours
+  if (Date.now() - adminSession.loginTime > 2 * 60 * 60 * 1000) {
     adminSessions.delete(token);
-    console.info(`Admin session expired for ${adminSession.email} from IP ${req.ip}`);
     return res.status(401).json({ message: "Admin session expired" });
   }
 
-  // Update last activity time for session
-  adminSession.loginTime = Date.now();
-  
-  // Add user info to request for logging
-  req.adminUser = adminSession.email;
-  
   next();
 }
 
 export async function registerRoutes(app: Express): Promise<Server> {
-  // Enhanced admin login with comprehensive security measures
-  app.post("/api/admin/login", async (req, res) => {
-    const startTime = Date.now();
-    const clientIP = req.ip;
-    
+  // Admin login route - the official admin login implementation
+  app.post("/api/admin/login", (req, res) => {
+    console.log('Admin login attempt:', req.body);
     try {
-      // Input validation and sanitization
       const { email, password } = req.body;
 
-      if (!email || !password || typeof email !== 'string' || typeof password !== 'string') {
-        console.warn(`Admin login attempt with missing/invalid data from IP ${clientIP}`);
-        // Add delay to prevent timing attacks
-        await new Promise(resolve => setTimeout(resolve, 1000));
-        return res.status(400).json({ message: "Valid email and password are required" });
+      if (!email || !password) {
+        console.log('Missing email or password');
+        return res.status(400).json({ message: "Email and password are required" });
       }
 
-      // Sanitize inputs
-      const sanitizedEmail = email.trim().toLowerCase();
-      const sanitizedPassword = password.trim();
-
-      // Length validation
-      if (sanitizedEmail.length > 254 || sanitizedPassword.length > 128) {
-        console.warn(`Admin login attempt with oversized credentials from IP ${clientIP}`);
-        await new Promise(resolve => setTimeout(resolve, 1000));
-        return res.status(400).json({ message: "Invalid credentials format" });
-      }
-
-      // Email format validation
-      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-      if (!emailRegex.test(sanitizedEmail)) {
-        console.warn(`Admin login attempt with invalid email format from IP ${clientIP}`);
-        await new Promise(resolve => setTimeout(resolve, 1000));
-        return res.status(400).json({ message: "Invalid credentials format" });
-      }
-
-      // Rate limiting check (additional to middleware)
-      const attemptKey = `admin_login_${clientIP}`;
-      const attempts = adminLoginAttempts.get(attemptKey) || [];
-      const recentAttempts = attempts.filter(time => Date.now() - time < 15 * 60 * 1000); // 15 minutes
-      
-      if (recentAttempts.length >= 3) {
-        console.warn(`Admin login rate limit exceeded for IP ${clientIP}`);
-        await new Promise(resolve => setTimeout(resolve, 5000)); // Longer delay for rate limited attempts
-        return res.status(429).json({ message: "Too many login attempts. Please try again later." });
-      }
-
-      // Record this attempt
-      adminLoginAttempts.set(attemptKey, [...recentAttempts, Date.now()]);
-
-      // Validate credentials with constant-time comparison
-      const isValidEmail = sanitizedEmail === ADMIN_CREDENTIALS.email.toLowerCase();
-      const isValidPassword = sanitizedPassword === ADMIN_CREDENTIALS.password;
-
-      if (!isValidEmail || !isValidPassword) {
-        console.warn(`Invalid admin credentials from IP ${clientIP} for email: ${sanitizedEmail}`);
-        // Constant delay regardless of which credential is wrong
-        await new Promise(resolve => setTimeout(resolve, 2000));
+      // Validate credentials
+      if (email !== ADMIN_CREDENTIALS.email || password !== ADMIN_CREDENTIALS.password) {
+        console.log('Invalid credentials provided');
         return res.status(401).json({ message: "Invalid admin credentials" });
       }
 
-      // Check for existing sessions and limit concurrent sessions
+      // Get admin sessions from the shared storage
       adminSessions = getAdminSessions();
-      const existingSessions = Array.from(adminSessions.values()).filter(
-        session => session.email === sanitizedEmail
-      );
-      
-      // Limit to 2 concurrent admin sessions
-      if (existingSessions.length >= 2) {
-        // Remove oldest session
-        for (const [token, session] of adminSessions.entries()) {
-          if (session.email === sanitizedEmail) {
-            adminSessions.delete(token);
-            break;
-          }
-        }
-      }
 
-      // Generate cryptographically secure admin token
+      // Generate admin token
       const adminToken = randomBytes(32).toString('hex');
-      
-      // Store session with additional security metadata
       adminSessions.set(adminToken, {
-        email: sanitizedEmail,
+        email,
         loginTime: Date.now()
       });
 
-      // Clear failed attempts on successful login
-      adminLoginAttempts.delete(attemptKey);
-
-      console.info(`Admin login successful for ${sanitizedEmail} from IP ${clientIP}`);
-      
-      // Set security headers
-      res.set({
-        'Cache-Control': 'no-store, no-cache, must-revalidate, private',
-        'Pragma': 'no-cache',
-        'X-Content-Type-Options': 'nosniff'
-      });
-
+      console.log('Admin login successful, token created');
       res.json({ 
         message: "Admin login successful",
         token: adminToken,
-        success: true,
-        expiresIn: 3600 // 1 hour
+        success: true
       });
     } catch (error) {
       console.error('Admin login error:', error);
-      // Ensure consistent timing even on errors
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      res.status(500).json({ message: "Authentication service temporarily unavailable" });
+      res.status(500).json({ message: "Login failed" });
     }
   });
 
@@ -268,25 +167,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
     res.json({ message: "Admin authenticated", success: true });
   });
 
-  // Enhanced admin logout with session cleanup
+  // Admin logout endpoint
   app.post("/api/admin/logout", ensureAdminAuthenticated, (req, res) => {
     const authHeader = req.headers.authorization;
     const token = authHeader?.split(' ')[1];
     
     if (token) {
       adminSessions = getAdminSessions();
-      const session = adminSessions.get(token);
-      if (session) {
-        console.info(`Admin logout for ${session.email} from IP ${req.ip}`);
-      }
       adminSessions.delete(token);
     }
-    
-    // Set security headers for logout
-    res.set({
-      'Cache-Control': 'no-store, no-cache, must-revalidate, private',
-      'Clear-Site-Data': '"cache", "cookies", "storage"'
-    });
     
     res.json({ message: "Logged out successfully" });
   });
