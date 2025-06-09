@@ -28,6 +28,10 @@ import BadgesPage from "./pages/badges-page";
 import ActivitiesPage from "@/pages/activities-page";
 import AboutPage from "@/pages/about-page";
 import AdminCompanyWalletsPage from "@/pages/admin-company-wallets-page";
+import AdminWithdrawalsPage from "@/pages/admin-withdrawals-page";
+import AdminPaymentDashboard from "./pages/admin-payment-dashboard";
+import PaymentDashboardPage from "./pages/payment-dashboard-page";
+import ResearcherPayoutsPage from "./pages/researcher-payouts-page";
 import CompanyWalletPage from "@/pages/company-wallet-page";
 import AdminLoginPage from "@/pages/admin-login-page";
 import AdminDashboardPage from "@/pages/admin-dashboard-page";
@@ -41,7 +45,7 @@ import HacktivityPage from "./pages/hacktivity-page";
 import { ProtectedRoute } from "./lib/protected-route";
 import { AuthProvider, useAuth } from "@/hooks/use-auth";
 import { ThemeProvider } from "@/components/theme-provider";
-import AdminWithdrawalsPage from "@/pages/admin-withdrawals-page";
+
 
 function Router() {
   const { user } = useAuth();
@@ -111,6 +115,9 @@ function Router() {
       <ProtectedRoute path="/company/wallet" component={CompanyWalletPage} />
       <ProtectedRoute path="/admin/company-wallets" component={AdminCompanyWalletsPage} />
       <ProtectedRoute path="/admin/withdrawals" component={AdminWithdrawalsPage} />
+       <ProtectedRoute path="/admin/payments" component={AdminPaymentDashboard} />
+      <ProtectedRoute path="/payment-dashboard" component={PaymentDashboardPage} />
+      <ProtectedRoute path="/researcher-payouts" component={ResearcherPayoutsPage} />
       <Route path="/admin" component={AdminLoginPage} />
       <Route path="/auth" component={AuthPage} />
       <Route path="/forgot-password" component={ForgotPasswordPage} />
