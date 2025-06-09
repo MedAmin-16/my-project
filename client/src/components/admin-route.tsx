@@ -5,7 +5,7 @@ import AdminDashboardPage from "@/pages/admin-dashboard-page";
 
 export function AdminRoute() {
   const [, navigate] = useLocation();
-  const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -33,7 +33,6 @@ export function AdminRoute() {
           setIsAuthenticated(false);
         }
       } catch (error) {
-        console.error("Admin auth check failed:", error);
         localStorage.removeItem('adminToken');
         setIsAuthenticated(false);
       } finally {
@@ -44,17 +43,6 @@ export function AdminRoute() {
     checkAuth();
   }, []);
 
-  if (isLoading) {
-    return (
-      <div className="min-h-screen bg-deep-black flex items-center justify-center">
-        <div className="text-matrix font-mono">AUTHENTICATING...</div>
-      </div>
-    );
-  }
-
-  if (isAuthenticated) {
-    return <AdminDashboardPage />;
-  }
-
+  // Always show login page first, let it handle the redirect logic
   return <AdminLoginPage />;
 }

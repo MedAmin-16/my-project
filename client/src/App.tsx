@@ -143,7 +143,7 @@ function Router() {
       <Route path="/create-program" component={CreateProgramPage} />
 
       {/* Admin Routes */}
-      <Route path="/admin" component={AdminRoute} />
+      <Route path="/admin" component={AdminLoginPage} />
       <Route path="/admin/dashboard" component={AdminDashboardPage} />
       
 
