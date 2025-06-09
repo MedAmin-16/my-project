@@ -44,25 +44,66 @@ export default function AdminLoginPage() {
   const onSubmit = async (data: AdminLoginFormValues) => {
     setIsLoading(true);
     try {
+      // Input validation and sanitization
+      const sanitizedData = {
+        email: data.email.trim().toLowerCase(),
+        password: data.password.trim()
+      };
+
+      // Client-side validation
+      if (!sanitizedData.email || !sanitizedData.password) {
+        throw new Error("All fields are required");
+      }
+
+      if (sanitizedData.email.length > 254 || sanitizedData.password.length > 128) {
+        throw new Error("Invalid input length");
+      }
+
+      // Email format validation
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(sanitizedData.email)) {
+        throw new Error("Invalid email format");
+      }
+
       const response = await fetch("/api/admin/login", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          "X-Requested-With": "XMLHttpRequest", // CSRF protection
         },
         credentials: "include",
-        body: JSON.stringify(data),
+        body: JSON.stringify(sanitizedData),
       });
 
       const result = await response.json();
 
       if (!response.ok) {
-        throw new Error(result.message || "Login failed");
+        // Enhanced error handling without exposing sensitive info
+        let errorMessage = "Authentication failed";
+        if (response.status === 429) {
+          errorMessage = "Too many attempts. Please try again later.";
+        } else if (response.status === 401) {
+          errorMessage = "Invalid credentials";
+        }
+        throw new Error(errorMessage);
       }
 
-      // Store the admin token in localStorage for API calls
-      if (result.token) {
-        localStorage.setItem('adminToken', result.token);
+      // Validate token format before storing
+      if (result.token && /^[a-f0-9]{64}$/i.test(result.token)) {
+        // Store with expiration time
+        const tokenData = {
+          token: result.token,
+          expiresAt: Date.now() + (result.expiresIn * 1000 || 3600000) // 1 hour default
+        };
+        localStorage.setItem('adminToken', JSON.stringify(tokenData));
+      } else {
+        throw new Error("Invalid token received");
       }
+
+      // Clear form data for security
+      document.querySelectorAll('input[type="password"]').forEach((input: any) => {
+        input.value = '';
+      });
 
       toast({
         title: "Access Granted",
@@ -71,9 +112,10 @@ export default function AdminLoginPage() {
 
       navigate("/admin/dashboard");
     } catch (error) {
+      console.error('Login error:', error); // Log for debugging
       toast({
         title: "Access Denied",
-        description: error instanceof Error ? error.message : "Invalid credentials",
+        description: error instanceof Error ? error.message : "Authentication failed",
         variant: "destructive",
       });
     } finally {

@@ -21,10 +21,10 @@ app.use(helmet({
   contentSecurityPolicy: {
     directives: {
       defaultSrc: ["'self'"],
-      scriptSrc: ["'self'", "'unsafe-inline'"],
+      scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'"], // unsafe-eval needed for Vite HMR
       styleSrc: ["'self'", "'unsafe-inline'"],
       imgSrc: ["'self'", "data:", "https:"],
-      connectSrc: ["'self'"],
+      connectSrc: ["'self'", "ws:", "wss:"], // WebSocket for Vite HMR
       frameSrc: ["'none'"],
       objectSrc: ["'none'"],
       baseUri: ["'self'"],
@@ -33,9 +33,9 @@ app.use(helmet({
       upgradeInsecureRequests: [],
     },
   },
-  crossOriginEmbedderPolicy: { policy: "require-corp" },
+  crossOriginEmbedderPolicy: false, // Disabled for Vite compatibility
   crossOriginOpenerPolicy: { policy: "same-origin" },
-  crossOriginResourcePolicy: { policy: "same-origin" },
+  crossOriginResourcePolicy: { policy: "cross-origin" }, // Adjusted for Vite
   hsts: {
     maxAge: 31536000,
     includeSubDomains: true,
@@ -44,24 +44,46 @@ app.use(helmet({
   noSniff: true,
   referrerPolicy: { policy: 'strict-origin-when-cross-origin' },
   permissionsPolicy: {
-    policy: {
+    features: {
       'geolocation': [],
       'camera': [],
-      'microphone': []
+      'microphone': [],
+      'payment': [],
+      'usb': []
     }
   }
 }));
 
-// Add request sanitization
+// Enhanced request sanitization and validation
 app.use((req, res, next) => {
   // Sanitize request body
   if (req.body) {
-    Object.keys(req.body).forEach(key => {
-      if (typeof req.body[key] === 'string') {
-        req.body[key] = req.body[key].trim();
-      }
-    });
+    try {
+      Object.keys(req.body).forEach(key => {
+        if (typeof req.body[key] === 'string') {
+          // Trim and remove null bytes
+          req.body[key] = req.body[key].trim().replace(/\0/g, '');
+          
+          // Limit string length to prevent DoS
+          if (req.body[key].length > 10000) {
+            req.body[key] = req.body[key].substring(0, 10000);
+          }
+        }
+      });
+    } catch (error) {
+      console.warn('Request sanitization error:', error);
+      return res.status(400).json({ message: 'Invalid request format' });
+    }
   }
+  
+  // Add security headers to all responses
+  res.set({
+    'X-Content-Type-Options': 'nosniff',
+    'X-Frame-Options': 'DENY',
+    'X-XSS-Protection': '1; mode=block',
+    'Strict-Transport-Security': 'max-age=31536000; includeSubDomains; preload'
+  });
+  
   next();
 });
 
@@ -77,15 +99,19 @@ export function getAdminSessions() {
   return adminSessions;
 }
 
-// Add session middleware first
+// Add session middleware with enhanced security
 app.use(session({
-  secret: process.env.SESSION_SECRET || 'your-secret-key',
+  secret: process.env.SESSION_SECRET || randomBytes(32).toString('hex'),
+  name: 'sessionId', // Change default session name
   resave: false,
   saveUninitialized: false,
+  rolling: true, // Reset expiration on activity
   cookie: {
     secure: process.env.NODE_ENV === 'production',
-    sameSite: 'lax',
-    maxAge: 24 * 60 * 60 * 1000 // 24 hours
+    httpOnly: true,
+    sameSite: 'strict', // Enhanced CSRF protection
+    maxAge: 2 * 60 * 60 * 1000, // Reduced to 2 hours
+    domain: undefined // Restrict to current domain
   }
 }));
 
