@@ -1,6 +1,6 @@
 import { drizzle } from 'drizzle-orm/postgres-js';
 import postgres from 'postgres';
-import { users, programs, submissions, activities, notifications, wallets, transactions, type User, type InsertUser, type Program, type InsertProgram, type Submission, type InsertSubmission, type Activity, type InsertActivity, type Notification, type InsertNotification, type Wallet, type Transaction, type InsertTransaction, type Withdrawal, type InsertWithdrawal, type CompanyWallet, type InsertCompanyWallet, type CompanyTransaction, type InsertCompanyTransaction, companyWallets, companyTransactions } from '@shared/schema';
+import { users, programs, submissions, activities, notifications, wallets, transactions, type User, type InsertUser, type Program, type InsertProgram, type Submission, type InsertSubmission, type Activity, type InsertActivity, type Notification, type InsertNotification, type Wallet, type Transaction, type InsertTransaction, type Withdrawal, type InsertWithdrawal, type CompanyWallet, type InsertCompanyWallet, type CompanyTransaction, type InsertCompanyTransaction, companyWallets, companyTransactions, paymentMethods, escrowAccounts, paymentIntents, payouts, commissions, transactionLogs, paymentDisputes, paymentRateLimits, type PaymentMethod, type InsertPaymentMethod, type EscrowAccount, type InsertEscrowAccount, type PaymentIntent, type InsertPaymentIntent, type Payout, type InsertPayout, type Commission, type InsertCommission, type TransactionLog, type PaymentDispute, type InsertPaymentDispute } from '@shared/schema';
 import { and, eq, desc, sql } from "drizzle-orm";
 import createMemoryStore from "memorystore";
 import session from "express-session";
@@ -825,5 +825,464 @@ export const storage = {
         }
     }
     return []
+  },
+
+  // Payment Methods
+  async getPaymentMethods() {
+    if (db) {
+      try {
+        return db.select().from(paymentMethods).where(eq(paymentMethods.isActive, true));
+      } catch (error) {
+        console.error('Error getting payment methods:', error);
+        return [];
+      }
+    }
+    return [];
+  },
+
+  async createPaymentMethod(data: InsertPaymentMethod) {
+    if (db) {
+      try {
+        const [paymentMethod] = await db.insert(paymentMethods).values(data).returning();
+        return paymentMethod;
+      } catch (error) {
+        console.error('Error creating payment method:', error);
+        return null;
+      }
+    }
+    return null;
+  },
+
+  // Payment Intents
+  async createPaymentIntent(data: InsertPaymentIntent) {
+    if (db) {
+      try {
+        const [paymentIntent] = await db.insert(paymentIntents).values(data).returning();
+        
+        // Log transaction
+        await this.logTransaction('payment_intent', paymentIntent.id, data.companyId, 'created', null, paymentIntent);
+        
+        return paymentIntent;
+      } catch (error) {
+        console.error('Error creating payment intent:', error);
+        return null;
+      }
+    }
+    return null;
+  },
+
+  async updatePaymentIntent(id: number, status: string, stripePaymentIntentId?: string) {
+    if (db) {
+      try {
+        const [paymentIntent] = await db
+          .update(paymentIntents)
+          .set({ 
+            status, 
+            stripePaymentIntentId,
+            updatedAt: new Date() 
+          })
+          .where(eq(paymentIntents.id, id))
+          .returning();
+        
+        await this.logTransaction('payment_intent', id, paymentIntent.companyId, 'updated', null, paymentIntent);
+        
+        return paymentIntent;
+      } catch (error) {
+        console.error('Error updating payment intent:', error);
+        return null;
+      }
+    }
+    return null;
+  },
+
+  async getPaymentIntent(id: number) {
+    if (db) {
+      try {
+        const [paymentIntent] = await db.select().from(paymentIntents).where(eq(paymentIntents.id, id));
+        return paymentIntent;
+      } catch (error) {
+        console.error('Error getting payment intent:', error);
+        return null;
+      }
+    }
+    return null;
+  },
+
+  // Escrow Accounts
+  async createEscrowAccount(data: InsertEscrowAccount) {
+    if (db) {
+      try {
+        const [escrow] = await db.insert(escrowAccounts).values(data).returning();
+        
+        await this.logTransaction('escrow', escrow.id, data.companyId, 'created', null, escrow);
+        
+        return escrow;
+      } catch (error) {
+        console.error('Error creating escrow account:', error);
+        return null;
+      }
+    }
+    return null;
+  },
+
+  async updateEscrowStatus(id: number, status: string) {
+    if (db) {
+      try {
+        const [escrow] = await db
+          .update(escrowAccounts)
+          .set({ status, updatedAt: new Date() })
+          .where(eq(escrowAccounts.id, id))
+          .returning();
+        
+        await this.logTransaction('escrow', id, escrow.companyId, 'updated', null, escrow);
+        
+        return escrow;
+      } catch (error) {
+        console.error('Error updating escrow status:', error);
+        return null;
+      }
+    }
+    return null;
+  },
+
+  async getEscrowBySubmission(submissionId: number) {
+    if (db) {
+      try {
+        const [escrow] = await db.select().from(escrowAccounts).where(eq(escrowAccounts.submissionId, submissionId));
+        return escrow;
+      } catch (error) {
+        console.error('Error getting escrow by submission:', error);
+        return null;
+      }
+    }
+    return null;
+  },
+
+  // Payouts
+  async createPayout(data: InsertPayout) {
+    if (db) {
+      try {
+        const [payout] = await db.insert(payouts).values(data).returning();
+        
+        await this.logTransaction('payout', payout.id, data.userId, 'created', null, payout);
+        
+        return payout;
+      } catch (error) {
+        console.error('Error creating payout:', error);
+        return null;
+      }
+    }
+    return null;
+  },
+
+  async updatePayoutStatus(id: number, status: string, externalTransactionId?: string, failureReason?: string) {
+    if (db) {
+      try {
+        const updateData: any = { 
+          status, 
+          updatedAt: new Date() 
+        };
+        
+        if (externalTransactionId) updateData.externalTransactionId = externalTransactionId;
+        if (failureReason) updateData.failureReason = failureReason;
+        if (status === 'completed') updateData.completedAt = new Date();
+
+        const [payout] = await db
+          .update(payouts)
+          .set(updateData)
+          .where(eq(payouts.id, id))
+          .returning();
+        
+        await this.logTransaction('payout', id, payout.userId, 'updated', null, payout);
+        
+        return payout;
+      } catch (error) {
+        console.error('Error updating payout status:', error);
+        return null;
+      }
+    }
+    return null;
+  },
+
+  async getUserPayouts(userId: number) {
+    if (db) {
+      try {
+        return db.select({
+          id: payouts.id,
+          amount: payouts.amount,
+          currency: payouts.currency,
+          status: payouts.status,
+          completedAt: payouts.completedAt,
+          createdAt: payouts.createdAt,
+          submissionTitle: submissions.title,
+          paymentMethodName: paymentMethods.name
+        })
+        .from(payouts)
+        .leftJoin(submissions, eq(payouts.submissionId, submissions.id))
+        .leftJoin(paymentMethods, eq(payouts.paymentMethodId, paymentMethods.id))
+        .where(eq(payouts.userId, userId))
+        .orderBy(desc(payouts.createdAt));
+      } catch (error) {
+        console.error('Error getting user payouts:', error);
+        return [];
+      }
+    }
+    return [];
+  },
+
+  // Commissions
+  async createCommission(data: InsertCommission) {
+    if (db) {
+      try {
+        const [commission] = await db.insert(commissions).values(data).returning();
+        
+        await this.logTransaction('commission', commission.id, null, 'created', null, commission);
+        
+        return commission;
+      } catch (error) {
+        console.error('Error creating commission:', error);
+        return null;
+      }
+    }
+    return null;
+  },
+
+  async getTotalCommissions(startDate?: Date, endDate?: Date) {
+    if (db) {
+      try {
+        let query = db.select({
+          totalCommissions: sql<number>`sum(${commissions.commissionAmount})`,
+          count: sql<number>`count(*)`
+        }).from(commissions).where(eq(commissions.status, 'collected'));
+
+        // Add date filters if provided
+        if (startDate && endDate) {
+          query = query.where(
+            and(
+              eq(commissions.status, 'collected'),
+              sql`${commissions.createdAt} >= ${startDate}`,
+              sql`${commissions.createdAt} <= ${endDate}`
+            )
+          );
+        }
+
+        const [result] = await query;
+        return result;
+      } catch (error) {
+        console.error('Error getting total commissions:', error);
+        return { totalCommissions: 0, count: 0 };
+      }
+    }
+    return { totalCommissions: 0, count: 0 };
+  },
+
+  // Payment Disputes
+  async createPaymentDispute(data: InsertPaymentDispute) {
+    if (db) {
+      try {
+        const [dispute] = await db.insert(paymentDisputes).values(data).returning();
+        
+        await this.logTransaction('dispute', dispute.id, data.disputedBy, 'created', null, dispute);
+        
+        return dispute;
+      } catch (error) {
+        console.error('Error creating payment dispute:', error);
+        return null;
+      }
+    }
+    return null;
+  },
+
+  async updatePaymentDispute(id: number, status: string, resolution?: string, resolvedBy?: number) {
+    if (db) {
+      try {
+        const updateData: any = { 
+          status, 
+          updatedAt: new Date() 
+        };
+        
+        if (resolution) updateData.resolution = resolution;
+        if (resolvedBy) updateData.resolvedBy = resolvedBy;
+        if (status === 'resolved') updateData.resolvedAt = new Date();
+
+        const [dispute] = await db
+          .update(paymentDisputes)
+          .set(updateData)
+          .where(eq(paymentDisputes.id, id))
+          .returning();
+        
+        await this.logTransaction('dispute', id, dispute.disputedBy, 'updated', null, dispute);
+        
+        return dispute;
+      } catch (error) {
+        console.error('Error updating payment dispute:', error);
+        return null;
+      }
+    }
+    return null;
+  },
+
+  async getAllPaymentDisputes() {
+    if (db) {
+      try {
+        return db.select({
+          id: paymentDisputes.id,
+          disputeType: paymentDisputes.disputeType,
+          description: paymentDisputes.description,
+          status: paymentDisputes.status,
+          resolution: paymentDisputes.resolution,
+          createdAt: paymentDisputes.createdAt,
+          resolvedAt: paymentDisputes.resolvedAt,
+          submissionTitle: submissions.title,
+          disputedByName: users.username
+        })
+        .from(paymentDisputes)
+        .leftJoin(submissions, eq(paymentDisputes.submissionId, submissions.id))
+        .leftJoin(users, eq(paymentDisputes.disputedBy, users.id))
+        .orderBy(desc(paymentDisputes.createdAt));
+      } catch (error) {
+        console.error('Error getting payment disputes:', error);
+        return [];
+      }
+    }
+    return [];
+  },
+
+  // Transaction Logging
+  async logTransaction(
+    transactionType: string, 
+    transactionId: number, 
+    userId: number | null, 
+    action: string, 
+    previousState: any, 
+    newState: any, 
+    metadata?: any,
+    ipAddress?: string,
+    userAgent?: string
+  ) {
+    if (db) {
+      try {
+        await db.insert(transactionLogs).values({
+          transactionType,
+          transactionId,
+          userId,
+          action,
+          previousState,
+          newState,
+          metadata,
+          ipAddress,
+          userAgent
+        });
+      } catch (error) {
+        console.error('Error logging transaction:', error);
+      }
+    }
+  },
+
+  // Rate Limiting
+  async checkRateLimit(userId: number | null, ipAddress: string, actionType: string, maxAttempts: number = 5, windowMinutes: number = 15) {
+    if (db) {
+      try {
+        const windowStart = new Date(Date.now() - windowMinutes * 60 * 1000);
+        
+        const [existing] = await db.select()
+          .from(paymentRateLimits)
+          .where(
+            and(
+              userId ? eq(paymentRateLimits.userId, userId) : eq(paymentRateLimits.ipAddress, ipAddress),
+              eq(paymentRateLimits.actionType, actionType),
+              sql`${paymentRateLimits.windowStart} > ${windowStart}`
+            )
+          );
+
+        if (existing) {
+          if (existing.attemptCount >= maxAttempts) {
+            // Update blocked until time
+            await db.update(paymentRateLimits)
+              .set({ 
+                blockedUntil: new Date(Date.now() + windowMinutes * 60 * 1000),
+                attemptCount: existing.attemptCount + 1
+              })
+              .where(eq(paymentRateLimits.id, existing.id));
+            
+            return false; // Rate limited
+          } else {
+            // Increment attempt count
+            await db.update(paymentRateLimits)
+              .set({ attemptCount: existing.attemptCount + 1 })
+              .where(eq(paymentRateLimits.id, existing.id));
+          }
+        } else {
+          // Create new rate limit record
+          await db.insert(paymentRateLimits).values({
+            userId,
+            ipAddress,
+            actionType,
+            attemptCount: 1,
+            windowStart: new Date()
+          });
+        }
+        
+        return true; // Not rate limited
+      } catch (error) {
+        console.error('Error checking rate limit:', error);
+        return true; // Allow on error
+      }
+    }
+    return true;
+  },
+
+  // Analytics
+  async getPaymentAnalytics(startDate?: Date, endDate?: Date) {
+    if (db) {
+      try {
+        const dateFilter = startDate && endDate 
+          ? sql`created_at >= ${startDate} AND created_at <= ${endDate}`
+          : sql`created_at >= NOW() - INTERVAL '30 days'`;
+
+        const totalPayments = await db.select({
+          count: sql<number>`count(*)`,
+          total: sql<number>`sum(amount)`
+        }).from(paymentIntents).where(
+          and(
+            eq(paymentIntents.status, 'succeeded'),
+            sql`${dateFilter}`
+          )
+        );
+
+        const totalPayouts = await db.select({
+          count: sql<number>`count(*)`,
+          total: sql<number>`sum(amount)`
+        }).from(payouts).where(
+          and(
+            eq(payouts.status, 'completed'),
+            sql`${dateFilter}`
+          )
+        );
+
+        const pendingEscrow = await db.select({
+          count: sql<number>`count(*)`,
+          total: sql<number>`sum(amount)`
+        }).from(escrowAccounts).where(eq(escrowAccounts.status, 'held'));
+
+        return {
+          totalPayments: totalPayments[0] || { count: 0, total: 0 },
+          totalPayouts: totalPayouts[0] || { count: 0, total: 0 },
+          pendingEscrow: pendingEscrow[0] || { count: 0, total: 0 }
+        };
+      } catch (error) {
+        console.error('Error getting payment analytics:', error);
+        return {
+          totalPayments: { count: 0, total: 0 },
+          totalPayouts: { count: 0, total: 0 },
+          pendingEscrow: { count: 0, total: 0 }
+        };
+      }
+    }
+    return {
+      totalPayments: { count: 0, total: 0 },
+      totalPayouts: { count: 0, total: 0 },
+      pendingEscrow: { count: 0, total: 0 }
+    };
   }
 };

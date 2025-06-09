@@ -7,6 +7,7 @@ import { randomBytes } from "crypto";
 import { insertSubmissionSchema, insertProgramSchema } from "@shared/schema";
 import { getAdminSessions } from "./index";
 import { sendWelcomeEmail, sendAchievementEmail, sendSubmissionStatusEmail, sendWithdrawalCompletedEmail } from "./email-service";
+import { PaymentService } from "./payment-service";
 import multer from "multer";
 import path from "path";
 const upload = multer({
@@ -999,6 +1000,319 @@ export async function registerWalletRoutes(app: Express): Promise<void> {
     } catch (error) {
       console.error('Error fetching withdrawals:', error);
       res.status(500).json({ message: "Failed to fetch withdrawals" });
+    }
+  });
+
+  // =======================================================
+  // PAYMENT SYSTEM ENDPOINTS
+  // =======================================================
+
+  // Get payment methods
+  app.get("/api/payment-methods", async (req, res) => {
+    try {
+      const paymentMethods = await storage.getPaymentMethods();
+      res.json(paymentMethods);
+    } catch (error) {
+      console.error('Error fetching payment methods:', error);
+      res.status(500).json({ message: "Failed to fetch payment methods" });
+    }
+  });
+
+  // Create payment intent for company deposits
+  app.post("/api/payments/create-intent", ensureCompanyUser, async (req, res) => {
+    try {
+      const { amount, currency = 'USD', purpose = 'wallet_topup' } = req.body;
+
+      if (!amount || amount <= 0) {
+        return res.status(400).json({ message: "Valid amount is required" });
+      }
+
+      if (amount > 10000000) { // $100,000 limit
+        return res.status(400).json({ message: "Amount exceeds maximum limit" });
+      }
+
+      const result = await PaymentService.createPaymentIntent(
+        req.user!.id,
+        amount,
+        currency,
+        purpose
+      );
+
+      res.json(result);
+    } catch (error) {
+      console.error('Error creating payment intent:', error);
+      if (error.message.includes('Rate limit')) {
+        return res.status(429).json({ message: error.message });
+      }
+      res.status(500).json({ message: "Failed to create payment intent" });
+    }
+  });
+
+  // Confirm payment completion
+  app.post("/api/payments/confirm", ensureCompanyUser, async (req, res) => {
+    try {
+      const { paymentIntentId } = req.body;
+
+      if (!paymentIntentId) {
+        return res.status(400).json({ message: "Payment intent ID is required" });
+      }
+
+      const paymentIntent = await PaymentService.confirmPayment(paymentIntentId);
+      res.json({ message: "Payment confirmed successfully", paymentIntent });
+    } catch (error) {
+      console.error('Error confirming payment:', error);
+      res.status(500).json({ message: "Failed to confirm payment" });
+    }
+  });
+
+  // Webhook for Stripe events
+  app.post("/api/payments/webhook", async (req, res) => {
+    try {
+      const sig = req.headers['stripe-signature'];
+      
+      // In production, verify the webhook signature
+      // const event = stripe.webhooks.constructEvent(req.body, sig, process.env.STRIPE_WEBHOOK_SECRET);
+      
+      // For demo purposes, we'll process the event directly
+      await PaymentService.handleStripeWebhook(req.body);
+      
+      res.json({ received: true });
+    } catch (error) {
+      console.error('Error handling webhook:', error);
+      res.status(400).json({ message: "Webhook error" });
+    }
+  });
+
+  // Create escrow for approved bounties
+  app.post("/api/escrow/create", ensureCompanyUser, async (req, res) => {
+    try {
+      const { submissionId, bountyAmount } = req.body;
+
+      if (!submissionId || !bountyAmount || bountyAmount <= 0) {
+        return res.status(400).json({ message: "Valid submission ID and bounty amount are required" });
+      }
+
+      // Verify submission belongs to a program owned by this company
+      const submission = await storage.getSubmission(submissionId);
+      if (!submission) {
+        return res.status(404).json({ message: "Submission not found" });
+      }
+
+      const program = await storage.getProgram(submission.programId);
+      if (!program || (program.company !== req.user?.companyName && program.company !== req.user?.username)) {
+        return res.status(403).json({ message: "Not authorized for this submission" });
+      }
+
+      const escrow = await PaymentService.createEscrowForBounty(
+        submissionId,
+        bountyAmount,
+        req.user!.id
+      );
+
+      // Update submission status to approved with reward
+      await storage.updateSubmissionStatus(submissionId, 'approved', bountyAmount);
+
+      res.json({ message: "Escrow created successfully", escrow });
+    } catch (error) {
+      console.error('Error creating escrow:', error);
+      if (error.message.includes('Insufficient')) {
+        return res.status(400).json({ message: error.message });
+      }
+      res.status(500).json({ message: "Failed to create escrow" });
+    }
+  });
+
+  // Request payout (for researchers)
+  app.post("/api/payouts/request", ensureAuthenticated, async (req, res) => {
+    try {
+      const { submissionId, paymentMethodId, paymentDetails } = req.body;
+
+      if (!submissionId || !paymentMethodId || !paymentDetails) {
+        return res.status(400).json({ message: "Submission ID, payment method, and payment details are required" });
+      }
+
+      // Verify submission belongs to the user
+      const submission = await storage.getSubmission(submissionId);
+      if (!submission || submission.userId !== req.user!.id) {
+        return res.status(403).json({ message: "Not authorized for this submission" });
+      }
+
+      // Check if submission is approved and has escrow
+      if (submission.status !== 'approved') {
+        return res.status(400).json({ message: "Submission must be approved before requesting payout" });
+      }
+
+      const escrow = await storage.getEscrowBySubmission(submissionId);
+      if (!escrow || escrow.status !== 'held') {
+        return res.status(400).json({ message: "No valid escrow found for this submission" });
+      }
+
+      // Fraud detection
+      const fraudCheck = await PaymentService.detectFraud(
+        req.user!.id,
+        escrow.researcherPayout,
+        req.ip
+      );
+
+      if (fraudCheck.isFraudulent) {
+        return res.status(403).json({ message: `Payout blocked: ${fraudCheck.reason}` });
+      }
+
+      const payout = await PaymentService.releaseEscrowAndPayout(
+        submissionId,
+        paymentMethodId,
+        paymentDetails
+      );
+
+      res.json({ message: "Payout requested successfully", payout });
+    } catch (error) {
+      console.error('Error requesting payout:', error);
+      res.status(500).json({ message: "Failed to request payout" });
+    }
+  });
+
+  // Get user payouts
+  app.get("/api/payouts", ensureAuthenticated, async (req, res) => {
+    try {
+      const payouts = await storage.getUserPayouts(req.user!.id);
+      res.json(payouts);
+    } catch (error) {
+      console.error('Error fetching payouts:', error);
+      res.status(500).json({ message: "Failed to fetch payouts" });
+    }
+  });
+
+  // Create payment dispute
+  app.post("/api/disputes", ensureAuthenticated, async (req, res) => {
+    try {
+      const { submissionId, disputeType, description } = req.body;
+
+      if (!submissionId || !disputeType || !description) {
+        return res.status(400).json({ message: "Submission ID, dispute type, and description are required" });
+      }
+
+      // Verify user is related to the submission
+      const submission = await storage.getSubmission(submissionId);
+      if (!submission) {
+        return res.status(404).json({ message: "Submission not found" });
+      }
+
+      // Check if user is either the researcher or from the company
+      const program = await storage.getProgram(submission.programId);
+      const isResearcher = submission.userId === req.user!.id;
+      const isCompanyUser = req.user?.userType === 'company' && 
+        (program?.company === req.user?.companyName || program?.company === req.user?.username);
+
+      if (!isResearcher && !isCompanyUser) {
+        return res.status(403).json({ message: "Not authorized to dispute this submission" });
+      }
+
+      const dispute = await storage.createPaymentDispute({
+        submissionId,
+        disputedBy: req.user!.id,
+        disputeType,
+        description
+      });
+
+      res.json({ message: "Dispute created successfully", dispute });
+    } catch (error) {
+      console.error('Error creating dispute:', error);
+      res.status(500).json({ message: "Failed to create dispute" });
+    }
+  });
+
+  // Admin: Get all payment disputes
+  app.get("/api/admin/disputes", ensureAdminAuthenticated, async (req, res) => {
+    try {
+      const disputes = await storage.getAllPaymentDisputes();
+      res.json(disputes);
+    } catch (error) {
+      console.error('Error fetching disputes:', error);
+      res.status(500).json({ message: "Failed to fetch disputes" });
+    }
+  });
+
+  // Admin: Resolve payment dispute
+  app.patch("/api/admin/disputes/:id", ensureAdminAuthenticated, async (req, res) => {
+    try {
+      const disputeId = parseInt(req.params.id);
+      const { status, resolution } = req.body;
+
+      if (!status || !['resolved', 'rejected'].includes(status)) {
+        return res.status(400).json({ message: "Valid status is required (resolved or rejected)" });
+      }
+
+      const dispute = await storage.updatePaymentDispute(
+        disputeId,
+        status,
+        resolution,
+        req.user!.id
+      );
+
+      if (!dispute) {
+        return res.status(404).json({ message: "Dispute not found" });
+      }
+
+      res.json({ message: "Dispute updated successfully", dispute });
+    } catch (error) {
+      console.error('Error updating dispute:', error);
+      res.status(500).json({ message: "Failed to update dispute" });
+    }
+  });
+
+  // Admin: Get payment analytics
+  app.get("/api/admin/payment-analytics", ensureAdminAuthenticated, async (req, res) => {
+    try {
+      const { startDate, endDate } = req.query;
+      
+      const start = startDate ? new Date(startDate as string) : undefined;
+      const end = endDate ? new Date(endDate as string) : undefined;
+
+      const analytics = await storage.getPaymentAnalytics(start, end);
+      const commissions = await storage.getTotalCommissions(start, end);
+
+      res.json({
+        ...analytics,
+        commissions
+      });
+    } catch (error) {
+      console.error('Error fetching payment analytics:', error);
+      res.status(500).json({ message: "Failed to fetch payment analytics" });
+    }
+  });
+
+  // Admin: Get all payouts
+  app.get("/api/admin/payouts", ensureAdminAuthenticated, async (req, res) => {
+    try {
+      // This would need a new storage method to get all payouts for admin
+      // For now, return empty array
+      res.json([]);
+    } catch (error) {
+      console.error('Error fetching admin payouts:', error);
+      res.status(500).json({ message: "Failed to fetch payouts" });
+    }
+  });
+
+  // Admin: Create payment method
+  app.post("/api/admin/payment-methods", ensureAdminAuthenticated, async (req, res) => {
+    try {
+      const { name, type, supportedCurrencies, processingFee } = req.body;
+
+      if (!name || !type || !supportedCurrencies) {
+        return res.status(400).json({ message: "Name, type, and supported currencies are required" });
+      }
+
+      const paymentMethod = await storage.createPaymentMethod({
+        name,
+        type,
+        supportedCurrencies,
+        processingFee: processingFee || 0
+      });
+
+      res.json({ message: "Payment method created successfully", paymentMethod });
+    } catch (error) {
+      console.error('Error creating payment method:', error);
+      res.status(500).json({ message: "Failed to create payment method" });
     }
   });
 }

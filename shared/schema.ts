@@ -238,3 +238,188 @@ export const insertCompanyTransactionSchema = createInsertSchema(companyTransact
 
 export type CompanyTransaction = typeof companyTransactions.$inferSelect;
 export type InsertCompanyTransaction = z.infer<typeof insertCompanyTransactionSchema>;
+
+// Payment Methods table
+export const paymentMethods = pgTable("payment_methods", {
+  id: serial("id").primaryKey(),
+  name: text("name").notNull(), // PayPal, Stripe, Wise, etc.
+  type: text("type").notNull(), // bank_transfer, digital_wallet, crypto
+  isActive: boolean("is_active").default(true),
+  supportedCurrencies: jsonb("supported_currencies").notNull(),
+  processingFee: integer("processing_fee").default(0), // in basis points (100 = 1%)
+  createdAt: timestamp("created_at").defaultNow()
+});
+
+// Escrow Accounts table
+export const escrowAccounts = pgTable("escrow_accounts", {
+  id: serial("id").primaryKey(),
+  companyId: integer("company_id").notNull().references(() => users.id),
+  submissionId: integer("submission_id").references(() => submissions.id),
+  amount: integer("amount").notNull(), // in cents
+  currency: text("currency").default("USD"),
+  status: text("status").default("pending"), // pending, held, released, refunded
+  platformCommission: integer("platform_commission").notNull(), // in cents
+  researcherPayout: integer("researcher_payout").notNull(), // in cents
+  expiresAt: timestamp("expires_at"),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at")
+});
+
+// Payment Intents table (for handling payments from companies)
+export const paymentIntents = pgTable("payment_intents", {
+  id: serial("id").primaryKey(),
+  stripePaymentIntentId: text("stripe_payment_intent_id").unique(),
+  companyId: integer("company_id").notNull().references(() => users.id),
+  amount: integer("amount").notNull(), // in cents
+  currency: text("currency").default("USD"),
+  status: text("status").default("pending"), // pending, succeeded, failed, canceled
+  purpose: text("purpose").notNull(), // wallet_topup, bounty_payment, subscription
+  metadata: jsonb("metadata"),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at")
+});
+
+// Payouts table (for payments to researchers)
+export const payouts = pgTable("payouts", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").notNull().references(() => users.id),
+  submissionId: integer("submission_id").references(() => submissions.id),
+  escrowAccountId: integer("escrow_account_id").references(() => escrowAccounts.id),
+  amount: integer("amount").notNull(), // in cents
+  currency: text("currency").default("USD"),
+  paymentMethodId: integer("payment_method_id").notNull().references(() => paymentMethods.id),
+  paymentMethodDetails: jsonb("payment_method_details"), // email, wallet address, etc.
+  status: text("status").default("pending"), // pending, processing, completed, failed, cancelled
+  externalTransactionId: text("external_transaction_id"), // PayPal, Stripe, etc. transaction ID
+  failureReason: text("failure_reason"),
+  scheduledFor: timestamp("scheduled_for"),
+  completedAt: timestamp("completed_at"),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at")
+});
+
+// Commission Records table
+export const commissions = pgTable("commissions", {
+  id: serial("id").primaryKey(),
+  submissionId: integer("submission_id").notNull().references(() => submissions.id),
+  totalAmount: integer("total_amount").notNull(), // total bounty in cents
+  commissionRate: integer("commission_rate").notNull(), // in basis points (1500 = 15%)
+  commissionAmount: integer("commission_amount").notNull(), // in cents
+  currency: text("currency").default("USD"),
+  status: text("status").default("pending"), // pending, collected, refunded
+  createdAt: timestamp("created_at").defaultNow()
+});
+
+// Transaction Logs table (for audit trail)
+export const transactionLogs = pgTable("transaction_logs", {
+  id: serial("id").primaryKey(),
+  transactionType: text("transaction_type").notNull(), // payment_intent, escrow, payout, commission
+  transactionId: integer("transaction_id").notNull(), // references various transaction tables
+  userId: integer("user_id").references(() => users.id),
+  action: text("action").notNull(), // created, updated, completed, failed, cancelled
+  previousState: jsonb("previous_state"),
+  newState: jsonb("new_state"),
+  metadata: jsonb("metadata"),
+  ipAddress: text("ip_address"),
+  userAgent: text("user_agent"),
+  createdAt: timestamp("created_at").defaultNow()
+});
+
+// Payment Disputes table
+export const paymentDisputes = pgTable("payment_disputes", {
+  id: serial("id").primaryKey(),
+  submissionId: integer("submission_id").notNull().references(() => submissions.id),
+  disputedBy: integer("disputed_by").notNull().references(() => users.id), // researcher or company
+  disputeType: text("dispute_type").notNull(), // payment_amount, payment_delay, invalid_bounty
+  description: text("description").notNull(),
+  status: text("status").default("open"), // open, under_review, resolved, rejected
+  resolution: text("resolution"),
+  resolvedBy: integer("resolved_by").references(() => users.id),
+  resolvedAt: timestamp("resolved_at"),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at")
+});
+
+// Rate Limiting table for fraud prevention
+export const paymentRateLimits = pgTable("payment_rate_limits", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").references(() => users.id),
+  ipAddress: text("ip_address"),
+  actionType: text("action_type").notNull(), // payment_intent, payout_request, dispute
+  attemptCount: integer("attempt_count").default(1),
+  windowStart: timestamp("window_start").defaultNow(),
+  blockedUntil: timestamp("blocked_until")
+});
+
+// Schema validators
+export const insertPaymentMethodSchema = createInsertSchema(paymentMethods).pick({
+  name: true,
+  type: true,
+  isActive: true,
+  supportedCurrencies: true,
+  processingFee: true
+});
+
+export const insertEscrowAccountSchema = createInsertSchema(escrowAccounts).pick({
+  companyId: true,
+  submissionId: true,
+  amount: true,
+  currency: true,
+  platformCommission: true,
+  researcherPayout: true,
+  expiresAt: true
+});
+
+export const insertPaymentIntentSchema = createInsertSchema(paymentIntents).pick({
+  companyId: true,
+  amount: true,
+  currency: true,
+  purpose: true,
+  metadata: true
+});
+
+export const insertPayoutSchema = createInsertSchema(payouts).pick({
+  userId: true,
+  submissionId: true,
+  escrowAccountId: true,
+  amount: true,
+  currency: true,
+  paymentMethodId: true,
+  paymentMethodDetails: true,
+  scheduledFor: true
+});
+
+export const insertCommissionSchema = createInsertSchema(commissions).pick({
+  submissionId: true,
+  totalAmount: true,
+  commissionRate: true,
+  commissionAmount: true,
+  currency: true
+});
+
+export const insertPaymentDisputeSchema = createInsertSchema(paymentDisputes).pick({
+  submissionId: true,
+  disputedBy: true,
+  disputeType: true,
+  description: true
+});
+
+// Type exports
+export type PaymentMethod = typeof paymentMethods.$inferSelect;
+export type InsertPaymentMethod = z.infer<typeof insertPaymentMethodSchema>;
+
+export type EscrowAccount = typeof escrowAccounts.$inferSelect;
+export type InsertEscrowAccount = z.infer<typeof insertEscrowAccountSchema>;
+
+export type PaymentIntent = typeof paymentIntents.$inferSelect;
+export type InsertPaymentIntent = z.infer<typeof insertPaymentIntentSchema>;
+
+export type Payout = typeof payouts.$inferSelect;
+export type InsertPayout = z.infer<typeof insertPayoutSchema>;
+
+export type Commission = typeof commissions.$inferSelect;
+export type InsertCommission = z.infer<typeof insertCommissionSchema>;
+
+export type TransactionLog = typeof transactionLogs.$inferSelect;
+export type PaymentDispute = typeof paymentDisputes.$inferSelect;
+export type InsertPaymentDispute = z.infer<typeof insertPaymentDisputeSchema>;
