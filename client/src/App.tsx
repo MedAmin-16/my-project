@@ -45,6 +45,7 @@ import HacktivityPage from "./pages/hacktivity-page";
 import { ProtectedRoute } from "./lib/protected-route";
 import { AuthProvider, useAuth } from "@/hooks/use-auth";
 import { ThemeProvider } from "@/components/theme-provider";
+import ClientLandingPage from "@/pages/client-landing-page";
 
 
 function Router() {
@@ -156,7 +157,7 @@ function Router() {
         {() => <ForceAdmin />}
       </Route>
       <Route path="/admin/dashboard" component={AdminDashboardPage} />
-
+      <Route path="/for-organizations" component={ClientLandingPage} />
 
       <Route path="/*" component={NotFound} />
     </Switch>
