@@ -17,17 +17,6 @@ export default function ClientLandingPage() {
     <div className="min-h-screen bg-deep-black relative">
       <MatrixBackground />
 
-      {/* Pre-launch Banner */}
-      <div className="relative z-10 bg-matrix/20 border-b border-matrix/50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
-          <div className="text-center">
-            <p className="text-matrix font-mono text-sm">
-              🚀 CyberHunt is currently in its pre-launch phase. The platform is being finalized, and some statistics and features will be available upon official release. Stay tuned for updates!
-            </p>
-          </div>
-        </div>
-      </div>
-
       {/* Header/Navigation */}
       <header className="relative z-10 border-b border-matrix/30">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -65,7 +54,7 @@ export default function ClientLandingPage() {
             <div>
               <div className="inline-flex items-center px-3 py-1 rounded-full border border-matrix/30 bg-matrix/10 mb-6">
                 <Shield className="h-4 w-4 text-matrix mr-2" />
-                <span className="text-matrix font-mono text-sm">Launching Soon - Pre-Register Now</span>
+                <span className="text-matrix font-mono text-sm">Enterprise Security Solutions</span>
               </div>
               <h1 className="text-4xl md:text-5xl lg:text-6xl font-mono font-bold text-light-gray mb-6">
                 <span className="text-matrix">Secure</span> Your Digital Assets
