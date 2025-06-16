@@ -17,6 +17,17 @@ export default function ClientLandingPage() {
     <div className="min-h-screen bg-deep-black relative">
       <MatrixBackground />
 
+      {/* Pre-launch Banner */}
+      <div className="relative z-10 bg-matrix/20 border-b border-matrix/50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
+          <div className="text-center">
+            <p className="text-matrix font-mono text-sm">
+              🚀 CyberHunt is currently in its pre-launch phase. The platform is being finalized, and some statistics and features will be available upon official release. Stay tuned for updates!
+            </p>
+          </div>
+        </div>
+      </div>
+
       {/* Header/Navigation */}
       <header className="relative z-10 border-b border-matrix/30">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -54,24 +65,24 @@ export default function ClientLandingPage() {
             <div>
               <div className="inline-flex items-center px-3 py-1 rounded-full border border-matrix/30 bg-matrix/10 mb-6">
                 <Shield className="h-4 w-4 text-matrix mr-2" />
-                <span className="text-matrix font-mono text-sm">Trusted by 500+ Organizations</span>
+                <span className="text-matrix font-mono text-sm">Launching Soon - Pre-Register Now</span>
               </div>
               <h1 className="text-4xl md:text-5xl lg:text-6xl font-mono font-bold text-light-gray mb-6">
                 <span className="text-matrix">Secure</span> Your Digital Assets
               </h1>
               <p className="text-dim-gray text-lg mb-8">
-                Partner with elite security researchers to identify vulnerabilities before attackers do. 
-                Our platform connects you with vetted ethical hackers for comprehensive security testing.
+                Get ready to partner with elite security researchers to identify vulnerabilities before attackers do. 
+                Our platform will connect you with vetted ethical hackers for comprehensive security testing.
               </p>
               <div className="flex flex-col sm:flex-row gap-4 mb-8">
                 <Link href="/auth?mode=register">
                   <Button className="glow-button text-base font-mono py-6 px-8">
-                    Launch Bug Bounty <ArrowRight className="ml-2 h-5 w-5" />
+                    Join Pre-Launch <ArrowRight className="ml-2 h-5 w-5" />
                   </Button>
                 </Link>
                 <Link href="#demo">
                   <Button variant="outline" className="border-matrix/50 text-matrix hover:bg-matrix/10 text-base font-mono py-6 px-8">
-                    Schedule Demo
+                    Request Early Access
                   </Button>
                 </Link>
               </div>
@@ -125,22 +136,25 @@ export default function ClientLandingPage() {
       {/* Trust Indicators */}
       <section className="relative z-10 bg-terminal border-y border-matrix/30 py-10">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-6">
+            <p className="text-dim-gray font-mono text-sm">Platform launching soon with enterprise-grade security</p>
+          </div>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
             <div className="text-center">
               <p className="text-matrix font-mono text-2xl md:text-3xl font-bold">99.9%</p>
-              <p className="text-dim-gray font-mono text-sm">Uptime SLA</p>
+              <p className="text-dim-gray font-mono text-sm">Target Uptime SLA</p>
             </div>
             <div className="text-center">
-              <p className="text-matrix font-mono text-2xl md:text-3xl font-bold">15k+</p>
-              <p className="text-dim-gray font-mono text-sm">Vulnerabilities Fixed</p>
+              <p className="text-matrix font-mono text-2xl md:text-3xl font-bold">Soon</p>
+              <p className="text-dim-gray font-mono text-sm">Live Vulnerability Testing</p>
             </div>
             <div className="text-center">
-              <p className="text-matrix font-mono text-2xl md:text-3xl font-bold">72hrs</p>
-              <p className="text-dim-gray font-mono text-sm">Avg Response Time</p>
+              <p className="text-matrix font-mono text-2xl md:text-3xl font-bold">&lt;24hrs</p>
+              <p className="text-dim-gray font-mono text-sm">Target Response Time</p>
             </div>
             <div className="text-center">
               <p className="text-matrix font-mono text-2xl md:text-3xl font-bold">SOC2</p>
-              <p className="text-dim-gray font-mono text-sm">Compliant</p>
+              <p className="text-dim-gray font-mono text-sm">Ready</p>
             </div>
           </div>
         </div>
@@ -158,7 +172,7 @@ export default function ClientLandingPage() {
               <Users className="text-matrix h-10 w-10 mb-4" />
               <h3 className="text-xl font-mono font-bold text-light-gray mb-3">Elite Researcher Network</h3>
               <p className="text-dim-gray mb-4">
-                Access to 5,000+ vetted security researchers with proven track records and specialized expertise across all technology stacks.
+                At launch, access our growing network of vetted security researchers with proven track records and specialized expertise across all technology stacks.
               </p>
               <ul className="text-sm text-dim-gray space-y-2">
                 <li className="flex items-center"><CheckCircle className="h-4 w-4 text-matrix mr-2" />Background verified</li>
@@ -171,7 +185,7 @@ export default function ClientLandingPage() {
               <TrendingUp className="text-matrix h-10 w-10 mb-4" />
               <h3 className="text-xl font-mono font-bold text-light-gray mb-3">Cost-Effective Security</h3>
               <p className="text-dim-gray mb-4">
-                Save up to 70% compared to traditional penetration testing while getting continuous security assessment and faster vulnerability discovery.
+                Save up to 70% compared to traditional penetration testing with our upcoming continuous security assessment and faster vulnerability discovery platform.
               </p>
               <ul className="text-sm text-dim-gray space-y-2">
                 <li className="flex items-center"><CheckCircle className="h-4 w-4 text-matrix mr-2" />Pay-per-vulnerability model</li>
@@ -413,21 +427,21 @@ export default function ClientLandingPage() {
             Ready to Strengthen Your Security?
           </h2>
           <p className="text-dim-gray text-lg mb-8">
-            Join hundreds of organizations that trust CyberHunt to protect their digital assets. 
-            Start your bug bounty program today and discover vulnerabilities before attackers do.
+            Be among the first organizations to experience next-generation security testing. 
+            Join our pre-launch program and get early access to discover vulnerabilities before attackers do.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link href="/auth?mode=register">
               <Button className="glow-button text-base font-mono py-6 px-8">
-                Start Your Program <ArrowRight className="ml-2 h-5 w-5" />
+                Join Pre-Launch <ArrowRight className="ml-2 h-5 w-5" />
               </Button>
             </Link>
             <Button variant="outline" className="border-matrix/50 text-matrix hover:bg-matrix/10 text-base font-mono py-6 px-8">
-              Schedule Demo
+              Request Early Access
             </Button>
           </div>
           <p className="text-dim-gray text-sm mt-6 font-mono">
-            No setup fees • Pay only for results • 30-day free trial
+            Early access • Exclusive pre-launch pricing • Be first to launch
           </p>
         </div>
       </section>
