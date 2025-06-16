@@ -473,7 +473,7 @@ export default function ClientLandingPage() {
             </p>
           </div>
         </div>
-      </section>
+      </footer>
     </div>
   );
 }
