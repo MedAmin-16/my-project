@@ -440,7 +440,7 @@ export default function ClientLandingPage() {
             <p className="text-dim-gray text-xl max-w-3xl mx-auto">
               We only succeed when you do - simple, transparent commission structure
             </p>
-          </div>v>
+          </div>
 
           <div className="grid lg:grid-cols-3 gap-10">
             <div className="terminal-card p-10 rounded-xl border border-matrix/30 hover:border-matrix/50 transition-all">
