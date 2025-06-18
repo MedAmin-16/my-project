@@ -350,15 +350,97 @@ export default function ClientLandingPage() {
         </div>
       </section>
 
+      {/* How It Works - Pricing Transparency */}
+      <section className="relative z-10 py-16 bg-gradient-to-r from-matrix/10 to-green-400/10 border-y border-matrix/30">
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl font-mono font-bold text-light-gray mb-4">
+              <span className="text-matrix">How CyberHunt Works</span>
+            </h2>
+            <p className="text-xl text-matrix font-mono font-bold mb-2">
+              100% FREE for Organizations
+            </p>
+            <p className="text-dim-gray text-lg">
+              No upfront fees. No subscriptions. Just results.
+            </p>
+          </div>
+
+          <div className="grid md:grid-cols-3 gap-8 mb-12">
+            <div className="text-center">
+              <div className="w-16 h-16 rounded-full bg-matrix/20 flex items-center justify-center mx-auto mb-4 border-2 border-matrix">
+                <span className="text-matrix font-mono text-2xl font-bold">1</span>
+              </div>
+              <h3 className="text-xl font-mono text-light-gray mb-3">Setup Your Program</h3>
+              <p className="text-dim-gray">
+                Launch your bug bounty program in minutes. Define scope, set rewards - completely free.
+              </p>
+            </div>
+
+            <div className="text-center">
+              <div className="w-16 h-16 rounded-full bg-matrix/20 flex items-center justify-center mx-auto mb-4 border-2 border-matrix">
+                <span className="text-matrix font-mono text-2xl font-bold">2</span>
+              </div>
+              <h3 className="text-xl font-mono text-light-gray mb-3">Researchers Find Bugs</h3>
+              <p className="text-dim-gray">
+                Elite security researchers test your systems and submit verified vulnerability reports.
+              </p>
+            </div>
+
+            <div className="text-center">
+              <div className="w-16 h-16 rounded-full bg-matrix/20 flex items-center justify-center mx-auto mb-4 border-2 border-matrix">
+                <span className="text-matrix font-mono text-2xl font-bold">3</span>
+              </div>
+              <h3 className="text-xl font-mono text-light-gray mb-3">Pay Only for Results</h3>
+              <p className="text-dim-gray">
+                Pay rewards only when valid vulnerabilities are discovered. We take a small percentage.
+              </p>
+            </div>
+          </div>
+
+          <div className="terminal-card p-8 rounded-xl border border-matrix/30 bg-black/60 backdrop-blur-sm max-w-4xl mx-auto">
+            <div className="text-center mb-6">
+              <h3 className="text-2xl font-mono text-matrix font-bold mb-2">Transparent Cost Structure</h3>
+              <p className="text-dim-gray">Our revenue model aligns with your success</p>
+            </div>
+            
+            <div className="grid md:grid-cols-2 gap-8">
+              <div className="text-center">
+                <div className="text-4xl font-mono text-matrix font-bold mb-2">$0</div>
+                <p className="text-light-gray font-mono text-lg mb-2">Setup & Monthly Fees</p>
+                <p className="text-dim-gray text-sm">No hidden costs, no subscriptions</p>
+              </div>
+              
+              <div className="text-center">
+                <div className="text-4xl font-mono text-matrix font-bold mb-2">15-20%</div>
+                <p className="text-light-gray font-mono text-lg mb-2">Platform Fee</p>
+                <p className="text-dim-gray text-sm">Only charged when vulnerabilities are found</p>
+              </div>
+            </div>
+
+            <div className="mt-8 p-6 rounded-lg bg-matrix/10 border border-matrix/30">
+              <div className="flex items-center justify-center mb-4">
+                <CheckCircle className="h-6 w-6 text-matrix mr-3" />
+                <span className="text-light-gray font-mono text-lg font-bold">Example: How You Pay</span>
+              </div>
+              <div className="text-center text-dim-gray">
+                <p className="mb-2">Researcher finds a critical vulnerability → You pay $500 reward</p>
+                <p className="text-matrix font-mono">You pay: $500 (to researcher) + $75 (15% platform fee) = $575 total</p>
+                <p className="text-xs mt-3 text-dim-gray">If no vulnerabilities are found, you pay $0</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* Enhanced Pricing Section */}
       <section id="pricing" className="relative z-10 py-24">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <h2 className="text-4xl font-mono font-bold text-light-gray mb-6">
-              <span className="text-matrix">_</span> Transparent Pricing
+              <span className="text-matrix">_</span> Platform Fee Structure
             </h2>
             <p className="text-dim-gray text-xl max-w-3xl mx-auto">
-              Choose the plan that scales with your security needs
+              Simple, transparent pricing that scales with your organization
             </p>
           </div>
 
