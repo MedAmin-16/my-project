@@ -8,10 +8,8 @@ import { useAuth } from "@/hooks/use-auth";
 export default function ClientLandingPage() {
   const { user } = useAuth();
 
-  // If user is logged in, redirect to dashboard
-  if (user) {
-    return <Redirect to="/dashboard" />;
-  }
+  // Allow both logged-in and non-logged-in users to access this page
+  // Removed automatic redirect to dashboard
 
   return (
     <div className="min-h-screen bg-deep-black relative">
