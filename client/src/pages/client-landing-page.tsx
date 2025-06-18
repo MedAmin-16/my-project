@@ -421,8 +421,8 @@ export default function ClientLandingPage() {
                 <span className="text-light-gray font-mono text-lg font-bold">Example: How You Pay</span>
               </div>
               <div className="text-center text-dim-gray">
-                <p className="mb-2">Researcher finds a critical vulnerability → You pay $500 reward</p>
-                <p className="text-matrix font-mono">You pay: $500 (to researcher) + $75 (15% commission to us) = $575 total</p>
+                <p className="mb-2">Researcher finds a critical vulnerability → You set $500 reward</p>
+                <p className="text-matrix font-mono">Total cost: $500 (reward) + $75-$100 (15-20% commission) = $575-$600</p>
                 <p className="text-xs mt-3 text-dim-gray">If no vulnerabilities are found, you pay $0</p>
               </div>
             </div>
