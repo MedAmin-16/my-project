@@ -390,7 +390,7 @@ export default function ClientLandingPage() {
               </div>
               <h3 className="text-xl font-mono text-light-gray mb-3">Pay Only for Results</h3>
               <p className="text-dim-gray">
-                Pay rewards only when valid vulnerabilities are discovered. We take a small percentage.
+                Pay rewards only when valid vulnerabilities are discovered. We earn a small commission from successful findings.
               </p>
             </div>
           </div>
@@ -410,8 +410,8 @@ export default function ClientLandingPage() {
               
               <div className="text-center">
                 <div className="text-4xl font-mono text-matrix font-bold mb-2">15-20%</div>
-                <p className="text-light-gray font-mono text-lg mb-2">Platform Fee</p>
-                <p className="text-dim-gray text-sm">Only charged when vulnerabilities are found</p>
+                <p className="text-light-gray font-mono text-lg mb-2">Our Commission</p>
+                <p className="text-dim-gray text-sm">Only earned when vulnerabilities are found</p>
               </div>
             </div>
 
@@ -422,7 +422,7 @@ export default function ClientLandingPage() {
               </div>
               <div className="text-center text-dim-gray">
                 <p className="mb-2">Researcher finds a critical vulnerability → You pay $500 reward</p>
-                <p className="text-matrix font-mono">You pay: $500 (to researcher) + $75 (15% platform fee) = $575 total</p>
+                <p className="text-matrix font-mono">You pay: $500 (to researcher) + $75 (15% commission to us) = $575 total</p>
                 <p className="text-xs mt-3 text-dim-gray">If no vulnerabilities are found, you pay $0</p>
               </div>
             </div>
@@ -435,12 +435,12 @@ export default function ClientLandingPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <h2 className="text-4xl font-mono font-bold text-light-gray mb-6">
-              <span className="text-matrix">_</span> Platform Fee Structure
+              <span className="text-matrix">_</span> Revenue Sharing Model
             </h2>
             <p className="text-dim-gray text-xl max-w-3xl mx-auto">
-              Simple, transparent pricing that scales with your organization
+              We only succeed when you do - simple, transparent commission structure
             </p>
-          </div>
+          </div>v>
 
           <div className="grid lg:grid-cols-3 gap-10">
             <div className="terminal-card p-10 rounded-xl border border-matrix/30 hover:border-matrix/50 transition-all">
