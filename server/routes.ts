@@ -13,17 +13,17 @@ export function registerRoutes(app: Express): Server {
   // Vulnerability grading endpoint
   app.post("/api/grade-vulnerability", (req, res) => {
     try {
-      const { vulnerabilityType, description, allowsCodeExecution, allowsDataAccess, affectsAdmin } = req.body;
-      
-      if (!vulnerabilityType || !description) {
+      const { vulnerabilityType, description, affectsAdmin, allowsCodeExecution, allowsDataAccess } = req.body;
+
+      if (!vulnerabilityType) {
         return res.status(400).json({ 
-          error: "Missing required fields: vulnerabilityType and description" 
+          error: "Missing required field: vulnerabilityType" 
         });
       }
 
       const grading = gradeVulnerability({
         vulnerabilityType,
-        description,
+        description: description || "",
         affectsAdmin: affectsAdmin || false,
         allowsCodeExecution: allowsCodeExecution || false,
         allowsDataAccess: allowsDataAccess || false
