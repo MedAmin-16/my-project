@@ -4,7 +4,7 @@ import { setupVite, log } from "./vite";
 import { getAdminSessions } from "./index";
 import { gradeVulnerability } from "./vulnerability-grading";
 
-export function registerRoutes(app: Express): Promise<Server> {
+export function registerRoutes(app: Express): Server {
   // Health check endpoint
   app.get("/api/health", (req, res) => {
     res.json({ status: "ok", timestamp: new Date().toISOString() });
@@ -13,17 +13,18 @@ export function registerRoutes(app: Express): Promise<Server> {
   // Vulnerability grading endpoint
   app.post("/api/grade-vulnerability", (req, res) => {
     try {
-      const { vulnerabilityType, impactTarget, allowsCodeExecution, allowsDataAccess } = req.body;
+      const { vulnerabilityType, description, allowsCodeExecution, allowsDataAccess, affectsAdmin } = req.body;
       
-      if (!vulnerabilityType || !impactTarget) {
+      if (!vulnerabilityType || !description) {
         return res.status(400).json({ 
-          error: "Missing required fields: vulnerabilityType and impactTarget" 
+          error: "Missing required fields: vulnerabilityType and description" 
         });
       }
 
       const grading = gradeVulnerability({
         vulnerabilityType,
-        impactTarget,
+        description,
+        affectsAdmin: affectsAdmin || false,
         allowsCodeExecution: allowsCodeExecution || false,
         allowsDataAccess: allowsDataAccess || false
       });
@@ -36,7 +37,5 @@ export function registerRoutes(app: Express): Promise<Server> {
   });
 
   const server = createServer(app);
-
-  return setupVite(app, server).then(() => server);
+  return server;
 }
-```
