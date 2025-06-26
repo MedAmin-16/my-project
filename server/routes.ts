@@ -3,8 +3,12 @@ import { createServer, type Server } from "http";
 import { setupVite, log } from "./vite";
 import { getAdminSessions } from "./index";
 import { gradeVulnerability } from "./vulnerability-grading";
+import { setupAuth } from "./auth";
 
 export function registerRoutes(app: Express): Server {
+  // Set up authentication routes first
+  setupAuth(app);
+  
   // Health check endpoint
   app.get("/api/health", (req, res) => {
     res.json({ status: "ok", timestamp: new Date().toISOString() });
