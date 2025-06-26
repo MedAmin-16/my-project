@@ -14,6 +14,7 @@ import Navbar from "@/components/layout/navbar";
 import { useToast } from "@/hooks/use-toast";
 import { BugReportTemplates } from "@/components/bug-report-templates";
 import { AIReportEnhancer } from "@/components/ai-report-enhancer";
+import { VulnerabilityGradingForm } from "@/components/vulnerability-grading-form";
 import {
   Form,
   FormControl,
@@ -147,6 +148,11 @@ export default function SubmitBugPage() {
           <p className="text-dim-gray font-mono">
             Report a security vulnerability you've discovered and get rewarded.
           </p>
+        </div>
+
+        {/* Vulnerability Grading Tool */}
+        <div className="mb-8">
+          <VulnerabilityGradingForm />
         </div>
 
         <div className="terminal-card p-6 rounded-lg">
