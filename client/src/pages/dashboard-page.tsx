@@ -632,7 +632,8 @@ export default function DashboardPage() {
                           <span className="text-xs text-dim-gray font-mono">Progress</span>
                           <span className="text-xs text-dim-gray font-mono">0/1</span>
                         </div>
-                        <Progress value={0} className="h-1.5 bg-dim-gray/20" indicatorClassName="bg-matrix" />
+                        <Progress value={0} className="h-1.5 bg-dim-gray/20"```text
+ indicatorClassName="bg-matrix" />
                       </div>
                     </div>
                   </div>

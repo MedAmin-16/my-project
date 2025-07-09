@@ -340,6 +340,28 @@ export const paymentDisputes = pgTable("payment_disputes", {
   updatedAt: timestamp("updated_at")
 });
 
+// Comments Schema
+export const comments = pgTable("comments", {
+  id: serial("id").primaryKey(),
+  content: text("content").notNull(),
+  submissionId: integer("submission_id").notNull().references(() => submissions.id),
+  userId: integer("user_id").notNull().references(() => users.id),
+  parentId: integer("parent_id").references(() => comments.id), // For threaded replies
+  isEdited: boolean("is_edited").default(false),
+  editedAt: timestamp("edited_at"),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at")
+});
+
+// Comment Participants table (to track who should get notifications)
+export const commentParticipants = pgTable("comment_participants", {
+  id: serial("id").primaryKey(),
+  submissionId: integer("submission_id").notNull().references(() => submissions.id),
+  userId: integer("user_id").notNull().references(() => users.id),
+  lastReadAt: timestamp("last_read_at"),
+  createdAt: timestamp("created_at").defaultNow()
+});
+
 // Rate Limiting table for fraud prevention
 export const paymentRateLimits = pgTable("payment_rate_limits", {
   id: serial("id").primaryKey(),
@@ -423,3 +445,29 @@ export type InsertCommission = z.infer<typeof insertCommissionSchema>;
 export type TransactionLog = typeof transactionLogs.$inferSelect;
 export type PaymentDispute = typeof paymentDisputes.$inferSelect;
 export type InsertPaymentDispute = z.infer<typeof insertPaymentDisputeSchema>;
+
+// Comment schema validators
+export const insertCommentSchema = createInsertSchema(comments).pick({
+  content: true,
+  submissionId: true,
+  parentId: true
+}).extend({
+  content: z.string().min(1, "Comment cannot be empty").max(5000, "Comment too long")
+});
+
+export const insertCommentParticipantSchema = createInsertSchema(commentParticipants).pick({
+  submissionId: true,
+  userId: true
+});
+
+// Comment types
+export type Comment = typeof comments.$inferSelect;
+export type InsertComment = z.infer<typeof insertCommentSchema>;
+export type CommentParticipant = typeof commentParticipants.$inferSelect;
+export type InsertCommentParticipant = z.infer<typeof insertCommentParticipantSchema>;
+
+// Extended comment type with user info
+export type CommentWithUser = Comment & {
+  user: Pick<User, 'id' | 'username' | 'userType'>;
+  replies?: CommentWithUser[];
+};
