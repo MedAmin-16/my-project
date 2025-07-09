@@ -169,6 +169,7 @@ function Router() {
       <Route path="/admin/dashboard" component={AdminDashboardPage} />
       <Route path="/for-organizations" component={ClientLandingPage} />
       <Route path="/for-organisations" component={ClientLandingPage} />
+      <Route path="/for-organisation" component={ClientLandingPage} />
 
       <Route path="/*" component={NotFound} />
     </Switch>
