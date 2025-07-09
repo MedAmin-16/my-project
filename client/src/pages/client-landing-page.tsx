@@ -422,83 +422,135 @@ export default function ClientLandingPage() {
 
 
 
-      {/* Enhanced Testimonials */}
-      <section id="testimonials" className="relative z-10 py-24 bg-gradient-to-b from-terminal to-black border-y border-matrix/30">
+      {/* No Security Team? No Problem */}
+      <section id="managed-security" className="relative z-10 py-24 bg-gradient-to-b from-terminal to-black border-y border-matrix/30">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <h2 className="text-4xl font-mono font-bold text-light-gray mb-6">
-              <span className="text-matrix">_</span> Trusted by Industry Leaders
+              <span className="text-matrix">_</span> No Security Team? No Problem.
             </h2>
-            <p className="text-dim-gray text-xl max-w-3xl mx-auto">
-              See how organizations transform their security posture with CyberHunt
+            <p className="text-dim-gray text-xl max-w-4xl mx-auto leading-relaxed">
+              Many companies lack dedicated cybersecurity teams. CyberHunt handles the complete vulnerability management 
+              lifecycle so you can focus on building your business while we protect it.
             </p>
           </div>
 
-          <div className="grid lg:grid-cols-3 gap-10">
-            <div className="bg-black/60 p-8 rounded-xl border border-matrix/20 backdrop-blur-sm">
-              <div className="flex mb-6">
-                {[...Array(5)].map((_, i) => (
-                  <Star key={i} className="h-5 w-5 text-yellow-400 fill-current" />
-                ))}
-              </div>
-              <p className="text-dim-gray mb-8 italic text-lg leading-relaxed">
-                "CyberHunt transformed our security approach. We discovered critical vulnerabilities 
-                that traditional testing missed, and the researcher quality is exceptional."
-              </p>
-              <div className="flex items-center">
-                <div className="w-14 h-14 rounded-full bg-matrix/20 flex items-center justify-center mr-4 border border-matrix/30">
-                  <span className="text-matrix font-mono font-bold">JS</span>
+          <div className="grid lg:grid-cols-2 gap-12 items-center mb-16">
+            <div className="terminal-card p-8 rounded-xl border border-matrix/30 bg-black/60 backdrop-blur-sm">
+              <div className="mb-6">
+                <div className="w-16 h-16 rounded-lg bg-matrix/10 flex items-center justify-center border border-matrix/30 mb-4">
+                  <Users className="text-matrix h-8 w-8" />
                 </div>
-                <div>
-                  <p className="text-light-gray font-mono font-bold">John Stevens</p>
-                  <p className="text-dim-gray text-sm">CISO, TechCorp Global</p>
-                  <p className="text-dim-gray text-xs">Fortune 500 Technology</p>
+                <h3 className="text-2xl font-mono font-bold text-light-gray mb-4">Complete Managed Service</h3>
+                <p className="text-dim-gray mb-6 leading-relaxed">
+                  Our expert security team becomes your security team. We handle everything from vulnerability discovery 
+                  to remediation guidance, giving you enterprise-grade protection without the overhead.
+                </p>
+              </div>
+              
+              <div className="space-y-4">
+                <div className="flex items-start">
+                  <CheckCircle className="h-5 w-5 text-matrix mr-3 mt-0.5 flex-shrink-0" />
+                  <div>
+                    <p className="text-light-gray font-mono font-semibold">Vulnerability Triage & Validation</p>
+                    <p className="text-dim-gray text-sm">Expert analysis and prioritization by our security team</p>
+                  </div>
+                </div>
+                
+                <div className="flex items-start">
+                  <CheckCircle className="h-5 w-5 text-matrix mr-3 mt-0.5 flex-shrink-0" />
+                  <div>
+                    <p className="text-light-gray font-mono font-semibold">Researcher Communication</p>
+                    <p className="text-dim-gray text-sm">We handle all interactions with security researchers for you</p>
+                  </div>
+                </div>
+                
+                <div className="flex items-start">
+                  <CheckCircle className="h-5 w-5 text-matrix mr-3 mt-0.5 flex-shrink-0" />
+                  <div>
+                    <p className="text-light-gray font-mono font-semibold">Technical Reports & Impact Assessment</p>
+                    <p className="text-dim-gray text-sm">Detailed reports with business impact and risk analysis</p>
+                  </div>
+                </div>
+                
+                <div className="flex items-start">
+                  <CheckCircle className="h-5 w-5 text-matrix mr-3 mt-0.5 flex-shrink-0" />
+                  <div>
+                    <p className="text-light-gray font-mono font-semibold">Remediation Guidance</p>
+                    <p className="text-dim-gray text-sm">Step-by-step fix instructions and follow-up verification</p>
+                  </div>
                 </div>
               </div>
             </div>
 
-            <div className="bg-black/60 p-8 rounded-xl border border-matrix/20 backdrop-blur-sm">
-              <div className="flex mb-6">
-                {[...Array(5)].map((_, i) => (
-                  <Star key={i} className="h-5 w-5 text-yellow-400 fill-current" />
-                ))}
-              </div>
-              <p className="text-dim-gray mb-8 italic text-lg leading-relaxed">
-                "The cost savings are incredible - 70% less than traditional pen testing while 
-                providing continuous coverage. ROI was clear within the first month."
-              </p>
-              <div className="flex items-center">
-                <div className="w-14 h-14 rounded-full bg-matrix/20 flex items-center justify-center mr-4 border border-matrix/30">
-                  <span className="text-matrix font-mono font-bold">MJ</span>
+            <div className="terminal-card p-8 rounded-xl border border-matrix/30 bg-black/60 backdrop-blur-sm">
+              <div className="mb-6">
+                <div className="w-16 h-16 rounded-lg bg-matrix/10 flex items-center justify-center border border-matrix/30 mb-4">
+                  <Zap className="text-matrix h-8 w-8" />
                 </div>
-                <div>
-                  <p className="text-light-gray font-mono font-bold">Maria Johnson</p>
-                  <p className="text-dim-gray text-sm">Security Director, FinanceApp</p>
-                  <p className="text-dim-gray text-xs">Fintech Startup</p>
+                <h3 className="text-2xl font-mono font-bold text-light-gray mb-4">Zero Technical Overhead</h3>
+                <p className="text-dim-gray mb-6 leading-relaxed">
+                  Professional dashboard designed for non-technical teams. Monitor your security posture, 
+                  track vulnerabilities, and make informed decisions without cybersecurity expertise.
+                </p>
+              </div>
+              
+              <div className="space-y-4">
+                <div className="flex items-start">
+                  <CheckCircle className="h-5 w-5 text-matrix mr-3 mt-0.5 flex-shrink-0" />
+                  <div>
+                    <p className="text-light-gray font-mono font-semibold">Executive-Level Reporting</p>
+                    <p className="text-dim-gray text-sm">Clear, actionable insights for business leadership</p>
+                  </div>
+                </div>
+                
+                <div className="flex items-start">
+                  <CheckCircle className="h-5 w-5 text-matrix mr-3 mt-0.5 flex-shrink-0" />
+                  <div>
+                    <p className="text-light-gray font-mono font-semibold">Managed Bug Bounty Workflow</p>
+                    <p className="text-dim-gray text-sm">Optional end-to-end program management and optimization</p>
+                  </div>
+                </div>
+                
+                <div className="flex items-start">
+                  <CheckCircle className="h-5 w-5 text-matrix mr-3 mt-0.5 flex-shrink-0" />
+                  <div>
+                    <p className="text-light-gray font-mono font-semibold">Compliance & Documentation</p>
+                    <p className="text-dim-gray text-sm">Automated compliance reporting and audit trails</p>
+                  </div>
+                </div>
+                
+                <div className="flex items-start">
+                  <CheckCircle className="h-5 w-5 text-matrix mr-3 mt-0.5 flex-shrink-0" />
+                  <div>
+                    <p className="text-light-gray font-mono font-semibold">24/7 Security Monitoring</p>
+                    <p className="text-dim-gray text-sm">Continuous protection with real-time alerts</p>
+                  </div>
                 </div>
               </div>
             </div>
+          </div>
 
-            <div className="bg-black/60 p-8 rounded-xl border border-matrix/20 backdrop-blur-sm">
-              <div className="flex mb-6">
-                {[...Array(5)].map((_, i) => (
-                  <Star key={i} className="h-5 w-5 text-yellow-400 fill-current" />
-                ))}
-              </div>
-              <p className="text-dim-gray mb-8 italic text-lg leading-relaxed">
-                "The AI-powered triage and researcher matching saved us countless hours. 
-                We now focus on fixing vulnerabilities instead of managing the process."
-              </p>
-              <div className="flex items-center">
-                <div className="w-14 h-14 rounded-full bg-matrix/20 flex items-center justify-center mr-4 border border-matrix/30">
-                  <span className="text-matrix font-mono font-bold">DL</span>
-                </div>
-                <div>
-                  <p className="text-light-gray font-mono font-bold">David Lee</p>
-                  <p className="text-dim-gray text-sm">VP Security, CloudScale</p>
-                  <p className="text-dim-gray text-xs">Cloud Infrastructure</p>
-                </div>
-              </div>
+          <div className="text-center">
+            <div className="inline-flex items-center px-6 py-3 rounded-full border border-matrix/30 bg-matrix/10 mb-8">
+              <Shield className="h-5 w-5 text-matrix mr-2" />
+              <span className="text-matrix font-mono text-sm">Perfect for startups and growing companies</span>
+            </div>
+            
+            <p className="text-dim-gray text-lg mb-8 max-w-3xl mx-auto">
+              Stop worrying about security gaps. Our managed service provides enterprise-grade protection 
+              without the complexity, cost, or overhead of building an in-house security team.
+            </p>
+
+            <div className="flex flex-col sm:flex-row gap-6 justify-center">
+              <Link href="/auth?mode=register">
+                <Button className="glow-button text-lg font-mono py-6 px-10 rounded-lg">
+                  Let Us Handle It For You <ArrowRight className="ml-3 h-5 w-5" />
+                </Button>
+              </Link>
+              <Button variant="outline" className="border-matrix/50 text-matrix hover:bg-matrix/10 text-lg font-mono py-6 px-10 rounded-lg transition-all">
+                Start Managed Triage
+              </Button>
             </div>
           </div>
         </div>
