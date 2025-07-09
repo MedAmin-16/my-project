@@ -169,10 +169,7 @@ function Router() {
   );
 }
 
-// Placeholder for FindProgramsPage component
-function FindProgramsPage() {
-  return <h1>Find Programs Page</h1>;
-}
+
 
 function App() {
   return (
