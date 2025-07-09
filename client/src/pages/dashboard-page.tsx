@@ -1,10 +1,8 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { Link } from "wouter";
 import { useAuth } from "@/hooks/use-auth";
-import Navbar from "@/components/layout/navbar";
-import ProgramCard from "@/components/ui/program-card";
-import ActivityItem from "@/components/ui/activity-item";
+import PublicChatWidget from "@/components/public-chat-widget";
+import { Link } from "wouter";
 import { Program, Activity } from "@shared/schema";
 import { 
   AlertTriangle, Bug, Search, User, Terminal, Award, 

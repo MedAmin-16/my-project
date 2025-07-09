@@ -471,3 +471,32 @@ export type CommentWithUser = Comment & {
   user: Pick<User, 'id' | 'username' | 'userType'>;
   replies?: CommentWithUser[];
 };
+
+// Public Chat Schema
+export const publicMessages = pgTable("public_messages", {
+  id: serial("id").primaryKey(),
+  content: text("content").notNull(),
+  userId: integer("user_id").notNull().references(() => users.id),
+  messageType: text("message_type").default("message"), // "message", "announcement"
+  isEdited: boolean("is_edited").default(false),
+  editedAt: timestamp("edited_at"),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at")
+});
+
+// Public Message schema validators
+export const insertPublicMessageSchema = createInsertSchema(publicMessages).pick({
+  content: true,
+  messageType: true
+}).extend({
+  content: z.string().min(1, "Message cannot be empty").max(1000, "Message too long")
+});
+
+// Public Message types
+export type PublicMessage = typeof publicMessages.$inferSelect;
+export type InsertPublicMessage = z.infer<typeof insertPublicMessageSchema>;
+
+// Extended public message type with user info
+export type PublicMessageWithUser = PublicMessage & {
+  user: Pick<User, 'id' | 'username' | 'userType'>;
+};

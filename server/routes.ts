@@ -358,6 +358,195 @@ export function registerRoutes(app: Express): Server {
     }
   });
 
+  // Public Chat Routes
+  
+  // Get public chat messages
+  app.get("/api/public-chat/messages", (req, res) => {
+    try {
+      const { limit = "50", before } = req.query;
+      
+      const limitNum = Math.min(Number(limit) || 50, 100); // Max 100 messages
+
+      // Mock messages data
+      const mockMessages = [
+        {
+          id: 1,
+          content: "🚀 Excited to announce our new Web Application Security Program! Higher rewards for critical vulnerabilities.",
+          userId: 10,
+          messageType: "announcement",
+          isEdited: false,
+          editedAt: null,
+          createdAt: new Date(Date.now() - 3600000).toISOString(), // 1 hour ago
+          updatedAt: new Date(Date.now() - 3600000).toISOString(),
+          user: {
+            id: 10,
+            username: "TechCorpSecurity",
+            userType: "company"
+          }
+        },
+        {
+          id: 2,
+          content: "Has anyone tested the new authentication flows? Looking for collaboration on some findings.",
+          userId: 5,
+          messageType: "message",
+          isEdited: false,
+          editedAt: null,
+          createdAt: new Date(Date.now() - 1800000).toISOString(), // 30 minutes ago
+          updatedAt: new Date(Date.now() - 1800000).toISOString(),
+          user: {
+            id: 5,
+            username: "SecurityResearcher42",
+            userType: "hacker"
+          }
+        },
+        {
+          id: 3,
+          content: "Great job to everyone who participated in last month's contest! Looking forward to the next one.",
+          userId: 8,
+          messageType: "message",
+          isEdited: false,
+          editedAt: null,
+          createdAt: new Date(Date.now() - 900000).toISOString(), // 15 minutes ago
+          updatedAt: new Date(Date.now() - 900000).toISOString(),
+          user: {
+            id: 8,
+            username: "EliteHunter",
+            userType: "hacker"
+          }
+        },
+        {
+          id: 4,
+          content: "📢 New bounty program launching next week - Mobile App Security. Stay tuned for details!",
+          userId: 12,
+          messageType: "announcement",
+          isEdited: false,
+          editedAt: null,
+          createdAt: new Date(Date.now() - 300000).toISOString(), // 5 minutes ago
+          updatedAt: new Date(Date.now() - 300000).toISOString(),
+          user: {
+            id: 12,
+            username: "StartupCorp",
+            userType: "company"
+          }
+        }
+      ];
+
+      // Sort by creation date (newest first for display, but return in chronological order)
+      const sortedMessages = mockMessages.sort((a, b) => 
+        new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
+      );
+
+      res.json(sortedMessages.slice(-limitNum));
+    } catch (error) {
+      console.error("Get public messages error:", error);
+      res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
+  // Post a new public message
+  app.post("/api/public-chat/messages", (req, res) => {
+    try {
+      const { content, messageType = "message" } = req.body;
+
+      if (!content || content.trim().length === 0) {
+        return res.status(400).json({ message: "Message content is required" });
+      }
+
+      if (content.length > 1000) {
+        return res.status(400).json({ message: "Message too long" });
+      }
+
+      // Mock user (in real app, get from auth middleware)
+      const mockUser = {
+        id: 1,
+        username: "researcher123",
+        userType: "hacker"
+      };
+
+      // Validate message type
+      if (!["message", "announcement"].includes(messageType)) {
+        return res.status(400).json({ message: "Invalid message type" });
+      }
+
+      // Only companies can post announcements
+      if (messageType === "announcement" && mockUser.userType !== "company") {
+        return res.status(403).json({ message: "Only companies can post announcements" });
+      }
+
+      // Create new message
+      const newMessage = {
+        id: Date.now(), // Mock ID
+        content: content.trim(),
+        userId: mockUser.id,
+        messageType,
+        isEdited: false,
+        editedAt: null,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+        user: mockUser
+      };
+
+      // In real app: save to database, broadcast to connected clients, etc.
+      
+      res.status(201).json(newMessage);
+    } catch (error) {
+      console.error("Post public message error:", error);
+      res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
+  // Update a public message
+  app.put("/api/public-chat/messages/:messageId", (req, res) => {
+    try {
+      const { messageId } = req.params;
+      const { content } = req.body;
+
+      if (!messageId || isNaN(Number(messageId))) {
+        return res.status(400).json({ message: "Invalid message ID" });
+      }
+
+      if (!content || content.trim().length === 0) {
+        return res.status(400).json({ message: "Message content is required" });
+      }
+
+      if (content.length > 1000) {
+        return res.status(400).json({ message: "Message too long" });
+      }
+
+      // Mock updated message
+      const updatedMessage = {
+        id: Number(messageId),
+        content: content.trim(),
+        isEdited: true,
+        editedAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+      };
+
+      res.json(updatedMessage);
+    } catch (error) {
+      console.error("Update public message error:", error);
+      res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
+  // Delete a public message
+  app.delete("/api/public-chat/messages/:messageId", (req, res) => {
+    try {
+      const { messageId } = req.params;
+
+      if (!messageId || isNaN(Number(messageId))) {
+        return res.status(400).json({ message: "Invalid message ID" });
+      }
+
+      // In real app: check ownership, mark as deleted, etc.
+      
+      res.json({ message: "Message deleted successfully" });
+    } catch (error) {
+      console.error("Delete public message error:", error);
+      res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
   const server = createServer(app);
   return server;
 }

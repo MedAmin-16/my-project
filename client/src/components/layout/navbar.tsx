@@ -82,6 +82,17 @@ export default function Navbar() {
                   </div>
                 </Link>
               ))}
+               <Link href="/public-chat">
+                  <div
+                    className={`${
+                      isActive('/public-chat')
+                        ? "text-light-gray border-matrix"
+                        : "text-dim-gray border-transparent hover:text-matrix"
+                    } border-b-2 px-3 pt-5 pb-3 text-sm font-mono cursor-pointer`}
+                  >
+                    Public Chat
+                  </div>
+                </Link>
             </div>
           </div>
 
@@ -163,6 +174,19 @@ export default function Navbar() {
                 {link.name}
               </div>
             ))}
+            <div
+                className={`block px-3 py-2 rounded-md text-base font-mono cursor-pointer ${
+                  isActive('/public-chat')
+                    ? "text-light-gray bg-matrix/10 border-l-2 border-matrix"
+                    : "text-dim-gray hover:bg-matrix/10 hover:text-light-gray"
+                }`}
+                onClick={() => {
+                  setMobileMenuOpen(false);
+                  window.location.href = '/public-chat';
+                }}
+              >
+                Public Chat
+              </div>
             <div
               className="block px-3 py-2 rounded-md text-base font-mono text-dim-gray hover:bg-matrix/10 hover:text-light-gray cursor-pointer"
               onClick={() => {
