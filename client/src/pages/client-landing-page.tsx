@@ -1,591 +1,617 @@
 
-import { Link } from "wouter";
-import { 
-  ArrowRight, 
-  Shield, 
-  Users, 
-  TrendingUp, 
-  Lock, 
-  CheckCircle, 
-  Star, 
-  Building2, 
-  Zap, 
-  Eye, 
-  Clock, 
-  Award, 
-  Globe, 
-  FileText, 
-  ChevronRight, 
-  Monitor, 
-  Database, 
-  Bot,
-  Phone,
-  Mail,
-  MessageSquare,
-  ShieldCheck,
-  Activity,
-  BarChart3,
-  DollarSign,
-  Target,
-  Lightbulb,
-  Search,
-  AlertTriangle,
-  Download,
-  BookOpen,
-  Settings,
-  HeadphonesIcon,
-  Quote
-} from "lucide-react";
+import { Link, Redirect } from "wouter";
+import { ArrowRight, Shield, Users, TrendingUp, Lock, CheckCircle, Star, Building2, Zap, Eye, Clock, Award, Globe, FileText, ChevronRight, Monitor, Database, Bot } from "lucide-react";
 import MatrixBackground from "@/components/matrix-background";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/use-auth";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from "@/components/ui/accordion";
 
 export default function ClientLandingPage() {
   const { user } = useAuth();
 
-  const features = [
-    {
-      icon: Shield,
-      title: "Advanced Security Testing",
-      description: "Access to thousands of vetted ethical hackers worldwide who continuously test your applications for vulnerabilities."
-    },
-    {
-      icon: Bot,
-      title: "AI-Powered Triage",
-      description: "Our intelligent triage system automatically validates, prioritizes, and categorizes vulnerabilities to reduce false positives."
-    },
-    {
-      icon: Monitor,
-      title: "Real-Time Dashboard",
-      description: "Comprehensive dashboard with real-time analytics, vulnerability tracking, and detailed reporting capabilities."
-    },
-    {
-      icon: Database,
-      title: "Secure Data Management",
-      description: "Enterprise-grade security with encrypted communications, secure file sharing, and comprehensive audit trails."
-    },
-    {
-      icon: Users,
-      title: "Expert Support Team",
-      description: "Dedicated customer success team and security experts available 24/7 to assist with your program."
-    },
-    {
-      icon: Activity,
-      title: "Compliance Ready",
-      description: "Built-in compliance features for SOC 2, ISO 27001, GDPR, and other regulatory requirements."
-    }
-  ];
-
-  const pricingPlans = [
-    {
-      name: "Basic",
-      price: "$499",
-      period: "per month",
-      description: "Perfect for startups and small companies",
-      features: [
-        "Up to 50 vulnerability submissions per month",
-        "Basic triage and validation",
-        "Email notifications",
-        "Standard support",
-        "Basic analytics dashboard",
-        "Integration with popular tools"
-      ],
-      popular: false
-    },
-    {
-      name: "Professional",
-      price: "$1,299",
-      period: "per month",
-      description: "Ideal for growing companies",
-      features: [
-        "Up to 200 vulnerability submissions per month",
-        "Advanced AI-powered triage",
-        "Real-time notifications",
-        "Priority support",
-        "Advanced analytics and reporting",
-        "Custom integrations",
-        "Dedicated account manager"
-      ],
-      popular: true
-    },
-    {
-      name: "Enterprise",
-      price: "Custom",
-      period: "pricing",
-      description: "For large organizations with complex needs",
-      features: [
-        "Unlimited vulnerability submissions",
-        "White-label solution",
-        "Advanced compliance features",
-        "24/7 dedicated support",
-        "Custom reporting and analytics",
-        "API access and custom integrations",
-        "On-premise deployment options"
-      ],
-      popular: false
-    }
-  ];
-
-  const testimonials = [
-    {
-      company: "TechCorp Inc.",
-      logo: "🏢",
-      testimonial: "Cyber Hunt has revolutionized our security testing process. We've identified and fixed over 150 critical vulnerabilities in just 6 months.",
-      author: "Sarah Johnson",
-      role: "Chief Security Officer",
-      rating: 5
-    },
-    {
-      company: "StartupXYZ",
-      logo: "🚀",
-      testimonial: "The platform's triage service saved us countless hours. Their security experts validated vulnerabilities quickly and provided actionable remediation steps.",
-      author: "Michael Chen",
-      role: "CTO",
-      rating: 5
-    },
-    {
-      company: "Global Finance Corp",
-      logo: "🏦",
-      testimonial: "Outstanding compliance support and detailed reporting. Cyber Hunt helped us achieve SOC 2 certification with comprehensive security documentation.",
-      author: "Emily Rodriguez",
-      role: "Compliance Director",
-      rating: 5
-    }
-  ];
-
-  const faqs = [
-    {
-      question: "How do you ensure the quality of security researchers?",
-      answer: "All researchers on our platform undergo rigorous vetting including background checks, skill assessments, and continuous performance monitoring. We maintain a community of verified ethical hackers with proven track records."
-    },
-    {
-      question: "What types of vulnerabilities can be found through your platform?",
-      answer: "Our researchers can identify a wide range of vulnerabilities including SQL injection, XSS, authentication bypasses, privilege escalation, API security issues, mobile app vulnerabilities, and more."
-    },
-    {
-      question: "How quickly can we expect to see results?",
-      answer: "Most programs start receiving vulnerability reports within 24-48 hours of launch. Our average response time for triage is 12-24 hours, with critical vulnerabilities prioritized immediately."
-    },
-    {
-      question: "Is my data secure on your platform?",
-      answer: "Yes, we employ enterprise-grade security measures including end-to-end encryption, SOC 2 compliance, regular security audits, and secure communication channels. Your data never leaves our secure infrastructure."
-    },
-    {
-      question: "Can I integrate Cyber Hunt with my existing tools?",
-      answer: "Yes, we offer integrations with popular tools like Jira, Slack, Microsoft Teams, GitHub, and many others. We also provide REST APIs for custom integrations."
-    },
-    {
-      question: "What happens if a researcher finds a critical vulnerability?",
-      answer: "Critical vulnerabilities are immediately escalated to our security team and your designated contacts. We provide detailed reports with reproduction steps and recommended fixes within hours."
-    }
-  ];
-
-  const stats = [
-    { number: "50,000+", label: "Vulnerabilities Found" },
-    { number: "2,500+", label: "Companies Protected" },
-    { number: "15,000+", label: "Security Researchers" },
-    { number: "99.9%", label: "Platform Uptime" }
-  ];
+  // Allow both logged-in and non-logged-in users to access this page
+  // Removed automatic redirect to dashboard
 
   return (
     <div className="min-h-screen bg-deep-black relative">
       <MatrixBackground />
-      
-      {/* Navigation */}
-      <nav className="relative z-20 bg-terminal/90 backdrop-blur-sm border-b border-matrix/30">
+
+      {/* Header/Navigation */}
+      <header className="relative z-10 border-b border-matrix/30 bg-black/80 backdrop-blur-md">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
-            <Link href="/">
-              <div className="text-matrix text-xl font-mono font-bold cursor-pointer">
-                CyberHunt_
-              </div>
-            </Link>
-            <div className="flex space-x-4">
+          <div className="flex justify-between items-center py-4">
+            <div className="flex items-center">
+              <span className="text-matrix text-xl font-mono font-bold">CyberHunt_</span>
+              <span className="text-dim-gray text-sm font-mono ml-2">Enterprise Security</span>
+            </div>
+            <nav className="hidden md:flex space-x-8">
+              <a href="#security" className="text-dim-gray hover:text-matrix font-mono text-sm transition-colors">Security</a>
+              <a href="#features" className="text-dim-gray hover:text-matrix font-mono text-sm transition-colors">Features</a>
+              <a href="#pricing" className="text-dim-gray hover:text-matrix font-mono text-sm transition-colors">Pricing</a>
+              <a href="#testimonials" className="text-dim-gray hover:text-matrix font-mono text-sm transition-colors">Case Studies</a>
+              <a href="#contact" className="text-dim-gray hover:text-matrix font-mono text-sm transition-colors">Contact</a>
+            </nav>
+            <div className="flex items-center space-x-4">
               <Link href="/auth">
-                <Button variant="outline" className="border-matrix/30 text-matrix hover:bg-matrix/20">
+                <Button variant="outline" className="border-matrix/50 text-matrix hover:bg-matrix/10 font-mono text-sm transition-all">
                   Login
                 </Button>
               </Link>
-              <Link href="/auth">
-                <Button className="glow-button">
-                  Get Started
+              <Link href="/auth?mode=register">
+                <Button className="glow-button font-mono text-sm">
+                  Start Security Program
                 </Button>
               </Link>
             </div>
           </div>
         </div>
-      </nav>
+      </header>
 
       {/* Hero Section */}
-      <section className="relative z-10 py-20 lg:py-32">
+      <section className="relative z-10 pt-24 pb-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center">
-            <h1 className="text-4xl md:text-6xl font-mono font-bold text-light-gray mb-6">
-              Secure Your Organization with
-              <span className="text-matrix block mt-2">Crowdsourced Security</span>
-            </h1>
-            <p className="text-xl text-dim-gray mb-8 max-w-3xl mx-auto">
-              Join thousands of companies using Cyber Hunt to discover vulnerabilities before attackers do. 
-              Our platform connects you with elite security researchers worldwide, providing comprehensive 
-              security testing and expert triage services.
-            </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Link href="/auth">
-                <Button size="lg" className="glow-button text-lg px-8 py-6">
-                  Start Free Trial
-                  <ArrowRight className="ml-2 h-5 w-5" />
-                </Button>
-              </Link>
-              <Button size="lg" variant="outline" className="border-matrix/30 text-matrix hover:bg-matrix/20 text-lg px-8 py-6">
-                <Phone className="mr-2 h-5 w-5" />
-                Schedule Demo
-              </Button>
+          <div className="grid lg:grid-cols-2 gap-16 items-center">
+            <div>
+              <div className="inline-flex items-center px-4 py-2 rounded-full border border-matrix/30 bg-matrix/10 mb-8">
+                <Shield className="h-4 w-4 text-matrix mr-2" />
+                <span className="text-matrix font-mono text-sm">Next-Gen Security Platform</span>
+              </div>
+              <h1 className="text-4xl md:text-5xl lg:text-6xl font-mono font-bold text-light-gray mb-8 leading-tight">
+                <span className="text-matrix">Fortify</span> Your Digital Infrastructure
+              </h1>
+              <p className="text-dim-gray text-xl mb-10 leading-relaxed">
+                Connect with the world's elite security researchers to identify vulnerabilities before attackers do. 
+                Our platform transforms cybersecurity from reactive defense to proactive protection.
+              </p>
+              <div className="flex flex-col sm:flex-row gap-6 mb-10">
+                <Link href="/auth?mode=register">
+                  <Button className="glow-button text-lg font-mono py-8 px-10 rounded-lg">
+                    Launch Security Program <ArrowRight className="ml-3 h-6 w-6" />
+                  </Button>
+                </Link>
+                <Link href="#demo">
+                  <Button variant="outline" className="border-matrix/50 text-matrix hover:bg-matrix/10 text-lg font-mono py-8 px-10 rounded-lg transition-all">
+                    Request Demo
+                  </Button>
+                </Link>
+              </div>
+              <div className="grid grid-cols-2 gap-8 text-sm">
+                <div className="flex items-center">
+                  <CheckCircle className="h-5 w-5 text-matrix mr-3" />
+                  <span className="text-dim-gray font-mono">Zero Setup Costs</span>
+                </div>
+                <div className="flex items-center">
+                  <CheckCircle className="h-5 w-5 text-matrix mr-3" />
+                  <span className="text-dim-gray font-mono">Pay Only for Results</span>
+                </div>
+                <div className="flex items-center">
+                  <CheckCircle className="h-5 w-5 text-matrix mr-3" />
+                  <span className="text-dim-gray font-mono">24/7 Security Coverage</span>
+                </div>
+                <div className="flex items-center">
+                  <CheckCircle className="h-5 w-5 text-matrix mr-3" />
+                  <span className="text-dim-gray font-mono">Enterprise Grade</span>
+                </div>
+              </div>
+            </div>
+            <div className="relative">
+              <div className="terminal-card p-10 rounded-xl border border-matrix/30 animate-pulse-glow">
+                <div className="terminal-header mb-8">
+                  <div className="flex items-center justify-between">
+                    <span className="text-matrix font-mono text-lg">Security Command Center</span>
+                    <div className="flex space-x-2">
+                      <div className="w-4 h-4 rounded-full bg-red-500"></div>
+                      <div className="w-4 h-4 rounded-full bg-yellow-500"></div>
+                      <div className="w-4 h-4 rounded-full bg-green-500"></div>
+                    </div>
+                  </div>
+                </div>
+                <div className="space-y-6">
+                  <div className="flex justify-between items-center py-2">
+                    <span className="text-dim-gray font-mono">Critical Vulnerabilities:</span>
+                    <span className="text-red-400 font-mono text-lg font-bold">0</span>
+                  </div>
+                  <div className="flex justify-between items-center py-2">
+                    <span className="text-dim-gray font-mono">High Priority:</span>
+                    <span className="text-orange-400 font-mono text-lg font-bold">2</span>
+                  </div>
+                  <div className="flex justify-between items-center py-2">
+                    <span className="text-dim-gray font-mono">Medium Priority:</span>
+                    <span className="text-yellow-400 font-mono text-lg font-bold">7</span>
+                  </div>
+                  <div className="flex justify-between items-center py-2">
+                    <span className="text-dim-gray font-mono">Researchers Active:</span>
+                    <span className="text-matrix font-mono text-lg font-bold">23</span>
+                  </div>
+                  <div className="w-full bg-terminal rounded-full h-3 mt-6">
+                    <div className="bg-gradient-to-r from-matrix to-green-400 h-3 rounded-full transition-all duration-1000" style={{width: '94%'}}></div>
+                  </div>
+                  <div className="text-center pt-2">
+                    <span className="text-matrix font-mono text-lg font-bold">Security Score: 94/100</span>
+                    <p className="text-dim-gray font-mono text-sm mt-1">Excellent Protection</p>
+                  </div>
+                </div>
+              </div>
+              <div className="absolute -top-8 -right-8 w-16 h-16 rounded-full bg-matrix/20 flex items-center justify-center border border-matrix animate-pulse">
+                <Shield className="h-8 w-8 text-matrix" />
+              </div>
             </div>
           </div>
         </div>
       </section>
 
-      {/* Stats Section */}
-      <section className="relative z-10 py-16 border-t border-matrix/20">
+      {/* Trust Indicators */}
+      <section className="relative z-10 bg-gradient-to-r from-terminal to-black border-y border-matrix/30 py-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
-            {stats.map((stat, index) => (
-              <div key={index} className="text-center">
-                <div className="text-3xl md:text-4xl font-mono font-bold text-matrix mb-2">
-                  {stat.number}
-                </div>
-                <div className="text-dim-gray font-mono text-sm">
-                  {stat.label}
+          <div className="text-center mb-10">
+            <p className="text-dim-gray font-mono text-lg">Trusted by leading organizations worldwide</p>
+          </div>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-12">
+            <div className="text-center">
+              <div className="mb-4">
+                <Globe className="h-8 w-8 text-matrix mx-auto" />
+              </div>
+              <p className="text-matrix font-mono text-3xl md:text-4xl font-bold mb-2">99.9%</p>
+              <p className="text-dim-gray font-mono text-sm">Uptime SLA Guarantee</p>
+            </div>
+            <div className="text-center">
+              <div className="mb-4">
+                <Clock className="h-8 w-8 text-matrix mx-auto" />
+              </div>
+              <p className="text-matrix font-mono text-3xl md:text-4xl font-bold mb-2">&lt;2hrs</p>
+              <p className="text-dim-gray font-mono text-sm">Average Response Time</p>
+            </div>
+            <div className="text-center">
+              <div className="mb-4">
+                <Award className="h-8 w-8 text-matrix mx-auto" />
+              </div>
+              <p className="text-matrix font-mono text-3xl md:text-4xl font-bold mb-2">SOC2</p>
+              <p className="text-dim-gray font-mono text-sm">Type II Certified</p>
+            </div>
+            <div className="text-center">
+              <div className="mb-4">
+                <Users className="h-8 w-8 text-matrix mx-auto" />
+              </div>
+              <p className="text-matrix font-mono text-3xl md:text-4xl font-bold mb-2">10K+</p>
+              <p className="text-dim-gray font-mono text-sm">Verified Researchers</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Enhanced Features Section */}
+      <section id="features" className="relative z-10 py-24">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-16">
+            <h2 className="text-4xl font-mono font-bold text-light-gray mb-6">
+              <span className="text-matrix">_</span> Platform Capabilities
+            </h2>
+            <p className="text-dim-gray text-xl max-w-3xl mx-auto">
+              Comprehensive security testing platform designed for modern enterprises
+            </p>
+          </div>
+
+          <div className="grid lg:grid-cols-3 gap-10">
+            <div className="terminal-card p-8 rounded-xl border border-matrix/30 hover:animate-pulse-glow group">
+              <div className="mb-6">
+                <div className="w-16 h-16 rounded-lg bg-matrix/10 flex items-center justify-center border border-matrix/30 group-hover:bg-matrix/20 transition-all">
+                  <Bot className="text-matrix h-8 w-8" />
                 </div>
               </div>
-            ))}
+              <h3 className="text-2xl font-mono font-bold text-light-gray mb-4">AI-Powered Triage</h3>
+              <p className="text-dim-gray mb-6 leading-relaxed">
+                Advanced AI automatically validates, prioritizes, and routes vulnerability reports, reducing false positives by 85% and accelerating response times.
+              </p>
+              <ul className="text-sm text-dim-gray space-y-3">
+                <li className="flex items-center"><CheckCircle className="h-4 w-4 text-matrix mr-3" />Automated duplicate detection</li>
+                <li className="flex items-center"><CheckCircle className="h-4 w-4 text-matrix mr-3" />Smart severity assessment</li>
+                <li className="flex items-center"><CheckCircle className="h-4 w-4 text-matrix mr-3" />Context-aware routing</li>
+              </ul>
+            </div>
+
+            <div className="terminal-card p-8 rounded-xl border border-matrix/30 hover:animate-pulse-glow group">
+              <div className="mb-6">
+                <div className="w-16 h-16 rounded-lg bg-matrix/10 flex items-center justify-center border border-matrix/30 group-hover:bg-matrix/20 transition-all">
+                  <Users className="text-matrix h-8 w-8" />
+                </div>
+              </div>
+              <h3 className="text-2xl font-mono font-bold text-light-gray mb-4">Elite Researcher Network</h3>
+              <p className="text-dim-gray mb-6 leading-relaxed">
+                Access our curated network of top-tier security researchers, each vetted through rigorous background checks and skill assessments.
+              </p>
+              <ul className="text-sm text-dim-gray space-y-3">
+                <li className="flex items-center"><CheckCircle className="h-4 w-4 text-matrix mr-3" />Multi-layer verification process</li>
+                <li className="flex items-center"><CheckCircle className="h-4 w-4 text-matrix mr-3" />Specialized expertise matching</li>
+                <li className="flex items-center"><CheckCircle className="h-4 w-4 text-matrix mr-3" />Performance-based reputation</li>
+              </ul>
+            </div>
+
+            <div className="terminal-card p-8 rounded-xl border border-matrix/30 hover:animate-pulse-glow group">
+              <div className="mb-6">
+                <div className="w-16 h-16 rounded-lg bg-matrix/10 flex items-center justify-center border border-matrix/30 group-hover:bg-matrix/20 transition-all">
+                  <Monitor className="text-matrix h-8 w-8" />
+                </div>
+              </div>
+              <h3 className="text-2xl font-mono font-bold text-light-gray mb-4">Real-Time Monitoring</h3>
+              <p className="text-dim-gray mb-6 leading-relaxed">
+                Comprehensive dashboard providing real-time insights into your security posture with customizable alerts and detailed analytics.
+              </p>
+              <ul className="text-sm text-dim-gray space-y-3">
+                <li className="flex items-center"><CheckCircle className="h-4 w-4 text-matrix mr-3" />Live threat visualization</li>
+                <li className="flex items-center"><CheckCircle className="h-4 w-4 text-matrix mr-3" />Custom alert rules</li>
+                <li className="flex items-center"><CheckCircle className="h-4 w-4 text-matrix mr-3" />Executive reporting</li>
+              </ul>
+            </div>
+
+            <div className="terminal-card p-8 rounded-xl border border-matrix/30 hover:animate-pulse-glow group">
+              <div className="mb-6">
+                <div className="w-16 h-16 rounded-lg bg-matrix/10 flex items-center justify-center border border-matrix/30 group-hover:bg-matrix/20 transition-all">
+                  <Database className="text-matrix h-8 w-8" />
+                </div>
+              </div>
+              <h3 className="text-2xl font-mono font-bold text-light-gray mb-4">Enterprise Integrations</h3>
+              <p className="text-dim-gray mb-6 leading-relaxed">
+                Seamlessly integrate with your existing security tools and workflows through our comprehensive API and pre-built connectors.
+              </p>
+              <ul className="text-sm text-dim-gray space-y-3">
+                <li className="flex items-center"><CheckCircle className="h-4 w-4 text-matrix mr-3" />SIEM/SOAR integration</li>
+                <li className="flex items-center"><CheckCircle className="h-4 w-4 text-matrix mr-3" />Ticketing system sync</li>
+                <li className="flex items-center"><CheckCircle className="h-4 w-4 text-matrix mr-3" />CI/CD pipeline hooks</li>
+              </ul>
+            </div>
+
+            <div className="terminal-card p-8 rounded-xl border border-matrix/30 hover:animate-pulse-glow group">
+              <div className="mb-6">
+                <div className="w-16 h-16 rounded-lg bg-matrix/10 flex items-center justify-center border border-matrix/30 group-hover:bg-matrix/20 transition-all">
+                  <Lock className="text-matrix h-8 w-8" />
+                </div>
+              </div>
+              <h3 className="text-2xl font-mono font-bold text-light-gray mb-4">Zero Trust Security</h3>
+              <p className="text-dim-gray mb-6 leading-relaxed">
+                Bank-grade security infrastructure with end-to-end encryption, multi-factor authentication, and complete audit trails.
+              </p>
+              <ul className="text-sm text-dim-gray space-y-3">
+                <li className="flex items-center"><CheckCircle className="h-4 w-4 text-matrix mr-3" />AES-256 encryption</li>
+                <li className="flex items-center"><CheckCircle className="h-4 w-4 text-matrix mr-3" />Zero-knowledge architecture</li>
+                <li className="flex items-center"><CheckCircle className="h-4 w-4 text-matrix mr-3" />Immutable audit logs</li>
+              </ul>
+            </div>
+
+            <div className="terminal-card p-8 rounded-xl border border-matrix/30 hover:animate-pulse-glow group">
+              <div className="mb-6">
+                <div className="w-16 h-16 rounded-lg bg-matrix/10 flex items-center justify-center border border-matrix/30 group-hover:bg-matrix/20 transition-all">
+                  <TrendingUp className="text-matrix h-8 w-8" />
+                </div>
+              </div>
+              <h3 className="text-2xl font-mono font-bold text-light-gray mb-4">Cost Optimization</h3>
+              <p className="text-dim-gray mb-6 leading-relaxed">
+                Reduce security testing costs by up to 75% with our efficient pay-per-vulnerability model and automated workflows.
+              </p>
+              <ul className="text-sm text-dim-gray space-y-3">
+                <li className="flex items-center"><CheckCircle className="h-4 w-4 text-matrix mr-3" />Transparent pricing model</li>
+                <li className="flex items-center"><CheckCircle className="h-4 w-4 text-matrix mr-3" />Budget controls</li>
+                <li className="flex items-center"><CheckCircle className="h-4 w-4 text-matrix mr-3" />ROI analytics</li>
+              </ul>
+            </div>
           </div>
         </div>
       </section>
 
-      {/* Features Section */}
-      <section className="relative z-10 py-20">
+      {/* Process Section */}
+      <section className="relative z-10 py-24 bg-gradient-to-b from-terminal to-black border-y border-matrix/30">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-4xl font-mono font-bold text-light-gray mb-4">
-              Why Choose <span className="text-matrix">Cyber Hunt</span>?
+            <h2 className="text-4xl font-mono font-bold text-light-gray mb-6">
+              <span className="text-matrix">_</span> How It Works
             </h2>
-            <p className="text-xl text-dim-gray max-w-3xl mx-auto">
-              Our platform combines cutting-edge technology with human expertise to provide 
-              comprehensive security testing and vulnerability management.
+            <p className="text-dim-gray text-xl max-w-3xl mx-auto">
+              Simple, streamlined process to get your security program up and running
             </p>
           </div>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {features.map((feature, index) => (
-              <Card key={index} className="bg-terminal/50 border-matrix/30 hover:border-matrix/60 transition-all duration-300">
-                <CardHeader>
-                  <div className="flex items-center">
-                    <div className="p-3 bg-matrix/20 rounded-lg mr-4">
-                      <feature.icon className="h-6 w-6 text-matrix" />
-                    </div>
-                    <CardTitle className="text-light-gray font-mono">
-                      {feature.title}
-                    </CardTitle>
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-dim-gray">
-                    {feature.description}
-                  </p>
-                </CardContent>
-              </Card>
-            ))}
+
+          <div className="grid md:grid-cols-4 gap-8">
+            <div className="bg-black/60 p-8 rounded-xl border border-matrix/20 relative backdrop-blur-sm">
+              <div className="absolute -top-6 -left-6 w-12 h-12 rounded-full bg-matrix/20 flex items-center justify-center border-2 border-matrix font-mono text-matrix text-lg font-bold">1</div>
+              <Building2 className="text-matrix h-10 w-10 mb-6 mt-4" />
+              <h3 className="text-xl font-mono font-bold text-light-gray mb-4">Program Setup</h3>
+              <p className="text-dim-gray text-sm leading-relaxed">
+                Define your scope, set reward parameters, and configure program rules. Our experts help optimize your program for maximum effectiveness and researcher engagement.
+              </p>
+            </div>
+
+            <div className="bg-black/60 p-8 rounded-xl border border-matrix/20 relative backdrop-blur-sm">
+              <div className="absolute -top-6 -left-6 w-12 h-12 rounded-full bg-matrix/20 flex items-center justify-center border-2 border-matrix font-mono text-matrix text-lg font-bold">2</div>
+              <Users className="text-matrix h-10 w-10 mb-6 mt-4" />
+              <h3 className="text-xl font-mono font-bold text-light-gray mb-4">AI Matching</h3>
+              <p className="text-dim-gray text-sm leading-relaxed">
+                Our advanced AI matches your program with researchers who have proven expertise in your technology stack, industry vertical, and specific security domains.
+              </p>
+            </div>
+
+            <div className="bg-black/60 p-8 rounded-xl border border-matrix/20 relative backdrop-blur-sm">
+              <div className="absolute -top-6 -left-6 w-12 h-12 rounded-full bg-matrix/20 flex items-center justify-center border-2 border-matrix font-mono text-matrix text-lg font-bold">3</div>
+              <Eye className="text-matrix h-10 w-10 mb-6 mt-4" />
+              <h3 className="text-xl font-mono font-bold text-light-gray mb-4">Continuous Testing</h3>
+              <p className="text-dim-gray text-sm leading-relaxed">
+                Elite researchers continuously test your applications, submitting detailed vulnerability reports with proof-of-concept exploits and comprehensive remediation guidance.
+              </p>
+            </div>
+
+            <div className="bg-black/60 p-8 rounded-xl border border-matrix/20 relative backdrop-blur-sm">
+              <div className="absolute -top-6 -left-6 w-12 h-12 rounded-full bg-matrix/20 flex items-center justify-center border-2 border-matrix font-mono text-matrix text-lg font-bold">4</div>
+              <Zap className="text-matrix h-10 w-10 mb-6 mt-4" />
+              <h3 className="text-xl font-mono font-bold text-light-gray mb-4">Rapid Response</h3>
+              <p className="text-dim-gray text-sm leading-relaxed">
+                Receive actionable reports, track remediation progress, and verify fixes. Our platform streamlines the entire vulnerability lifecycle with automated workflows.
+              </p>
+            </div>
           </div>
         </div>
       </section>
 
-      {/* Triage Services Section */}
-      <section className="relative z-10 py-20 bg-terminal/30">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-4xl font-mono font-bold text-light-gray mb-4">
-              <span className="text-matrix">Managed Triage Services</span>
+      {/* How It Works - Pricing Transparency */}
+      <section className="relative z-10 py-16 bg-gradient-to-r from-matrix/10 to-green-400/10 border-y border-matrix/30">
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl font-mono font-bold text-light-gray mb-4">
+              <span className="text-matrix">How CyberHunt Works</span>
             </h2>
-            <p className="text-xl text-dim-gray max-w-3xl mx-auto">
-              Let our security experts handle vulnerability validation and risk assessment, 
-              so your team can focus on fixing critical issues.
+            <p className="text-xl text-matrix font-mono font-bold mb-2">
+              100% FREE for Organizations
+            </p>
+            <p className="text-dim-gray text-lg">
+              No upfront fees. No subscriptions. Just results.
             </p>
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-            <div>
-              <h3 className="text-2xl font-mono font-bold text-matrix mb-6">
-                Expert Validation & Prioritization
-              </h3>
-              <div className="space-y-4">
-                <div className="flex items-start">
-                  <CheckCircle className="h-5 w-5 text-matrix mr-3 mt-1 flex-shrink-0" />
-                  <div>
-                    <h4 className="font-mono font-semibold text-light-gray">Professional Triage</h4>
-                    <p className="text-dim-gray">Expert security analysts validate every submission and provide detailed risk assessments.</p>
-                  </div>
+          <div className="grid md:grid-cols-3 gap-8 mb-12">
+            <div className="text-center">
+              <div className="w-16 h-16 rounded-full bg-matrix/20 flex items-center justify-center mx-auto mb-4 border-2 border-matrix">
+                <span className="text-matrix font-mono text-2xl font-bold">1</span>
+              </div>
+              <h3 className="text-xl font-mono text-light-gray mb-3">Setup Your Program</h3>
+              <p className="text-dim-gray">
+                Launch your bug bounty program in minutes. Define scope, set rewards - completely free.
+              </p>
+            </div>
+
+            <div className="text-center">
+              <div className="w-16 h-16 rounded-full bg-matrix/20 flex items-center justify-center mx-auto mb-4 border-2 border-matrix">
+                <span className="text-matrix font-mono text-2xl font-bold">2</span>
+              </div>
+              <h3 className="text-xl font-mono text-light-gray mb-3">Researchers Find Bugs</h3>
+              <p className="text-dim-gray">
+                Elite security researchers test your systems and submit verified vulnerability reports.
+              </p>
+            </div>
+
+            <div className="text-center">
+              <div className="w-16 h-16 rounded-full bg-matrix/20 flex items-center justify-center mx-auto mb-4 border-2 border-matrix">
+                <span className="text-matrix font-mono text-2xl font-bold">3</span>
+              </div>
+              <h3 className="text-xl font-mono text-light-gray mb-3">Pay Only for Results</h3>
+              <p className="text-dim-gray">
+                Pay rewards only when valid vulnerabilities are discovered. We earn a small commission from successful findings.
+              </p>
+            </div>
+          </div>
+
+          <div className="terminal-card p-8 rounded-xl border border-matrix/30 bg-black/60 backdrop-blur-sm max-w-4xl mx-auto">
+            <div className="text-center mb-6">
+              <h3 className="text-2xl font-mono text-matrix font-bold mb-2">Transparent Cost Structure</h3>
+              <p className="text-dim-gray">Our revenue model aligns with your success</p>
+            </div>
+            
+            <div className="grid md:grid-cols-2 gap-8">
+              <div className="text-center">
+                <div className="text-4xl font-mono text-matrix font-bold mb-2">$0</div>
+                <p className="text-light-gray font-mono text-lg mb-2">Setup & Monthly Fees</p>
+                <p className="text-dim-gray text-sm">No hidden costs, no subscriptions</p>
+              </div>
+              
+              <div className="text-center">
+                <div className="text-4xl font-mono text-matrix font-bold mb-2">15-20%</div>
+                <p className="text-light-gray font-mono text-lg mb-2">Our Commission</p>
+                <p className="text-dim-gray text-sm">Only earned when vulnerabilities are found</p>
+              </div>
+            </div>
+
+
+          </div>
+        </div>
+      </section>
+
+
+
+      {/* Enhanced Testimonials */}
+      <section id="testimonials" className="relative z-10 py-24 bg-gradient-to-b from-terminal to-black border-y border-matrix/30">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-16">
+            <h2 className="text-4xl font-mono font-bold text-light-gray mb-6">
+              <span className="text-matrix">_</span> Trusted by Industry Leaders
+            </h2>
+            <p className="text-dim-gray text-xl max-w-3xl mx-auto">
+              See how organizations transform their security posture with CyberHunt
+            </p>
+          </div>
+
+          <div className="grid lg:grid-cols-3 gap-10">
+            <div className="bg-black/60 p-8 rounded-xl border border-matrix/20 backdrop-blur-sm">
+              <div className="flex mb-6">
+                {[...Array(5)].map((_, i) => (
+                  <Star key={i} className="h-5 w-5 text-yellow-400 fill-current" />
+                ))}
+              </div>
+              <p className="text-dim-gray mb-8 italic text-lg leading-relaxed">
+                "CyberHunt transformed our security approach. We discovered critical vulnerabilities 
+                that traditional testing missed, and the researcher quality is exceptional."
+              </p>
+              <div className="flex items-center">
+                <div className="w-14 h-14 rounded-full bg-matrix/20 flex items-center justify-center mr-4 border border-matrix/30">
+                  <span className="text-matrix font-mono font-bold">JS</span>
                 </div>
-                <div className="flex items-start">
-                  <CheckCircle className="h-5 w-5 text-matrix mr-3 mt-1 flex-shrink-0" />
-                  <div>
-                    <h4 className="font-mono font-semibold text-light-gray">Rapid Response</h4>
-                    <p className="text-dim-gray">Critical vulnerabilities are triaged within 4-8 hours, reducing your exposure time.</p>
-                  </div>
+                <div>
+                  <p className="text-light-gray font-mono font-bold">John Stevens</p>
+                  <p className="text-dim-gray text-sm">CISO, TechCorp Global</p>
+                  <p className="text-dim-gray text-xs">Fortune 500 Technology</p>
                 </div>
-                <div className="flex items-start">
-                  <CheckCircle className="h-5 w-5 text-matrix mr-3 mt-1 flex-shrink-0" />
-                  <div>
-                    <h4 className="font-mono font-semibold text-light-gray">Actionable Reports</h4>
-                    <p className="text-dim-gray">Detailed remediation guidance with technical analysis and business impact assessment.</p>
-                  </div>
+              </div>
+            </div>
+
+            <div className="bg-black/60 p-8 rounded-xl border border-matrix/20 backdrop-blur-sm">
+              <div className="flex mb-6">
+                {[...Array(5)].map((_, i) => (
+                  <Star key={i} className="h-5 w-5 text-yellow-400 fill-current" />
+                ))}
+              </div>
+              <p className="text-dim-gray mb-8 italic text-lg leading-relaxed">
+                "The cost savings are incredible - 70% less than traditional pen testing while 
+                providing continuous coverage. ROI was clear within the first month."
+              </p>
+              <div className="flex items-center">
+                <div className="w-14 h-14 rounded-full bg-matrix/20 flex items-center justify-center mr-4 border border-matrix/30">
+                  <span className="text-matrix font-mono font-bold">MJ</span>
                 </div>
+                <div>
+                  <p className="text-light-gray font-mono font-bold">Maria Johnson</p>
+                  <p className="text-dim-gray text-sm">Security Director, FinanceApp</p>
+                  <p className="text-dim-gray text-xs">Fintech Startup</p>
+                </div>
+              </div>
+            </div>
+
+            <div className="bg-black/60 p-8 rounded-xl border border-matrix/20 backdrop-blur-sm">
+              <div className="flex mb-6">
+                {[...Array(5)].map((_, i) => (
+                  <Star key={i} className="h-5 w-5 text-yellow-400 fill-current" />
+                ))}
+              </div>
+              <p className="text-dim-gray mb-8 italic text-lg leading-relaxed">
+                "The AI-powered triage and researcher matching saved us countless hours. 
+                We now focus on fixing vulnerabilities instead of managing the process."
+              </p>
+              <div className="flex items-center">
+                <div className="w-14 h-14 rounded-full bg-matrix/20 flex items-center justify-center mr-4 border border-matrix/30">
+                  <span className="text-matrix font-mono font-bold">DL</span>
+                </div>
+                <div>
+                  <p className="text-light-gray font-mono font-bold">David Lee</p>
+                  <p className="text-dim-gray text-sm">VP Security, CloudScale</p>
+                  <p className="text-dim-gray text-xs">Cloud Infrastructure</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Enhanced CTA Section */}
+      <section id="contact" className="relative z-10 py-24">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+          <div className="mb-8">
+            <Shield className="text-matrix h-16 w-16 mx-auto mb-8" />
+          </div>
+          <h2 className="text-4xl md:text-5xl font-mono font-bold text-light-gray mb-8">
+            Ready to Transform Your Security?
+          </h2>
+          <p className="text-dim-gray text-xl mb-12 leading-relaxed max-w-3xl mx-auto">
+            Join the ranks of forward-thinking organizations using next-generation security testing. 
+            Launch your program today and discover vulnerabilities before attackers do.
+          </p>
+          <div className="flex flex-col sm:flex-row gap-6 justify-center mb-12">
+            <Link href="/auth?mode=register">
+              <Button className="glow-button text-xl font-mono py-8 px-12 rounded-lg">
+                Launch Security Program <ArrowRight className="ml-3 h-6 w-6" />
+              </Button>
+            </Link>
+            <Button variant="outline" className="border-matrix/50 text-matrix hover:bg-matrix/10 text-xl font-mono py-8 px-12 rounded-lg transition-all">
+              Schedule Demo
+            </Button>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 text-center">
+            <div className="flex items-center justify-center">
+              <CheckCircle className="h-5 w-5 text-matrix mr-3" />
+              <span className="text-dim-gray font-mono">30-day free trial</span>
+            </div>
+            <div className="flex items-center justify-center">
+              <CheckCircle className="h-5 w-5 text-matrix mr-3" />
+              <span className="text-dim-gray font-mono">No setup fees</span>
+            </div>
+            <div className="flex items-center justify-center">
+              <CheckCircle className="h-5 w-5 text-matrix mr-3" />
+              <span className="text-dim-gray font-mono">Cancel anytime</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Enhanced Footer */}
+      <footer className="relative z-10 py-16 border-t border-matrix/30 bg-black/80">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid lg:grid-cols-5 gap-12">
+            <div className="lg:col-span-2">
+              <div className="mb-6">
+                <span className="text-matrix text-2xl font-mono font-bold">CyberHunt_</span>
+                <p className="text-dim-gray text-lg mt-3">Enterprise Security Solutions</p>
+              </div>
+              <p className="text-dim-gray mb-6 leading-relaxed">
+                Transforming cybersecurity through elite researcher networks and 
+                AI-powered vulnerability discovery for modern enterprises.
+              </p>
+              <div className="flex space-x-4">
+                <a href="#" className="w-10 h-10 rounded-lg bg-matrix/10 flex items-center justify-center border border-matrix/30 hover:bg-matrix/20 transition-all">
+                  <span className="text-matrix font-mono text-sm">in</span>
+                </a>
+                <a href="#" className="w-10 h-10 rounded-lg bg-matrix/10 flex items-center justify-center border border-matrix/30 hover:bg-matrix/20 transition-all">
+                  <span className="text-matrix font-mono text-sm">tw</span>
+                </a>
+                <a href="#" className="w-10 h-10 rounded-lg bg-matrix/10 flex items-center justify-center border border-matrix/30 hover:bg-matrix/20 transition-all">
+                  <span className="text-matrix font-mono text-sm">gh</span>
+                </a>
               </div>
             </div>
             
-            <Card className="bg-terminal/50 border-matrix/30">
-              <CardHeader>
-                <CardTitle className="text-matrix font-mono">Triage Process</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  <div className="flex items-center">
-                    <div className="w-8 h-8 bg-matrix/20 rounded-full flex items-center justify-center mr-4">
-                      <span className="text-matrix font-mono text-sm">1</span>
-                    </div>
-                    <div>
-                      <h4 className="font-mono text-light-gray">Submission Review</h4>
-                      <p className="text-dim-gray text-sm">Initial assessment and validation</p>
-                    </div>
-                  </div>
-                  <div className="flex items-center">
-                    <div className="w-8 h-8 bg-matrix/20 rounded-full flex items-center justify-center mr-4">
-                      <span className="text-matrix font-mono text-sm">2</span>
-                    </div>
-                    <div>
-                      <h4 className="font-mono text-light-gray">Risk Analysis</h4>
-                      <p className="text-dim-gray text-sm">Severity scoring and impact evaluation</p>
-                    </div>
-                  </div>
-                  <div className="flex items-center">
-                    <div className="w-8 h-8 bg-matrix/20 rounded-full flex items-center justify-center mr-4">
-                      <span className="text-matrix font-mono text-sm">3</span>
-                    </div>
-                    <div>
-                      <h4 className="font-mono text-light-gray">Detailed Report</h4>
-                      <p className="text-dim-gray text-sm">Comprehensive findings and remediation steps</p>
-                    </div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-        </div>
-      </section>
-
-      {/* Pricing Section */}
-      <section className="relative z-10 py-20">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-4xl font-mono font-bold text-light-gray mb-4">
-              <span className="text-matrix">Flexible Pricing</span> for Every Organization
-            </h2>
-            <p className="text-xl text-dim-gray max-w-3xl mx-auto">
-              Choose the plan that fits your security needs and budget. All plans include our core platform features.
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {pricingPlans.map((plan, index) => (
-              <Card key={index} className={`relative ${plan.popular ? 'border-matrix bg-terminal/70' : 'bg-terminal/50 border-matrix/30'}`}>
-                {plan.popular && (
-                  <div className="absolute top-0 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
-                    <span className="bg-matrix text-deep-black px-3 py-1 text-sm font-mono font-bold rounded-full">
-                      MOST POPULAR
-                    </span>
-                  </div>
-                )}
-                <CardHeader className="text-center">
-                  <CardTitle className="text-light-gray font-mono text-xl">{plan.name}</CardTitle>
-                  <div className="text-3xl font-mono font-bold text-matrix mt-2">
-                    {plan.price}
-                    <span className="text-dim-gray text-base ml-1">/{plan.period}</span>
-                  </div>
-                  <CardDescription className="text-dim-gray">{plan.description}</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <ul className="space-y-3 mb-6">
-                    {plan.features.map((feature, featureIndex) => (
-                      <li key={featureIndex} className="flex items-start">
-                        <CheckCircle className="h-4 w-4 text-matrix mr-2 mt-0.5 flex-shrink-0" />
-                        <span className="text-dim-gray text-sm">{feature}</span>
-                      </li>
-                    ))}
-                  </ul>
-                  <Button 
-                    className={`w-full ${plan.popular ? 'glow-button' : 'border-matrix/30 text-matrix hover:bg-matrix/20'}`}
-                    variant={plan.popular ? 'default' : 'outline'}
-                  >
-                    {plan.name === 'Enterprise' ? 'Contact Sales' : 'Get Started'}
-                  </Button>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Testimonials Section */}
-      <section className="relative z-10 py-20 bg-terminal/30">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-4xl font-mono font-bold text-light-gray mb-4">
-              What Our <span className="text-matrix">Clients Say</span>
-            </h2>
-            <p className="text-xl text-dim-gray max-w-3xl mx-auto">
-              Join hundreds of satisfied companies who trust Cyber Hunt to secure their applications.
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {testimonials.map((testimonial, index) => (
-              <Card key={index} className="bg-terminal/50 border-matrix/30">
-                <CardContent className="p-6">
-                  <div className="flex items-center mb-4">
-                    <div className="text-2xl mr-3">{testimonial.logo}</div>
-                    <div>
-                      <h4 className="font-mono font-semibold text-light-gray">{testimonial.company}</h4>
-                      <div className="flex">
-                        {[...Array(testimonial.rating)].map((_, i) => (
-                          <Star key={i} className="h-4 w-4 text-matrix fill-current" />
-                        ))}
-                      </div>
-                    </div>
-                  </div>
-                  <Quote className="h-8 w-8 text-matrix/40 mb-4" />
-                  <p className="text-dim-gray mb-4 italic">"{testimonial.testimonial}"</p>
-                  <div className="border-t border-matrix/20 pt-4">
-                    <p className="font-mono text-light-gray text-sm">{testimonial.author}</p>
-                    <p className="text-dim-gray text-xs">{testimonial.role}</p>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* FAQ Section */}
-      <section className="relative z-10 py-20">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-4xl font-mono font-bold text-light-gray mb-4">
-              Frequently Asked <span className="text-matrix">Questions</span>
-            </h2>
-            <p className="text-xl text-dim-gray">
-              Everything you need to know about our platform and services.
-            </p>
-          </div>
-
-          <Accordion type="single" collapsible className="w-full">
-            {faqs.map((faq, index) => (
-              <AccordionItem key={index} value={`item-${index}`} className="border-matrix/30">
-                <AccordionTrigger className="text-light-gray font-mono hover:text-matrix">
-                  {faq.question}
-                </AccordionTrigger>
-                <AccordionContent className="text-dim-gray">
-                  {faq.answer}
-                </AccordionContent>
-              </AccordionItem>
-            ))}
-          </Accordion>
-        </div>
-      </section>
-
-      {/* CTA Section */}
-      <section className="relative z-10 py-20 bg-terminal/50">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h2 className="text-3xl md:text-4xl font-mono font-bold text-light-gray mb-4">
-            Ready to <span className="text-matrix">Secure Your Organization</span>?
-          </h2>
-          <p className="text-xl text-dim-gray mb-8">
-            Join thousands of companies using Cyber Hunt to discover and fix vulnerabilities before attackers do.
-          </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Link href="/auth">
-              <Button size="lg" className="glow-button text-lg px-8 py-6">
-                Start Free Trial
-                <ArrowRight className="ml-2 h-5 w-5" />
-              </Button>
-            </Link>
-            <Button size="lg" variant="outline" className="border-matrix/30 text-matrix hover:bg-matrix/20 text-lg px-8 py-6">
-              <MessageSquare className="mr-2 h-5 w-5" />
-              Contact Sales
-            </Button>
-          </div>
-          <p className="text-dim-gray text-sm mt-4">
-            No credit card required • 14-day free trial • Cancel anytime
-          </p>
-        </div>
-      </section>
-
-      {/* Footer */}
-      <footer className="relative z-10 bg-terminal border-t border-matrix/30">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
             <div>
-              <div className="text-matrix text-xl font-mono font-bold mb-4">CyberHunt_</div>
-              <p className="text-dim-gray text-sm">
-                The world's leading bug bounty platform, connecting organizations with elite security researchers.
+              <h4 className="text-light-gray font-mono text-lg mb-6">Solutions</h4>
+              <ul className="space-y-3">
+                <li><a href="#" className="text-dim-gray hover:text-matrix font-mono text-sm transition-colors">Bug Bounty Programs</a></li>
+                <li><a href="#" className="text-dim-gray hover:text-matrix font-mono text-sm transition-colors">Penetration Testing</a></li>
+                <li><a href="#" className="text-dim-gray hover:text-matrix font-mono text-sm transition-colors">Compliance Testing</a></li>
+                <li><a href="#" className="text-dim-gray hover:text-matrix font-mono text-sm transition-colors">Red Team Exercises</a></li>
+              </ul>
+            </div>
+            
+            <div>
+              <h4 className="text-light-gray font-mono text-lg mb-6">Resources</h4>
+              <ul className="space-y-3">
+                <li><a href="#" className="text-dim-gray hover:text-matrix font-mono text-sm transition-colors">Case Studies</a></li>
+                <li><a href="#" className="text-dim-gray hover:text-matrix font-mono text-sm transition-colors">Security Blog</a></li>
+                <li><a href="#" className="text-dim-gray hover:text-matrix font-mono text-sm transition-colors">API Documentation</a></li>
+                <li><a href="#" className="text-dim-gray hover:text-matrix font-mono text-sm transition-colors">Security Guides</a></li>
+              </ul>
+            </div>
+            
+            <div>
+              <h4 className="text-light-gray font-mono text-lg mb-6">Company</h4>
+              <ul className="space-y-3">
+                <li><a href="#" className="text-dim-gray hover:text-matrix font-mono text-sm transition-colors">About Us</a></li>
+                <li><a href="#" className="text-dim-gray hover:text-matrix font-mono text-sm transition-colors">Careers</a></li>
+                <li><a href="#" className="text-dim-gray hover:text-matrix font-mono text-sm transition-colors">Contact Sales</a></li>
+                <li><a href="#" className="text-dim-gray hover:text-matrix font-mono text-sm transition-colors">Support</a></li>
+              </ul>
+            </div>
+          </div>
+          
+          <div className="border-t border-matrix/20 mt-12 pt-8">
+            <div className="flex flex-col md:flex-row justify-between items-center">
+              <p className="text-dim-gray text-sm font-mono mb-4 md:mb-0">
+                © {new Date().getFullYear()} CyberHunt. All rights reserved. <span className="text-matrix">|</span> Secure by Design.
               </p>
-            </div>
-            <div>
-              <h4 className="font-mono font-semibold text-light-gray mb-4">Product</h4>
-              <div className="space-y-2">
-                <Link href="/features" className="block text-dim-gray hover:text-matrix text-sm">Features</Link>
-                <Link href="/pricing" className="block text-dim-gray hover:text-matrix text-sm">Pricing</Link>
-                <Link href="/integrations" className="block text-dim-gray hover:text-matrix text-sm">Integrations</Link>
+              <div className="flex space-x-6">
+                <a href="#" className="text-dim-gray hover:text-matrix text-sm font-mono transition-colors">Privacy Policy</a>
+                <a href="#" className="text-dim-gray hover:text-matrix text-sm font-mono transition-colors">Terms of Service</a>
+                <a href="#" className="text-dim-gray hover:text-matrix text-sm font-mono transition-colors">Security</a>
               </div>
             </div>
-            <div>
-              <h4 className="font-mono font-semibold text-light-gray mb-4">Resources</h4>
-              <div className="space-y-2">
-                <Link href="/documentation" className="block text-dim-gray hover:text-matrix text-sm">Documentation</Link>
-                <Link href="/blog" className="block text-dim-gray hover:text-matrix text-sm">Blog</Link>
-                <Link href="/help-center" className="block text-dim-gray hover:text-matrix text-sm">Help Center</Link>
-              </div>
-            </div>
-            <div>
-              <h4 className="font-mono font-semibold text-light-gray mb-4">Contact</h4>
-              <div className="space-y-2">
-                <div className="flex items-center text-dim-gray text-sm">
-                  <Mail className="h-4 w-4 mr-2" />
-                  sales@cyberhunt.com
-                </div>
-                <div className="flex items-center text-dim-gray text-sm">
-                  <Phone className="h-4 w-4 mr-2" />
-                  +1 (555) 123-4567
-                </div>
-              </div>
-            </div>
-          </div>
-          <div className="border-t border-matrix/30 mt-8 pt-8 text-center">
-            <p className="text-dim-gray text-sm">
-              © 2024 CyberHunt. All rights reserved.
-            </p>
           </div>
         </div>
       </footer>

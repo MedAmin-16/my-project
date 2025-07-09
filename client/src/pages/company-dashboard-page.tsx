@@ -765,8 +765,7 @@ export default function CompanyDashboardPage() {
                 </div>
               </div>
             </CardContent>
-          </Card>
-        </TabsContent>
+          </Card        </TabsContent>
 
           {/* Triage Services Tab */}
           <TabsContent value="triage" className="space-y-6">
