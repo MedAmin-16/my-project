@@ -6,7 +6,9 @@ import { useState, useEffect } from "react";
 import NotFound from "./pages/not-found";
 import ProtectedRoute from "./lib/protected-route";
 import AdminRoute from "./components/admin-route";
-import { Toaster } from "@/components/ui/toaster";
+import { useAuth } from "./hooks/use-auth";
+import { ThemeProvider } from "./components/theme-provider";
+import { AuthProvider } from "./hooks/use-auth";
 
 // Import all pages
 import LandingPage from "./pages/landing-page";
@@ -92,7 +94,7 @@ function Router() {
     if (!user || user.userType !== 'admin' || !isAuthorized) {
       return <Redirect to="/dashboard" />;
     }
-    return <AdminPage />;
+    return <AdminDashboardPage />;
   };
 
   return (
@@ -157,9 +159,7 @@ function Router() {
       <Route path="/create-program" component={CreateProgramPage} />
 
       {/* Admin Routes */}
-      <Route path="/admin">
-        {() => <ForceAdmin />}
-      </Route>
+      <Route path="/admin" component={AdminLoginPage} />
       <Route path="/admin/dashboard" component={AdminDashboardPage} />
       <Route path="/for-organizations" component={ClientLandingPage} />
       <Route path="/for-organisations" component={ClientLandingPage} />
