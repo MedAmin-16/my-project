@@ -93,6 +93,19 @@ export default function Navbar() {
                     Public Chat
                   </div>
                 </Link>
+                {user?.userType === "admin" && (
+                  <Link href="/triage-dashboard">
+                    <div
+                      className={`${
+                        isActive('/triage-dashboard')
+                          ? "text-light-gray border-matrix"
+                          : "text-dim-gray border-transparent hover:text-matrix"
+                      } border-b-2 px-3 pt-5 pb-3 text-sm font-mono cursor-pointer`}
+                    >
+                      Triage Dashboard
+                    </div>
+                  </Link>
+                )}
             </div>
           </div>
 
@@ -187,6 +200,21 @@ export default function Navbar() {
               >
                 Public Chat
               </div>
+              {user?.userType === "admin" && (
+              <div
+                className={`block px-3 py-2 rounded-md text-base font-mono cursor-pointer ${
+                  isActive('/triage-dashboard')
+                    ? "text-light-gray bg-matrix/10 border-l-2 border-matrix"
+                    : "text-dim-gray hover:bg-matrix/10 hover:text-light-gray"
+                }`}
+                onClick={() => {
+                  setMobileMenuOpen(false);
+                  window.location.href = '/triage-dashboard';
+                }}
+              >
+                Triage Dashboard
+              </div>
+              )}
             <div
               className="block px-3 py-2 rounded-md text-base font-mono text-dim-gray hover:bg-matrix/10 hover:text-light-gray cursor-pointer"
               onClick={() => {

@@ -1,44 +1,36 @@
 
-import { Route, Redirect } from "wouter";
 import { useAuth } from "@/hooks/use-auth";
-import { Loader2 } from "lucide-react";
+import { Redirect } from "wouter";
+import { ReactNode } from "react";
 
 interface ProtectedRouteProps {
-  path: string;
-  component: React.ComponentType;
-  isPublic?: boolean;
+  children: ReactNode;
+  redirectTo?: string;
+  requiredUserType?: "hacker" | "company" | "admin";
 }
 
-export function ProtectedRoute({
-  path,
-  component: Component,
-  isPublic = false,
+export default function ProtectedRoute({ 
+  children, 
+  redirectTo = "/auth", 
+  requiredUserType 
 }: ProtectedRouteProps) {
   const { user, isLoading } = useAuth();
 
-  return (
-    <Route path={path}>
-      {() => {
-        if (isLoading) {
-          return (
-            <div className="flex items-center justify-center min-h-screen bg-deep-black">
-              <Loader2 className="h-8 w-8 animate-spin text-matrix" />
-            </div>
-          );
-        }
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-deep-black flex items-center justify-center">
+        <div className="text-matrix font-mono">Loading...</div>
+      </div>
+    );
+  }
 
-        if (isPublic) {
-          return <Component />;
-        }
+  if (!user) {
+    return <Redirect to={redirectTo} />;
+  }
 
-        if (!user) {
-          return <Redirect to="/auth" />;
-        }
+  if (requiredUserType && user.userType !== requiredUserType) {
+    return <Redirect to="/dashboard" />;
+  }
 
-        return <Component />;
-      }}
-    </Route>
-  );
+  return <>{children}</>;
 }
-
-export default ProtectedRoute;
