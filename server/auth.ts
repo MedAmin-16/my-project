@@ -411,12 +411,7 @@ export function setupAuth(app: Express) {
   app.get("/api/auth/google/callback", 
     passport.authenticate("google", { failureRedirect: "/auth?error=google_failed" }),
     (req, res) => {
-      const user = req.user as any;
-      if (user?.userType === 'company') {
-        res.redirect("/company-dashboard");
-      } else {
-        res.redirect("/dashboard");
-      }
+      res.redirect("/dashboard");
     }
   );
 
@@ -428,12 +423,7 @@ export function setupAuth(app: Express) {
   app.get("/api/auth/github/callback",
     passport.authenticate("github", { failureRedirect: "/auth?error=github_failed" }),
     (req, res) => {
-      const user = req.user as any;
-      if (user?.userType === 'company') {
-        res.redirect("/company-dashboard");
-      } else {
-        res.redirect("/dashboard");
-      }
+      res.redirect("/dashboard");
     }
   );
 
@@ -445,12 +435,7 @@ export function setupAuth(app: Express) {
   app.get("/api/auth/microsoft/callback",
     passport.authenticate("microsoft", { failureRedirect: "/auth?error=microsoft_failed" }),
     (req, res) => {
-      const user = req.user as any;
-      if (user?.userType === 'company') {
-        res.redirect("/company-dashboard");
-      } else {
-        res.redirect("/dashboard");
-      }
+      res.redirect("/dashboard");
     }
   );
 }
