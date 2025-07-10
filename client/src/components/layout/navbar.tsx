@@ -82,17 +82,6 @@ export default function Navbar() {
                   </div>
                 </Link>
               ))}
-               <Link href="/public-chat">
-                  <div
-                    className={`${
-                      isActive('/public-chat')
-                        ? "text-light-gray border-matrix"
-                        : "text-dim-gray border-transparent hover:text-matrix"
-                    } border-b-2 px-3 pt-5 pb-3 text-sm font-mono cursor-pointer`}
-                  >
-                    Public Chat
-                  </div>
-                </Link>
             </div>
           </div>
 
@@ -108,28 +97,24 @@ export default function Navbar() {
                 <ChevronDown className="h-4 w-4 text-dim-gray" />
               </DropdownMenuTrigger>
               <DropdownMenuContent className="bg-terminal border border-matrix/30 mt-1">
-                <DropdownMenuItem 
-                  className="text-light-gray hover:bg-matrix/10 cursor-pointer font-mono text-sm"
-                  onClick={() => window.location.href = '/profile'}
-                >
-                  Profile
-                </DropdownMenuItem>
-                <DropdownMenuItem 
-                  className="text-light-gray hover:bg-matrix/10 cursor-pointer font-mono text-sm"
-                  onClick={() => window.location.href = '/settings'}
-                >
-                  Settings
-                </DropdownMenuItem>
+                <Link href="/profile">
+                  <DropdownMenuItem className="text-light-gray hover:bg-matrix/10 cursor-pointer font-mono text-sm">
+                    Profile
+                  </DropdownMenuItem>
+                </Link>
+                <Link href="/settings">
+                  <DropdownMenuItem className="text-light-gray hover:bg-matrix/10 cursor-pointer font-mono text-sm">
+                    Settings
+                  </DropdownMenuItem>
+                </Link>
                 <DropdownMenuSeparator className="bg-matrix/20" />
 
                 {resourceLinks.map((link) => (
-                  <DropdownMenuItem 
-                    key={link.path}
-                    className="text-light-gray hover:bg-matrix/10 cursor-pointer font-mono text-sm"
-                    onClick={() => window.location.href = link.path}
-                  >
-                    {link.name}
-                  </DropdownMenuItem>
+                  <Link key={link.path} href={link.path}>
+                    <DropdownMenuItem className="text-light-gray hover:bg-matrix/10 cursor-pointer font-mono text-sm">
+                      {link.name}
+                    </DropdownMenuItem>
+                  </Link>
                 ))}
 
                 <DropdownMenuSeparator className="bg-matrix/20" />
@@ -159,65 +144,46 @@ export default function Navbar() {
         <div className="sm:hidden border-t border-matrix/30">
           <div className="px-2 pt-2 pb-3 space-y-1">
             {navLinks.map((link) => (
-              <div
-                key={link.path}
-                className={`block px-3 py-2 rounded-md text-base font-mono cursor-pointer ${
-                  isActive(link.path)
-                    ? "text-light-gray bg-matrix/10 border-l-2 border-matrix"
-                    : "text-dim-gray hover:bg-matrix/10 hover:text-light-gray"
-                }`}
-                onClick={() => {
-                  setMobileMenuOpen(false);
-                  window.location.href = link.path;
-                }}
-              >
-                {link.name}
-              </div>
-            ))}
-            <div
-                className={`block px-3 py-2 rounded-md text-base font-mono cursor-pointer ${
-                  isActive('/public-chat')
-                    ? "text-light-gray bg-matrix/10 border-l-2 border-matrix"
-                    : "text-dim-gray hover:bg-matrix/10 hover:text-light-gray"
-                }`}
-                onClick={() => {
-                  setMobileMenuOpen(false);
-                  window.location.href = '/public-chat';
-                }}
-              >
-                Public Chat
-              </div>
-            <div
-              className="block px-3 py-2 rounded-md text-base font-mono text-dim-gray hover:bg-matrix/10 hover:text-light-gray cursor-pointer"
-              onClick={() => {
-                setMobileMenuOpen(false);
-                window.location.href = '/profile';
-              }}
-            >
-              Profile
-            </div>
-            <div
-              className="block px-3 py-2 rounded-md text-base font-mono text-dim-gray hover:bg-matrix/10 hover:text-light-gray cursor-pointer"
-              onClick={() => {
-                setMobileMenuOpen(false);
-                window.location.href = '/settings';
-              }}
-            >
-              Settings
-            </div>
-            {/* Footer links */}
-            <div className="mt-4 pt-2 border-t border-matrix/20">
-              {footerLinks.map((link) => (
+              <Link key={link.path} href={link.path}>
                 <div
-                  key={link.path}
-                  className="block px-3 py-2 rounded-md text-sm font-mono text-dim-gray hover:bg-matrix/10 hover:text-light-gray cursor-pointer"
-                  onClick={() => {
-                    setMobileMenuOpen(false);
-                    window.location.href = link.path;
-                  }}
+                  className={`block px-3 py-2 rounded-md text-base font-mono cursor-pointer ${
+                    isActive(link.path)
+                      ? "text-light-gray bg-matrix/10 border-l-2 border-matrix"
+                      : "text-dim-gray hover:bg-matrix/10 hover:text-light-gray"
+                  }`}
+                  onClick={() => setMobileMenuOpen(false)}
                 >
                   {link.name}
                 </div>
+              </Link>
+            ))}
+            <Link href="/profile">
+              <div
+                className="block px-3 py-2 rounded-md text-base font-mono text-dim-gray hover:bg-matrix/10 hover:text-light-gray cursor-pointer"
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                Profile
+              </div>
+            </Link>
+            <Link href="/settings">
+              <div
+                className="block px-3 py-2 rounded-md text-base font-mono text-dim-gray hover:bg-matrix/10 hover:text-light-gray cursor-pointer"
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                Settings
+              </div>
+            </Link>
+            {/* Footer links */}
+            <div className="mt-4 pt-2 border-t border-matrix/20">
+              {footerLinks.map((link) => (
+                <Link key={link.path} href={link.path}>
+                  <div
+                    className="block px-3 py-2 rounded-md text-sm font-mono text-dim-gray hover:bg-matrix/10 hover:text-light-gray cursor-pointer"
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    {link.name}
+                  </div>
+                </Link>
               ))}
             </div>
 

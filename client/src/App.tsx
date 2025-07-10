@@ -3,53 +3,49 @@ import { queryClient } from "./lib/queryClient";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { useState, useEffect } from "react";
-import NotFound from "./pages/not-found";
-import ProtectedRoute from "./lib/protected-route";
-import AdminRoute from "./components/admin-route";
-import { useAuth } from "./hooks/use-auth";
-import { ThemeProvider } from "./components/theme-provider";
-import { AuthProvider } from "./hooks/use-auth";
-
-// Import all pages
-import LandingPage from "./pages/landing-page";
-import AuthPage from "./pages/auth-page";
-import DashboardPage from "./pages/dashboard-page";
-import SubmitBugPage from "./pages/submit-bug-page";
-import SubmissionDetailPage from "./pages/submission-detail-page";
-import ProgramsPage from "./pages/programs-page";
-import ProgramDetailPage from "./pages/program-detail-page";
-import ProfilePage from "./pages/profile-page";
-import SettingsPage from "./pages/settings-page";
-import WalletPage from "./pages/wallet-page";
-import LeaderboardPage from "./pages/leaderboard-page";
-import HacktivityPage from "./pages/hacktivity-page";
-import ActivitiesPage from "./pages/activities-page";
+import NotFound from "@/pages/not-found";
+import AuthPage from "@/pages/auth-page";
+import LandingPage from "@/pages/landing-page";
+import DashboardPage from "@/pages/dashboard-page";
+import CompanyDashboardPage from "@/pages/company-dashboard-page";
+import CreateProgramPage from "@/pages/create-program-page";
+import ProgramsPage from "@/pages/programs-page";
+import ProgramDetailPage from "@/pages/program-detail-page";
+import SubmitBugPage from "@/pages/submit-bug-page";
+import VerifyEmailPage from "@/pages/verify-email-page";
+import ProfilePage from "@/pages/profile-page";
+import SettingsPage from "@/pages/settings-page";
+import LeaderboardPage from "@/pages/leaderboard-page";
+import TermsOfServicePage from "@/pages/terms-of-service";
+import PrivacyPolicyPage from "@/pages/privacy-policy";
+import ResourcesPage from "@/pages/resources-page";
+import LegalPage from "@/pages/legal-page";
+import HelpCenterPage from "@/pages/help-center-page";
+import BlogPage from "@/pages/blog-page";
+import DocumentationPage from "@/pages/documentation-page";
+import SecurityPage from "@/pages/security-page";
 import BadgesPage from "./pages/badges-page";
-import HelpCenterPage from "./pages/help-center-page";
-import ResourcesPage from "./pages/resources-page";
-import DocumentationPage from "./pages/documentation-page";
-import SecurityPage from "./pages/security-page";
-import AboutPage from "./pages/about-page";
-import BlogPage from "./pages/blog-page";
-import LegalPage from "./pages/legal-page";
-import PrivacyPolicyPage from "./pages/privacy-policy";
-import TermsOfServicePage from "./pages/terms-of-service";
-import ForgotPasswordPage from "./pages/forgot-password-page";
-import VerifyEmailPage from "./pages/verify-email-page";
-import FindProgramsPage from "./pages/find-programs-page";
-import CreateProgramPage from "./pages/create-program-page";
-import CompanyDashboardPage from "./pages/company-dashboard-page";
-import CompanyWalletPage from "./pages/company-wallet-page";
+import ActivitiesPage from "@/pages/activities-page";
+import AboutPage from "@/pages/about-page";
+import AdminCompanyWalletsPage from "@/pages/admin-company-wallets-page";
+import AdminWithdrawalsPage from "@/pages/admin-withdrawals-page";
+import AdminPaymentDashboard from "./pages/admin-payment-dashboard";
 import PaymentDashboardPage from "./pages/payment-dashboard-page";
 import ResearcherPayoutsPage from "./pages/researcher-payouts-page";
-import AdminLoginPage from "./pages/admin-login-page";
-import AdminDashboardPage from "./pages/admin-dashboard-page";
-import AdminWithdrawalsPage from "./pages/admin-withdrawals-page";
-import AdminCompanyWalletsPage from "./pages/admin-company-wallets-page";
-import AdminPaymentDashboard from "./pages/admin-payment-dashboard";
-import SimpleAdminLogin from "./pages/simple-admin-login";
-import ClientLandingPage from "./pages/client-landing-page";
-import PublicChatPage from "./pages/public-chat-page";
+import CompanyWalletPage from "@/pages/company-wallet-page";
+import AdminLoginPage from "@/pages/admin-login-page";
+import AdminDashboardPage from "@/pages/admin-dashboard-page";
+import AdminPage from "./pages/admin-page";
+import { AdminRoute } from "@/components/admin-route";
+import SimpleAdminLogin from "@/pages/simple-admin-login";
+import ForceAdmin from "@/pages/force-admin";
+import ForgotPasswordPage from "./pages/forgot-password-page";
+import WalletPage from "./pages/wallet-page";
+import HacktivityPage from "./pages/hacktivity-page";
+import { ProtectedRoute } from "./lib/protected-route";
+import { AuthProvider, useAuth } from "@/hooks/use-auth";
+import { ThemeProvider } from "@/components/theme-provider";
+import ClientLandingPage from "@/pages/client-landing-page";
 
 
 function Router() {
@@ -95,7 +91,7 @@ function Router() {
     if (!user || user.userType !== 'admin' || !isAuthorized) {
       return <Redirect to="/dashboard" />;
     }
-    return <AdminDashboardPage />;
+    return <AdminPage />;
   };
 
   return (
@@ -108,10 +104,7 @@ function Router() {
       <Route path="/hacktivity" component={HacktivityPage} />
       <Route path="/find-programs" component={FindProgramsPage} />
       <ProtectedRoute path="/submit" component={SubmitBugPage} />
-      <ProtectedRoute path="/submit-bug" component={() => <ProtectedRoute><SubmitBugPage /></ProtectedRoute>} />
-      <ProtectedRoute path="/submissions/:id" component={() => <ProtectedRoute><SubmissionDetailPage /></ProtectedRoute>} />
-      <ProtectedRoute path="/programs" component={() => <ProtectedRoute><ProgramsPage /></ProtectedRoute>} />
-      <ProtectedRoute path="/programs/:id" component={() => <ProtectedRoute><ProgramDetailPage /></ProtectedRoute>} />
+      <ProtectedRoute path="/submit-bug" component={SubmitBugPage} />
       <ProtectedRoute path="/profile" component={ProfilePage} />
       <ProtectedRoute path="/profile/:id" component={ProfilePage} />
       <ProtectedRoute path="/settings" component={SettingsPage} />
@@ -158,10 +151,11 @@ function Router() {
         {() => <AboutPage />}
       </Route>
       <Route path="/create-program" component={CreateProgramPage} />
-      <Route path="/public-chat" component={PublicChatPage} />
 
       {/* Admin Routes */}
-      <Route path="/admin" component={AdminLoginPage} />
+      <Route path="/admin">
+        {() => <ForceAdmin />}
+      </Route>
       <Route path="/admin/dashboard" component={AdminDashboardPage} />
       <Route path="/for-organizations" component={ClientLandingPage} />
       <Route path="/for-organisations" component={ClientLandingPage} />
@@ -171,7 +165,10 @@ function Router() {
   );
 }
 
-
+// Placeholder for FindProgramsPage component
+function FindProgramsPage() {
+  return <h1>Find Programs Page</h1>;
+}
 
 function App() {
   return (

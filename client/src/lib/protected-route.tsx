@@ -40,5 +40,3 @@ export function ProtectedRoute({
     </Route>
   );
 }
-
-export default ProtectedRoute;
