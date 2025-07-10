@@ -1,0 +1,31 @@
+I hope you're doing well. I’m building a bug bounty platform called Cyber Hunt on Replit, and I would like to request your help implementing a small but important feature in the admin panel.
+
+I need an **automated vulnerability grading system** that classifies security reports submitted by researchers based on severity and estimated reward value. The grading logic can be rule-based for now — for example:
+
+- If the vulnerability is RCE or SQLi affecting admin → SV1 → $1500  
+- Stored XSS affecting user → SV2 → $500  
+- Reflected XSS affecting user → SV3 → $200  
+- Open Redirect → SV4 → $50  
+
+You can implement this as a reusable function that receives the vulnerability type, impact target (admin/user), and whether it allows code execution or data access, and returns severity (SV1–SV4) and suggested payout.
+
+Ideally, I’d like to have this integrated into the admin dashboard where I can see the calculated severity level automatically before reviewing the report manually.
+
+---
+
+Also, I’d appreciate it if you could create a small, well-structured table or config file that includes a detailed and realistic list of vulnerability types along with their severity levels and recommended reward values.
+
+The idea is to make the grading logic more professional and based on common bug bounty standards. Here's an example of how the table could look:
+
+| Vulnerability Type             | Severity | Example Impact                              | Suggested Reward |
+|-------------------------------|----------|----------------------------------------------|------------------|
+| Remote Code Execution (RCE)   | SV1       | Full server compromise                      | $1500 – $5000    |
+| SQL Injection (admin access)  | SV1       | Full database dump, login bypass            | $1000 – $3000    |
+| Stored XSS (admin/user panel) | SV2       | Persistent session theft, data exfiltration | $400 – $800      |
+| Reflected XSS                 | SV3       | Temporary script execution via link         | $100 – $300      |
+| CSRF (settings change)        | SV3       | User tricked into changing their own data   | $150 – $400      |
+| Open Redirect                 | SV4       | Redirect user to phishing domain            | $20 – $100       |
+| Clickjacking                  | SV4       | Tricking user into clicking hidden elements | $20 – $80        |
+| Information Disclosure        | SV3       | Leak of internal emails, tokens, paths      | $100 – $300      |
+
+If possible, please structure this in a way that I can update it later (like in a JSON or editable table inside the admin panel).
