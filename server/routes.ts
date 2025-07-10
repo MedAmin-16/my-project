@@ -176,6 +176,220 @@ export function registerRoutes(app: Express): Server {
     }
   });
 
+  // Triage Service endpoints
+  app.post("/api/triage-service", async (req, res) => {
+    try {
+      if (!req.session?.user?.id) {
+        return res.status(401).json({ error: "Authentication required" });
+      }
+
+      // Only companies can create triage services
+      if (req.session.user.userType !== "company") {
+        return res.status(403).json({ error: "Only companies can request triage services" });
+      }
+
+      const { servicePlan, pricePerReport, monthlyFee, settings } = req.body;
+
+      if (!servicePlan) {
+        return res.status(400).json({ error: "Service plan is required" });
+      }
+
+      // Check if company already has a triage service
+      const existingService = await storage.getTriageServiceByCompany(req.session.user.id);
+      if (existingService) {
+        return res.status(400).json({ error: "Company already has a triage service" });
+      }
+
+      const service = await storage.createTriageService({
+        companyId: req.session.user.id,
+        servicePlan,
+        pricePerReport: pricePerReport || null,
+        monthlyFee: monthlyFee || null,
+        settings: settings || null
+      });
+
+      res.status(201).json(service);
+    } catch (error) {
+      console.error("Error creating triage service:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  app.get("/api/triage-service", async (req, res) => {
+    try {
+      if (!req.session?.user?.id) {
+        return res.status(401).json({ error: "Authentication required" });
+      }
+
+      if (req.session.user.userType === "company") {
+        // Companies can only see their own service
+        const service = await storage.getTriageServiceByCompany(req.session.user.id);
+        res.json(service);
+      } else {
+        // Admin/triage specialists can see all services
+        const services = await storage.getAllTriageServices();
+        res.json(services);
+      }
+    } catch (error) {
+      console.error("Error getting triage services:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  app.get("/api/triage-reports", async (req, res) => {
+    try {
+      if (!req.session?.user?.id) {
+        return res.status(401).json({ error: "Authentication required" });
+      }
+
+      const { status, limit, offset } = req.query;
+      const filters: any = {};
+
+      if (status) filters.status = status as string;
+      if (limit) filters.limit = parseInt(limit as string);
+      if (offset) filters.offset = parseInt(offset as string);
+
+      // Filter based on user type
+      if (req.session.user.userType === "company") {
+        filters.companyId = req.session.user.id;
+      } else if (req.session.user.userType === "hacker") {
+        // Hackers can only see reports for their submissions
+        // This would need additional filtering in storage method
+      }
+
+      const reports = await storage.getTriageReports(filters);
+      res.json(reports);
+    } catch (error) {
+      console.error("Error getting triage reports:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  app.post("/api/triage-reports", async (req, res) => {
+    try {
+      if (!req.session?.user?.id) {
+        return res.status(401).json({ error: "Authentication required" });
+      }
+
+      // Only admin/triage specialists can create triage reports
+      if (req.session.user.userType !== "admin") {
+        return res.status(403).json({ error: "Only admin can create triage reports" });
+      }
+
+      const { submissionId, triageServiceId, priority, triageNotes } = req.body;
+
+      if (!submissionId || !triageServiceId) {
+        return res.status(400).json({ error: "Submission ID and triage service ID are required" });
+      }
+
+      const report = await storage.createTriageReport({
+        submissionId,
+        triageServiceId,
+        triageSpecialistId: req.session.user.id,
+        priority: priority || "medium",
+        triageNotes: triageNotes || ""
+      });
+
+      res.status(201).json(report);
+    } catch (error) {
+      console.error("Error creating triage report:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  app.put("/api/triage-reports/:id", async (req, res) => {
+    try {
+      if (!req.session?.user?.id) {
+        return res.status(401).json({ error: "Authentication required" });
+      }
+
+      // Only admin/triage specialists can update triage reports
+      if (req.session.user.userType !== "admin") {
+        return res.status(403).json({ error: "Only admin can update triage reports" });
+      }
+
+      const reportId = parseInt(req.params.id);
+      if (isNaN(reportId)) {
+        return res.status(400).json({ error: "Invalid report ID" });
+      }
+
+      const updates = req.body;
+      const updatedReport = await storage.updateTriageReport(reportId, updates);
+
+      res.json(updatedReport);
+    } catch (error) {
+      console.error("Error updating triage report:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  app.post("/api/triage-communications", async (req, res) => {
+    try {
+      if (!req.session?.user?.id) {
+        return res.status(401).json({ error: "Authentication required" });
+      }
+
+      const { triageReportId, recipientType, subject, message, messageType, isInternal } = req.body;
+
+      if (!triageReportId || !recipientType || !message) {
+        return res.status(400).json({ error: "Required fields missing" });
+      }
+
+      const communication = await storage.createTriageCommunication({
+        triageReportId,
+        fromUserId: req.session.user.id,
+        recipientType,
+        subject: subject || "",
+        message,
+        messageType: messageType || "update",
+        isInternal: isInternal || false
+      });
+
+      res.status(201).json(communication);
+    } catch (error) {
+      console.error("Error creating triage communication:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  app.get("/api/triage-communications/:reportId", async (req, res) => {
+    try {
+      if (!req.session?.user?.id) {
+        return res.status(401).json({ error: "Authentication required" });
+      }
+
+      const reportId = parseInt(req.params.reportId);
+      if (isNaN(reportId)) {
+        return res.status(400).json({ error: "Invalid report ID" });
+      }
+
+      const communications = await storage.getTriageCommunications(reportId);
+      res.json(communications);
+    } catch (error) {
+      console.error("Error getting triage communications:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  app.get("/api/triage-team", async (req, res) => {
+    try {
+      if (!req.session?.user?.id) {
+        return res.status(401).json({ error: "Authentication required" });
+      }
+
+      // Only admin can view triage team
+      if (req.session.user.userType !== "admin") {
+        return res.status(403).json({ error: "Admin access required" });
+      }
+
+      const team = await storage.getTriageTeam();
+      res.json(team);
+    } catch (error) {
+      console.error("Error getting triage team:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
   const server = createServer(app);
   return server;
 }

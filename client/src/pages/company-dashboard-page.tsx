@@ -754,8 +754,7 @@ export default function CompanyDashboardPage() {
           </Card>
         </TabsContent>
          <TabsContent value="chat" className="space-y-6">
-          <PublicChat />
-        </TabsContent>
+          <PublicChat        </TabsContent>
       </Tabs>
     </div>
   );

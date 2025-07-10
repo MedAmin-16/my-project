@@ -22,6 +22,9 @@ import {
 } from "lucide-react";
 // Removed Tabs components - using custom implementation
 // Using custom styled components instead of UI library components
+import WalletAnalytics from "@/components/wallet-analytics";
+import AuditTrail from "@/components/audit-trail";
+import { TriageManagement } from "@/components/triage-management";
 
 export default function AdminDashboardPage() {
   const [, navigate] = useLocation();
