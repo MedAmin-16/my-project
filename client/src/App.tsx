@@ -42,6 +42,7 @@ import ForceAdmin from "@/pages/force-admin";
 import ForgotPasswordPage from "./pages/forgot-password-page";
 import WalletPage from "./pages/wallet-page";
 import HacktivityPage from "./pages/hacktivity-page";
+import FindProgramsPage from "./pages/find-programs-page";
 import { ProtectedRoute } from "./lib/protected-route";
 import { AuthProvider, useAuth } from "@/hooks/use-auth";
 import { ThemeProvider } from "@/components/theme-provider";
@@ -165,10 +166,7 @@ function Router() {
   );
 }
 
-// Placeholder for FindProgramsPage component
-function FindProgramsPage() {
-  return <h1>Find Programs Page</h1>;
-}
+
 
 function App() {
   return (

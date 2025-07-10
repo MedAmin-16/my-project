@@ -76,14 +76,20 @@ export function registerRoutes(app: Express): Server {
       const hashedPassword = await bcrypt.hash(password, 10);
 
       // Create user
-      const userId = await storage.createUser({
+      const newUser = await storage.createUser({
         username,
         email,
         password: hashedPassword,
-        userType
+        userType,
+        ...req.body // Include additional fields like companyName, etc.
       });
 
-      res.json({ message: "User created successfully", userId });
+      // Set session
+      req.session.user = { id: newUser.id };
+
+      // Return the user object (without password)
+      const { password: _, ...userWithoutPassword } = newUser;
+      res.json(userWithoutPassword);
     } catch (error) {
       console.error("Registration error:", error);
       res.status(500).json({ error: "Internal server error" });
