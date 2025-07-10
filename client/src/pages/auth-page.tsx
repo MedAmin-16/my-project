@@ -168,16 +168,6 @@ export default function AuthPage() {
 
   // Handle company registration form submission
   const onRegisterCompanySubmit = (data: RegisterCompanyFormValues) => {
-    console.log("Registering company with data:", {
-      username: data.username,
-      email: data.email,
-      userType: "company",
-      companyName: data.companyName,
-      companyWebsite: data.companyWebsite,
-      companySize: data.companySize,
-      companyIndustry: data.companyIndustry,
-    });
-
     registerMutation.mutate({
       username: data.username,
       password: data.password,
@@ -188,13 +178,14 @@ export default function AuthPage() {
       companySize: data.companySize,
       companyIndustry: data.companyIndustry,
     }, {
-      onSuccess: () => {
+      onSuccess: (user) => {
         // Show a toast notification about email verification
         toast({
           title: "Company registration successful!",
-          description: "Please check your email to verify your company account.",
+          description: "Please check your email to verify your account.",
           variant: "default",
         });
+        // The redirect will be handled by the useAuth hook
       }
     });
   };

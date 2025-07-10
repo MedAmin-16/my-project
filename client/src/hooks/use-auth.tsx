@@ -43,6 +43,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     },
     onSuccess: (user: SelectUser) => {
       queryClient.setQueryData(["/api/user"], user);
+      // Redirect based on user type
+      if (user.userType === 'company') {
+        navigate("/company-dashboard");
+      } else {
+        navigate("/dashboard");
+      }
       toast({
         title: "Login successful",
         description: `Welcome back, ${user.username}!`,
@@ -65,6 +71,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     },
     onSuccess: (user: SelectUser) => {
       queryClient.setQueryData(["/api/user"], user);
+      // Redirect based on user type
+      if (user.userType === 'company') {
+        navigate("/company-dashboard");
+      } else {
+        navigate("/dashboard");
+      }
       toast({
         title: "Registration successful",
         description: `Welcome to CyberHunt, ${user.username}!`,
