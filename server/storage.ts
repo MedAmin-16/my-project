@@ -1398,8 +1398,8 @@ export const storage = {
         throw error;
       }
     }
-    return null
-  }
+    return null;
+  },
 
   async getTriageServiceByCompany(companyId: number) {
     if(db){
@@ -1416,7 +1416,7 @@ export const storage = {
       }
     }
     return null;
-  }
+  },
 
   async getAllTriageServices() {
     if(db){
@@ -1442,7 +1442,7 @@ export const storage = {
       }
     }
     return [];
-  }
+  },
 
   async createTriageReport(data: InsertTriageReport) {
     if(db){
@@ -1455,7 +1455,7 @@ export const storage = {
       }
     }
     return null;
-  }
+  },
 
   async getTriageReports(filters: { 
     status?: string; 
@@ -1513,7 +1513,7 @@ export const storage = {
       }
     }
     return [];
-  }
+  },
 
   async updateTriageReport(id: number, updates: Partial<InsertTriageReport>) {
     if(db){
@@ -1530,7 +1530,7 @@ export const storage = {
       }
     }
     return null;
-  }
+  },
 
   async createTriageCommunication(data: InsertTriageCommunication) {
     if(db){
@@ -1543,7 +1543,7 @@ export const storage = {
       }
     }
     return null;
-  }
+  },
 
   async getTriageCommunications(triageReportId: number) {
     if(db){
@@ -1570,7 +1570,7 @@ export const storage = {
       }
     }
     return [];
-  }
+  },
 
   async getTriageTeam() {
     if(db){
