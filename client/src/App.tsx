@@ -50,7 +50,6 @@ import AdminPaymentDashboard from "./pages/admin-payment-dashboard";
 import SimpleAdminLogin from "./pages/simple-admin-login";
 import ClientLandingPage from "./pages/client-landing-page";
 import PublicChatPage from "./pages/public-chat-page";
-import TriageDashboardPage from "./pages/triage-dashboard-page";
 
 
 function Router() {
@@ -160,9 +159,6 @@ function Router() {
       </Route>
       <Route path="/create-program" component={CreateProgramPage} />
       <Route path="/public-chat" component={PublicChatPage} />
-      <Route path="/triage-dashboard" component={TriageDashboardPage} />
-
-      {/* Static/Info Pages */}
 
       {/* Admin Routes */}
       <Route path="/admin" component={AdminLoginPage} />

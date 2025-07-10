@@ -40,7 +40,6 @@ import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { formatDistanceToNow } from "date-fns";
 import { Link, useLocation } from "wouter";
-import TriageServiceSubscription from "@/components/triage-service-subscription";
 
 // Company Dashboard Page
 export default function CompanyDashboardPage() {
@@ -767,21 +766,7 @@ export default function CompanyDashboardPage() {
             </CardContent>
           </Card>
         </TabsContent>
-
-          {/* Triage Services Tab */}
-          <TabsContent value="triage" className="space-y-6">
-            <div className="terminal-card p-6 rounded-lg">
-              <div className="mb-6">
-                <h3 className="text-xl font-mono font-bold text-light-gray mb-2">Managed Vulnerability Triage</h3>
-                <p className="text-dim-gray font-mono">
-                  Let our security experts handle vulnerability triage and management for your program
-                </p>
-              </div>
-
-              <TriageServiceSubscription />
-            </div>
-          </TabsContent>
-        </Tabs>
+      </Tabs>
     </div>
   );
 }
