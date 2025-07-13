@@ -365,6 +365,13 @@ export default function CompanyDashboardPage() {
                   >
                     💼 My Wallet
                   </Button>
+                  <Button 
+                    onClick={() => setLocation("/triage-dashboard")}
+                    variant="outline"
+                    className="w-full border-matrix/30 hover:bg-matrix/20 hover:text-matrix"
+                  >
+                    🔍 Triage Dashboard
+                  </Button>
                 </div>
               </CardContent>
             </Card>

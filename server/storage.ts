@@ -1,6 +1,6 @@
 import { drizzle } from 'drizzle-orm/postgres-js';
 import postgres from 'postgres';
-import { users, programs, submissions, activities, notifications, wallets, transactions, withdrawals, publicMessages, type User, type InsertUser, type Program, type InsertProgram, type Submission, type InsertSubmission, type Activity, type InsertActivity, type Notification, type InsertNotification, type Wallet, type Transaction, type InsertTransaction, type Withdrawal, type InsertWithdrawal, type CompanyWallet, type InsertCompanyWallet, type CompanyTransaction, type InsertCompanyTransaction, companyWallets, companyTransactions, paymentMethods, escrowAccounts, paymentIntents, payouts, commissions, transactionLogs, paymentDisputes, paymentRateLimits, type PaymentMethod, type InsertPaymentMethod, type EscrowAccount, type InsertEscrowAccount, type PaymentIntent, type InsertPaymentIntent, type Payout, type InsertPayout, type Commission, type InsertCommission, type TransactionLog, type PaymentDispute, type InsertPaymentDispute, type PublicMessage, type InsertPublicMessage } from '@shared/schema';
+import { users, programs, submissions, activities, notifications, wallets, transactions, withdrawals, publicMessages, triageServices, triageReports, triageCommunications, triageSubscriptions, triageAnalysts, type User, type InsertUser, type Program, type InsertProgram, type Submission, type InsertSubmission, type Activity, type InsertActivity, type Notification, type InsertNotification, type Wallet, type Transaction, type InsertTransaction, type Withdrawal, type InsertWithdrawal, type CompanyWallet, type InsertCompanyWallet, type CompanyTransaction, type InsertCompanyTransaction, companyWallets, companyTransactions, paymentMethods, escrowAccounts, paymentIntents, payouts, commissions, transactionLogs, paymentDisputes, paymentRateLimits, type PaymentMethod, type InsertPaymentMethod, type EscrowAccount, type InsertEscrowAccount, type PaymentIntent, type InsertPaymentIntent, type Payout, type InsertPayout, type Commission, type InsertCommission, type TransactionLog, type PaymentDispute, type InsertPaymentDispute, type PublicMessage, type InsertPublicMessage, type TriageService, type InsertTriageService, type TriageReport, type InsertTriageReport, type TriageCommunication, type InsertTriageCommunication, type TriageSubscription, type InsertTriageSubscription, type TriageAnalyst, type InsertTriageAnalyst } from '@shared/schema';
 import { and, eq, desc, sql } from "drizzle-orm";
 import createMemoryStore from "memorystore";
 import session from "express-session";
@@ -1340,5 +1340,420 @@ export const storage = {
       }
     }
     return memoryStorage.users.get(username) || null;
+  },
+
+  // Triage Services
+  async createTriageService(data: InsertTriageService) {
+    if (db) {
+      try {
+        const [service] = await db.insert(triageServices).values(data).returning();
+        return service;
+      } catch (error) {
+        console.error('Error creating triage service:', error);
+        return null;
+      }
+    }
+    return null;
+  },
+
+  async getTriageServicesByCompany(companyId: number) {
+    if (db) {
+      try {
+        return db.select().from(triageServices).where(eq(triageServices.companyId, companyId));
+      } catch (error) {
+        console.error('Error getting triage services by company:', error);
+        return [];
+      }
+    }
+    return [];
+  },
+
+  async getTriageService(id: number) {
+    if (db) {
+      try {
+        const [service] = await db.select().from(triageServices).where(eq(triageServices.id, id));
+        return service || null;
+      } catch (error) {
+        console.error('Error getting triage service:', error);
+        return null;
+      }
+    }
+    return null;
+  },
+
+  async updateTriageService(id: number, data: Partial<InsertTriageService>) {
+    if (db) {
+      try {
+        const [service] = await db
+          .update(triageServices)
+          .set({ ...data, updatedAt: new Date() })
+          .where(eq(triageServices.id, id))
+          .returning();
+        return service;
+      } catch (error) {
+        console.error('Error updating triage service:', error);
+        return null;
+      }
+    }
+    return null;
+  },
+
+  // Triage Reports
+  async createTriageReport(data: InsertTriageReport) {
+    if (db) {
+      try {
+        const [report] = await db.insert(triageReports).values(data).returning();
+        return report;
+      } catch (error) {
+        console.error('Error creating triage report:', error);
+        return null;
+      }
+    }
+    return null;
+  },
+
+  async getTriageReport(id: number) {
+    if (db) {
+      try {
+        const [report] = await db.select({
+          id: triageReports.id,
+          submissionId: triageReports.submissionId,
+          triageServiceId: triageReports.triageServiceId,
+          companyId: triageReports.companyId,
+          triageAnalystId: triageReports.triageAnalystId,
+          status: triageReports.status,
+          priority: triageReports.priority,
+          severity: triageReports.severity,
+          validationStatus: triageReports.validationStatus,
+          triageNotes: triageReports.triageNotes,
+          technicalAssessment: triageReports.technicalAssessment,
+          businessImpact: triageReports.businessImpact,
+          recommendedActions: triageReports.recommendedActions,
+          estimatedFixTime: triageReports.estimatedFixTime,
+          cveReference: triageReports.cveReference,
+          isEscalated: triageReports.isEscalated,
+          escalationReason: triageReports.escalationReason,
+          communicationHistory: triageReports.communicationHistory,
+          triageStartedAt: triageReports.triageStartedAt,
+          triageCompletedAt: triageReports.triageCompletedAt,
+          dueDate: triageReports.dueDate,
+          createdAt: triageReports.createdAt,
+          updatedAt: triageReports.updatedAt,
+          // Join submission details
+          submissionTitle: submissions.title,
+          submissionDescription: submissions.description,
+          submissionSeverity: submissions.severity,
+          submissionStatus: submissions.status,
+          // Join analyst details
+          analystUsername: users.username,
+          analystEmail: users.email
+        })
+        .from(triageReports)
+        .leftJoin(submissions, eq(triageReports.submissionId, submissions.id))
+        .leftJoin(users, eq(triageReports.triageAnalystId, users.id))
+        .where(eq(triageReports.id, id));
+        
+        return report || null;
+      } catch (error) {
+        console.error('Error getting triage report:', error);
+        return null;
+      }
+    }
+    return null;
+  },
+
+  async getTriageReportsByCompany(companyId: number) {
+    if (db) {
+      try {
+        return db.select({
+          id: triageReports.id,
+          submissionId: triageReports.submissionId,
+          status: triageReports.status,
+          priority: triageReports.priority,
+          severity: triageReports.severity,
+          validationStatus: triageReports.validationStatus,
+          dueDate: triageReports.dueDate,
+          createdAt: triageReports.createdAt,
+          updatedAt: triageReports.updatedAt,
+          submissionTitle: submissions.title,
+          submissionDescription: submissions.description,
+          analystUsername: users.username
+        })
+        .from(triageReports)
+        .leftJoin(submissions, eq(triageReports.submissionId, submissions.id))
+        .leftJoin(users, eq(triageReports.triageAnalystId, users.id))
+        .where(eq(triageReports.companyId, companyId))
+        .orderBy(desc(triageReports.createdAt));
+      } catch (error) {
+        console.error('Error getting triage reports by company:', error);
+        return [];
+      }
+    }
+    return [];
+  },
+
+  async getTriageReportBySubmission(submissionId: number) {
+    if (db) {
+      try {
+        const [report] = await db.select().from(triageReports).where(eq(triageReports.submissionId, submissionId));
+        return report || null;
+      } catch (error) {
+        console.error('Error getting triage report by submission:', error);
+        return null;
+      }
+    }
+    return null;
+  },
+
+  async updateTriageReport(id: number, data: Partial<InsertTriageReport>) {
+    if (db) {
+      try {
+        const [report] = await db
+          .update(triageReports)
+          .set({ ...data, updatedAt: new Date() })
+          .where(eq(triageReports.id, id))
+          .returning();
+        return report;
+      } catch (error) {
+        console.error('Error updating triage report:', error);
+        return null;
+      }
+    }
+    return null;
+  },
+
+  async getTriageReportsByAnalyst(analystId: number) {
+    if (db) {
+      try {
+        return db.select({
+          id: triageReports.id,
+          submissionId: triageReports.submissionId,
+          status: triageReports.status,
+          priority: triageReports.priority,
+          severity: triageReports.severity,
+          dueDate: triageReports.dueDate,
+          createdAt: triageReports.createdAt,
+          submissionTitle: submissions.title,
+          companyName: users.companyName
+        })
+        .from(triageReports)
+        .leftJoin(submissions, eq(triageReports.submissionId, submissions.id))
+        .leftJoin(users, eq(triageReports.companyId, users.id))
+        .where(eq(triageReports.triageAnalystId, analystId))
+        .orderBy(desc(triageReports.createdAt));
+      } catch (error) {
+        console.error('Error getting triage reports by analyst:', error);
+        return [];
+      }
+    }
+    return [];
+  },
+
+  // Triage Communications
+  async createTriageCommunication(data: InsertTriageCommunication) {
+    if (db) {
+      try {
+        const [communication] = await db.insert(triageCommunications).values(data).returning();
+        return communication;
+      } catch (error) {
+        console.error('Error creating triage communication:', error);
+        return null;
+      }
+    }
+    return null;
+  },
+
+  async getTriageCommunications(triageReportId: number) {
+    if (db) {
+      try {
+        return db.select({
+          id: triageCommunications.id,
+          triageReportId: triageCommunications.triageReportId,
+          fromUserId: triageCommunications.fromUserId,
+          toUserId: triageCommunications.toUserId,
+          messageType: triageCommunications.messageType,
+          subject: triageCommunications.subject,
+          message: triageCommunications.message,
+          isInternal: triageCommunications.isInternal,
+          attachments: triageCommunications.attachments,
+          isRead: triageCommunications.isRead,
+          readAt: triageCommunications.readAt,
+          createdAt: triageCommunications.createdAt,
+          fromUsername: users.username,
+          fromUserType: users.userType
+        })
+        .from(triageCommunications)
+        .leftJoin(users, eq(triageCommunications.fromUserId, users.id))
+        .where(eq(triageCommunications.triageReportId, triageReportId))
+        .orderBy(desc(triageCommunications.createdAt));
+      } catch (error) {
+        console.error('Error getting triage communications:', error);
+        return [];
+      }
+    }
+    return [];
+  },
+
+  async markTriageCommunicationAsRead(id: number) {
+    if (db) {
+      try {
+        const [communication] = await db
+          .update(triageCommunications)
+          .set({ isRead: true, readAt: new Date() })
+          .where(eq(triageCommunications.id, id))
+          .returning();
+        return communication;
+      } catch (error) {
+        console.error('Error marking triage communication as read:', error);
+        return null;
+      }
+    }
+    return null;
+  },
+
+  // Triage Subscriptions
+  async createTriageSubscription(data: InsertTriageSubscription) {
+    if (db) {
+      try {
+        const [subscription] = await db.insert(triageSubscriptions).values(data).returning();
+        return subscription;
+      } catch (error) {
+        console.error('Error creating triage subscription:', error);
+        return null;
+      }
+    }
+    return null;
+  },
+
+  async getTriageSubscriptionsByCompany(companyId: number) {
+    if (db) {
+      try {
+        return db.select({
+          id: triageSubscriptions.id,
+          triageServiceId: triageSubscriptions.triageServiceId,
+          subscriptionType: triageSubscriptions.subscriptionType,
+          status: triageSubscriptions.status,
+          startDate: triageSubscriptions.startDate,
+          endDate: triageSubscriptions.endDate,
+          autoRenew: triageSubscriptions.autoRenew,
+          reportsProcessed: triageSubscriptions.reportsProcessed,
+          totalCost: triageSubscriptions.totalCost,
+          nextBillingDate: triageSubscriptions.nextBillingDate,
+          createdAt: triageSubscriptions.createdAt,
+          serviceName: triageServices.serviceName,
+          serviceType: triageServices.serviceType,
+          triageLevel: triageServices.triageLevel
+        })
+        .from(triageSubscriptions)
+        .leftJoin(triageServices, eq(triageSubscriptions.triageServiceId, triageServices.id))
+        .where(eq(triageSubscriptions.companyId, companyId))
+        .orderBy(desc(triageSubscriptions.createdAt));
+      } catch (error) {
+        console.error('Error getting triage subscriptions by company:', error);
+        return [];
+      }
+    }
+    return [];
+  },
+
+  async updateTriageSubscription(id: number, data: Partial<InsertTriageSubscription>) {
+    if (db) {
+      try {
+        const [subscription] = await db
+          .update(triageSubscriptions)
+          .set({ ...data, updatedAt: new Date() })
+          .where(eq(triageSubscriptions.id, id))
+          .returning();
+        return subscription;
+      } catch (error) {
+        console.error('Error updating triage subscription:', error);
+        return null;
+      }
+    }
+    return null;
+  },
+
+  // Triage Analysts
+  async createTriageAnalyst(data: InsertTriageAnalyst) {
+    if (db) {
+      try {
+        const [analyst] = await db.insert(triageAnalysts).values(data).returning();
+        return analyst;
+      } catch (error) {
+        console.error('Error creating triage analyst:', error);
+        return null;
+      }
+    }
+    return null;
+  },
+
+  async getAvailableTriageAnalysts() {
+    if (db) {
+      try {
+        return db.select({
+          id: triageAnalysts.id,
+          userId: triageAnalysts.userId,
+          specializations: triageAnalysts.specializations,
+          currentWorkload: triageAnalysts.currentWorkload,
+          maxWorkload: triageAnalysts.maxWorkload,
+          availabilityStatus: triageAnalysts.availabilityStatus,
+          performanceRating: triageAnalysts.performanceRating,
+          avgResponseTime: triageAnalysts.avgResponseTime,
+          username: users.username,
+          email: users.email
+        })
+        .from(triageAnalysts)
+        .leftJoin(users, eq(triageAnalysts.userId, users.id))
+        .where(eq(triageAnalysts.availabilityStatus, 'available'))
+        .orderBy(triageAnalysts.performanceRating, triageAnalysts.currentWorkload);
+      } catch (error) {
+        console.error('Error getting available triage analysts:', error);
+        return [];
+      }
+    }
+    return [];
+  },
+
+  async updateTriageAnalystWorkload(analystId: number, workload: number) {
+    if (db) {
+      try {
+        const [analyst] = await db
+          .update(triageAnalysts)
+          .set({ currentWorkload: workload, updatedAt: new Date() })
+          .where(eq(triageAnalysts.id, analystId))
+          .returning();
+        return analyst;
+      } catch (error) {
+        console.error('Error updating triage analyst workload:', error);
+        return null;
+      }
+    }
+    return null;
+  },
+
+  async getTriageAnalyst(id: number) {
+    if (db) {
+      try {
+        const [analyst] = await db.select().from(triageAnalysts).where(eq(triageAnalysts.id, id));
+        return analyst || null;
+      } catch (error) {
+        console.error('Error getting triage analyst:', error);
+        return null;
+      }
+    }
+    return null;
+  },
+
+  async getTriageAnalystByUserId(userId: number) {
+    if (db) {
+      try {
+        const [analyst] = await db.select().from(triageAnalysts).where(eq(triageAnalysts.userId, userId));
+        return analyst || null;
+      } catch (error) {
+        console.error('Error getting triage analyst by user ID:', error);
+        return null;
+      }
+    }
+    return null;
   },
 };

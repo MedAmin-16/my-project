@@ -8,6 +8,7 @@ import AuthPage from "@/pages/auth-page";
 import LandingPage from "@/pages/landing-page";
 import DashboardPage from "@/pages/dashboard-page";
 import CompanyDashboardPage from "@/pages/company-dashboard-page";
+import TriageDashboardPage from "@/pages/triage-dashboard-page";
 import CreateProgramPage from "@/pages/create-program-page";
 import ProgramsPage from "@/pages/programs-page";
 import ProgramDetailPage from "@/pages/program-detail-page";
@@ -100,6 +101,7 @@ function Router() {
       <Route path="/" component={LandingPage} />
       <ProtectedRoute path="/dashboard" component={DashboardComponent} />
       <ProtectedRoute path="/company-dashboard" component={CompanyDashboardPage} />
+      <ProtectedRoute path="/triage-dashboard" component={TriageDashboardPage} />
       <ProtectedRoute path="/programs" component={ProgramsPage} />
       <Route path="/programs/:id" component={ProgramDetailPage} />
       <Route path="/hacktivity" component={HacktivityPage} />

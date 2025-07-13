@@ -442,3 +442,175 @@ export const insertPublicMessageSchema = createInsertSchema(publicMessages).pick
 
 export type PublicMessage = typeof publicMessages.$inferSelect;
 export type InsertPublicMessage = z.infer<typeof insertPublicMessageSchema>;
+
+// Triage Service Tables
+export const triageServices = pgTable("triage_services", {
+  id: serial("id").primaryKey(),
+  companyId: integer("company_id").notNull().references(() => users.id),
+  serviceName: text("service_name").notNull().default("Managed Vulnerability Triage"),
+  serviceType: text("service_type").notNull().default("managed_triage"), // managed_triage, consultation, remediation
+  pricingModel: text("pricing_model").notNull().default("per_report"), // per_report, monthly, annual
+  pricePerReport: integer("price_per_report").default(5000), // in cents ($50)
+  monthlyPrice: integer("monthly_price").default(50000), // in cents ($500)
+  annualPrice: integer("annual_price").default(500000), // in cents ($5000)
+  isActive: boolean("is_active").default(true),
+  autoAssignTriage: boolean("auto_assign_triage").default(true),
+  triageLevel: text("triage_level").default("standard"), // basic, standard, premium
+  includedServices: jsonb("included_services").default([]), // Array of service features
+  maxReportsPerMonth: integer("max_reports_per_month").default(50),
+  responseTimeHours: integer("response_time_hours").default(24),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at")
+});
+
+export const triageReports = pgTable("triage_reports", {
+  id: serial("id").primaryKey(),
+  submissionId: integer("submission_id").notNull().references(() => submissions.id),
+  triageServiceId: integer("triage_service_id").notNull().references(() => triageServices.id),
+  companyId: integer("company_id").notNull().references(() => users.id),
+  triageAnalystId: integer("triage_analyst_id").references(() => users.id),
+  status: text("status").notNull().default("pending"), // pending, in_progress, completed, escalated
+  priority: text("priority").notNull().default("medium"), // low, medium, high, critical
+  severity: text("severity").notNull().default("unknown"), // SV1, SV2, SV3, SV4, unknown
+  validationStatus: text("validation_status").default("pending"), // pending, validated, rejected, duplicate
+  triageNotes: text("triage_notes"),
+  technicalAssessment: text("technical_assessment"),
+  businessImpact: text("business_impact"),
+  recommendedActions: text("recommended_actions"),
+  estimatedFixTime: text("estimated_fix_time"),
+  cveReference: text("cve_reference"),
+  isEscalated: boolean("is_escalated").default(false),
+  escalationReason: text("escalation_reason"),
+  communicationHistory: jsonb("communication_history").default([]),
+  triageStartedAt: timestamp("triage_started_at"),
+  triageCompletedAt: timestamp("triage_completed_at"),
+  dueDate: timestamp("due_date"),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at")
+});
+
+export const triageCommunications = pgTable("triage_communications", {
+  id: serial("id").primaryKey(),
+  triageReportId: integer("triage_report_id").notNull().references(() => triageReports.id),
+  fromUserId: integer("from_user_id").notNull().references(() => users.id),
+  toUserId: integer("to_user_id").references(() => users.id),
+  messageType: text("message_type").notNull().default("message"), // message, status_update, question, clarification
+  subject: text("subject"),
+  message: text("message").notNull(),
+  isInternal: boolean("is_internal").default(false), // Internal platform notes vs external communication
+  attachments: jsonb("attachments").default([]),
+  isRead: boolean("is_read").default(false),
+  readAt: timestamp("read_at"),
+  createdAt: timestamp("created_at").defaultNow()
+});
+
+export const triageSubscriptions = pgTable("triage_subscriptions", {
+  id: serial("id").primaryKey(),
+  companyId: integer("company_id").notNull().references(() => users.id),
+  triageServiceId: integer("triage_service_id").notNull().references(() => triageServices.id),
+  subscriptionType: text("subscription_type").notNull().default("monthly"), // monthly, annual, per_report
+  status: text("status").notNull().default("active"), // active, paused, cancelled, expired
+  startDate: timestamp("start_date").notNull().defaultNow(),
+  endDate: timestamp("end_date"),
+  autoRenew: boolean("auto_renew").default(true),
+  reportsProcessed: integer("reports_processed").default(0),
+  totalCost: integer("total_cost").default(0), // in cents
+  lastBillingDate: timestamp("last_billing_date"),
+  nextBillingDate: timestamp("next_billing_date"),
+  paymentMethodId: integer("payment_method_id").references(() => paymentMethods.id),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at")
+});
+
+export const triageAnalysts = pgTable("triage_analysts", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").notNull().references(() => users.id),
+  specializations: jsonb("specializations").default([]), // Array of expertise areas
+  currentWorkload: integer("current_workload").default(0),
+  maxWorkload: integer("max_workload").default(10),
+  availabilityStatus: text("availability_status").default("available"), // available, busy, offline
+  hourlyRate: integer("hourly_rate").default(10000), // in cents ($100)
+  performanceRating: integer("performance_rating").default(5), // 1-5 scale
+  totalReportsHandled: integer("total_reports_handled").default(0),
+  avgResponseTime: integer("avg_response_time").default(0), // in minutes
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at")
+});
+
+// Insert schemas for triage tables
+export const insertTriageServiceSchema = createInsertSchema(triageServices).pick({
+  companyId: true,
+  serviceName: true,
+  serviceType: true,
+  pricingModel: true,
+  pricePerReport: true,
+  monthlyPrice: true,
+  annualPrice: true,
+  triageLevel: true,
+  includedServices: true,
+  maxReportsPerMonth: true,
+  responseTimeHours: true
+});
+
+export const insertTriageReportSchema = createInsertSchema(triageReports).pick({
+  submissionId: true,
+  triageServiceId: true,
+  companyId: true,
+  triageAnalystId: true,
+  status: true,
+  priority: true,
+  severity: true,
+  validationStatus: true,
+  triageNotes: true,
+  technicalAssessment: true,
+  businessImpact: true,
+  recommendedActions: true,
+  estimatedFixTime: true,
+  cveReference: true,
+  escalationReason: true,
+  dueDate: true
+});
+
+export const insertTriageCommunicationSchema = createInsertSchema(triageCommunications).pick({
+  triageReportId: true,
+  fromUserId: true,
+  toUserId: true,
+  messageType: true,
+  subject: true,
+  message: true,
+  isInternal: true,
+  attachments: true
+});
+
+export const insertTriageSubscriptionSchema = createInsertSchema(triageSubscriptions).pick({
+  companyId: true,
+  triageServiceId: true,
+  subscriptionType: true,
+  startDate: true,
+  endDate: true,
+  autoRenew: true,
+  paymentMethodId: true
+});
+
+export const insertTriageAnalystSchema = createInsertSchema(triageAnalysts).pick({
+  userId: true,
+  specializations: true,
+  maxWorkload: true,
+  hourlyRate: true
+});
+
+// Type exports for triage
+export type TriageService = typeof triageServices.$inferSelect;
+export type InsertTriageService = z.infer<typeof insertTriageServiceSchema>;
+
+export type TriageReport = typeof triageReports.$inferSelect;
+export type InsertTriageReport = z.infer<typeof insertTriageReportSchema>;
+
+export type TriageCommunication = typeof triageCommunications.$inferSelect;
+export type InsertTriageCommunication = z.infer<typeof insertTriageCommunicationSchema>;
+
+export type TriageSubscription = typeof triageSubscriptions.$inferSelect;
+export type InsertTriageSubscription = z.infer<typeof insertTriageSubscriptionSchema>;
+
+export type TriageAnalyst = typeof triageAnalysts.$inferSelect;
+export type InsertTriageAnalyst = z.infer<typeof insertTriageAnalystSchema>;
