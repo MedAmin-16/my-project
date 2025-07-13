@@ -572,6 +572,431 @@ export function registerRoutes(app: Express): Server {
     }
   });
 
+  // Moderation System Routes
+  
+  // Get moderation team members
+  app.get("/api/moderation/team", async (req, res) => {
+    try {
+      if (!req.session?.user?.id) {
+        return res.status(401).json({ error: "Authentication required" });
+      }
+
+      const user = await storage.getUser(req.session.user.id);
+      if (!user || (user.userType !== 'admin' && user.userType !== 'analyst')) {
+        return res.status(403).json({ error: "Admin or analyst access required" });
+      }
+
+      const department = req.query.department as string;
+      const members = await storage.getModerationTeamMembers(department);
+      res.json(members);
+    } catch (error) {
+      console.error("Error fetching moderation team:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  // Add moderation team member
+  app.post("/api/moderation/team", async (req, res) => {
+    try {
+      if (!req.session?.user?.id) {
+        return res.status(401).json({ error: "Authentication required" });
+      }
+
+      const user = await storage.getUser(req.session.user.id);
+      if (!user || user.userType !== 'admin') {
+        return res.status(403).json({ error: "Admin access required" });
+      }
+
+      const member = await storage.createModerationTeamMember(req.body);
+      res.status(201).json(member);
+    } catch (error) {
+      console.error("Error creating moderation team member:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  // Get moderation reviews
+  app.get("/api/moderation/reviews", async (req, res) => {
+    try {
+      if (!req.session?.user?.id) {
+        return res.status(401).json({ error: "Authentication required" });
+      }
+
+      const user = await storage.getUser(req.session.user.id);
+      if (!user || (user.userType !== 'admin' && user.userType !== 'analyst')) {
+        return res.status(403).json({ error: "Admin or analyst access required" });
+      }
+
+      const filters = {
+        reviewerId: req.query.reviewer_id ? parseInt(req.query.reviewer_id as string) : undefined,
+        status: req.query.status as string,
+        priority: req.query.priority as string,
+        category: req.query.category as string,
+        limit: req.query.limit ? parseInt(req.query.limit as string) : 50,
+        offset: req.query.offset ? parseInt(req.query.offset as string) : 0
+      };
+
+      // If user is not admin, only show their assigned reviews
+      if (user.userType !== 'admin') {
+        filters.reviewerId = user.id;
+      }
+
+      const reviews = await storage.getModerationReviews(filters);
+      res.json(reviews);
+    } catch (error) {
+      console.error("Error fetching moderation reviews:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  // Get specific moderation review
+  app.get("/api/moderation/reviews/:id", async (req, res) => {
+    try {
+      if (!req.session?.user?.id) {
+        return res.status(401).json({ error: "Authentication required" });
+      }
+
+      const user = await storage.getUser(req.session.user.id);
+      if (!user || (user.userType !== 'admin' && user.userType !== 'analyst')) {
+        return res.status(403).json({ error: "Admin or analyst access required" });
+      }
+
+      const reviewId = parseInt(req.params.id);
+      const review = await storage.getModerationReview(reviewId);
+      
+      if (!review) {
+        return res.status(404).json({ error: "Review not found" });
+      }
+
+      // Check if user has access to this review
+      if (user.userType !== 'admin' && review.reviewerId !== user.id) {
+        return res.status(403).json({ error: "Access denied" });
+      }
+
+      res.json(review);
+    } catch (error) {
+      console.error("Error fetching moderation review:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  // Create moderation review
+  app.post("/api/moderation/reviews", async (req, res) => {
+    try {
+      if (!req.session?.user?.id) {
+        return res.status(401).json({ error: "Authentication required" });
+      }
+
+      const user = await storage.getUser(req.session.user.id);
+      if (!user || (user.userType !== 'admin' && user.userType !== 'analyst')) {
+        return res.status(403).json({ error: "Admin or analyst access required" });
+      }
+
+      const reviewData = {
+        ...req.body,
+        assignedBy: user.id
+      };
+
+      const review = await storage.createModerationReview(reviewData);
+      
+      // Log the action
+      await storage.createModerationAuditLog({
+        reviewId: review.id,
+        submissionId: review.submissionId,
+        userId: user.id,
+        action: 'review_created',
+        description: 'Moderation review created',
+        metadata: { reviewData }
+      });
+
+      // Create notification for assigned reviewer
+      if (review.reviewerId) {
+        await storage.createModerationNotification({
+          recipientId: review.reviewerId,
+          senderId: user.id,
+          reviewId: review.id,
+          type: 'assignment',
+          title: 'New Review Assignment',
+          message: `You have been assigned a new review for submission #${review.submissionId}`,
+          actionUrl: `/moderation/reviews/${review.id}`
+        });
+      }
+
+      res.status(201).json(review);
+    } catch (error) {
+      console.error("Error creating moderation review:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  // Update moderation review
+  app.put("/api/moderation/reviews/:id", async (req, res) => {
+    try {
+      if (!req.session?.user?.id) {
+        return res.status(401).json({ error: "Authentication required" });
+      }
+
+      const user = await storage.getUser(req.session.user.id);
+      if (!user || (user.userType !== 'admin' && user.userType !== 'analyst')) {
+        return res.status(403).json({ error: "Admin or analyst access required" });
+      }
+
+      const reviewId = parseInt(req.params.id);
+      const existingReview = await storage.getModerationReview(reviewId);
+      
+      if (!existingReview) {
+        return res.status(404).json({ error: "Review not found" });
+      }
+
+      // Check if user has access to update this review
+      if (user.userType !== 'admin' && existingReview.reviewerId !== user.id) {
+        return res.status(403).json({ error: "Access denied" });
+      }
+
+      const updateData = req.body;
+      const updatedReview = await storage.updateModerationReview(reviewId, updateData);
+
+      // Log the action
+      await storage.createModerationAuditLog({
+        reviewId: reviewId,
+        submissionId: existingReview.submissionId,
+        userId: user.id,
+        action: 'review_updated',
+        description: 'Moderation review updated',
+        metadata: { changes: updateData }
+      });
+
+      res.json(updatedReview);
+    } catch (error) {
+      console.error("Error updating moderation review:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  // Assign review to reviewer
+  app.post("/api/moderation/reviews/:id/assign", async (req, res) => {
+    try {
+      if (!req.session?.user?.id) {
+        return res.status(401).json({ error: "Authentication required" });
+      }
+
+      const user = await storage.getUser(req.session.user.id);
+      if (!user || (user.userType !== 'admin' && user.userType !== 'analyst')) {
+        return res.status(403).json({ error: "Admin or analyst access required" });
+      }
+
+      const reviewId = parseInt(req.params.id);
+      const { reviewerId } = req.body;
+
+      const updatedReview = await storage.assignModerationReview(reviewId, reviewerId, user.id);
+      
+      // Log the action
+      await storage.createModerationAuditLog({
+        reviewId: reviewId,
+        submissionId: updatedReview.submissionId,
+        userId: user.id,
+        action: 'review_assigned',
+        description: `Review assigned to user ${reviewerId}`,
+        metadata: { reviewerId }
+      });
+
+      // Create notification for assigned reviewer
+      await storage.createModerationNotification({
+        recipientId: reviewerId,
+        senderId: user.id,
+        reviewId: reviewId,
+        type: 'assignment',
+        title: 'Review Assignment',
+        message: `You have been assigned a review for submission #${updatedReview.submissionId}`,
+        actionUrl: `/moderation/reviews/${reviewId}`
+      });
+
+      res.json(updatedReview);
+    } catch (error) {
+      console.error("Error assigning review:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  // Get comments for a review
+  app.get("/api/moderation/reviews/:id/comments", async (req, res) => {
+    try {
+      if (!req.session?.user?.id) {
+        return res.status(401).json({ error: "Authentication required" });
+      }
+
+      const user = await storage.getUser(req.session.user.id);
+      if (!user || (user.userType !== 'admin' && user.userType !== 'analyst')) {
+        return res.status(403).json({ error: "Admin or analyst access required" });
+      }
+
+      const reviewId = parseInt(req.params.id);
+      const comments = await storage.getModerationComments(reviewId);
+      res.json(comments);
+    } catch (error) {
+      console.error("Error fetching moderation comments:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  // Add comment to review
+  app.post("/api/moderation/reviews/:id/comments", async (req, res) => {
+    try {
+      if (!req.session?.user?.id) {
+        return res.status(401).json({ error: "Authentication required" });
+      }
+
+      const user = await storage.getUser(req.session.user.id);
+      if (!user || (user.userType !== 'admin' && user.userType !== 'analyst')) {
+        return res.status(403).json({ error: "Admin or analyst access required" });
+      }
+
+      const reviewId = parseInt(req.params.id);
+      const commentData = {
+        ...req.body,
+        reviewId,
+        authorId: user.id
+      };
+
+      const comment = await storage.createModerationComment(commentData);
+      
+      // Log the action
+      await storage.createModerationAuditLog({
+        reviewId: reviewId,
+        userId: user.id,
+        action: 'comment_added',
+        description: 'Comment added to review',
+        metadata: { commentId: comment.id }
+      });
+
+      // Create notifications for mentioned users
+      if (comment.mentions && Array.isArray(comment.mentions)) {
+        for (const mentionedUserId of comment.mentions) {
+          await storage.createModerationNotification({
+            recipientId: mentionedUserId,
+            senderId: user.id,
+            reviewId: reviewId,
+            type: 'mention',
+            title: 'You were mentioned',
+            message: `You were mentioned in a comment on review #${reviewId}`,
+            actionUrl: `/moderation/reviews/${reviewId}`
+          });
+        }
+      }
+
+      res.status(201).json(comment);
+    } catch (error) {
+      console.error("Error creating moderation comment:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  // Get available reviewers
+  app.get("/api/moderation/reviewers", async (req, res) => {
+    try {
+      if (!req.session?.user?.id) {
+        return res.status(401).json({ error: "Authentication required" });
+      }
+
+      const user = await storage.getUser(req.session.user.id);
+      if (!user || (user.userType !== 'admin' && user.userType !== 'analyst')) {
+        return res.status(403).json({ error: "Admin or analyst access required" });
+      }
+
+      const specialization = req.query.specialization as string;
+      const reviewers = await storage.getAvailableReviewers(specialization);
+      res.json(reviewers);
+    } catch (error) {
+      console.error("Error fetching available reviewers:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  // Get moderation stats
+  app.get("/api/moderation/stats", async (req, res) => {
+    try {
+      if (!req.session?.user?.id) {
+        return res.status(401).json({ error: "Authentication required" });
+      }
+
+      const user = await storage.getUser(req.session.user.id);
+      if (!user || (user.userType !== 'admin' && user.userType !== 'analyst')) {
+        return res.status(403).json({ error: "Admin or analyst access required" });
+      }
+
+      const reviewerId = req.query.reviewer_id ? parseInt(req.query.reviewer_id as string) : undefined;
+      const dateFrom = req.query.date_from ? new Date(req.query.date_from as string) : undefined;
+      const dateTo = req.query.date_to ? new Date(req.query.date_to as string) : undefined;
+
+      const stats = await storage.getModerationStats(reviewerId, dateFrom, dateTo);
+      res.json(stats);
+    } catch (error) {
+      console.error("Error fetching moderation stats:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  // Get moderation notifications
+  app.get("/api/moderation/notifications", async (req, res) => {
+    try {
+      if (!req.session?.user?.id) {
+        return res.status(401).json({ error: "Authentication required" });
+      }
+
+      const user = await storage.getUser(req.session.user.id);
+      if (!user || (user.userType !== 'admin' && user.userType !== 'analyst')) {
+        return res.status(403).json({ error: "Admin or analyst access required" });
+      }
+
+      const limit = req.query.limit ? parseInt(req.query.limit as string) : 50;
+      const notifications = await storage.getModerationNotifications(user.id, limit);
+      res.json(notifications);
+    } catch (error) {
+      console.error("Error fetching moderation notifications:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  // Mark notification as read
+  app.put("/api/moderation/notifications/:id/read", async (req, res) => {
+    try {
+      if (!req.session?.user?.id) {
+        return res.status(401).json({ error: "Authentication required" });
+      }
+
+      const notificationId = parseInt(req.params.id);
+      const notification = await storage.markNotificationAsRead(notificationId);
+      res.json(notification);
+    } catch (error) {
+      console.error("Error marking notification as read:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  // Get audit logs
+  app.get("/api/moderation/audit", async (req, res) => {
+    try {
+      if (!req.session?.user?.id) {
+        return res.status(401).json({ error: "Authentication required" });
+      }
+
+      const user = await storage.getUser(req.session.user.id);
+      if (!user || user.userType !== 'admin') {
+        return res.status(403).json({ error: "Admin access required" });
+      }
+
+      const reviewId = req.query.review_id ? parseInt(req.query.review_id as string) : undefined;
+      const submissionId = req.query.submission_id ? parseInt(req.query.submission_id as string) : undefined;
+      const limit = req.query.limit ? parseInt(req.query.limit as string) : 50;
+
+      const auditLogs = await storage.getModerationAuditLogs(reviewId, submissionId, limit);
+      res.json(auditLogs);
+    } catch (error) {
+      console.error("Error fetching audit logs:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
   const server = createServer(app);
   return server;
 }

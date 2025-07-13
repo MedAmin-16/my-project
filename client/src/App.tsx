@@ -9,6 +9,7 @@ import LandingPage from "@/pages/landing-page";
 import DashboardPage from "@/pages/dashboard-page";
 import CompanyDashboardPage from "@/pages/company-dashboard-page";
 import TriageDashboardPage from "@/pages/triage-dashboard-page";
+import ModerationDashboard from "@/components/moderation-dashboard";
 import CreateProgramPage from "@/pages/create-program-page";
 import ProgramsPage from "@/pages/programs-page";
 import ProgramDetailPage from "@/pages/program-detail-page";
@@ -102,7 +103,6 @@ function Router() {
       <ProtectedRoute path="/dashboard" component={DashboardComponent} />
       <ProtectedRoute path="/company-dashboard" component={CompanyDashboardPage} />
       <ProtectedRoute path="/triage-dashboard" component={TriageDashboardPage} />
-      <ProtectedRoute path="/programs" component={ProgramsPage} />
       <Route path="/programs/:id" component={ProgramDetailPage} />
       <Route path="/hacktivity" component={HacktivityPage} />
       <Route path="/find-programs" component={FindProgramsPage} />
@@ -162,6 +162,8 @@ function Router() {
       <Route path="/admin/dashboard" component={AdminDashboardPage} />
       <Route path="/for-organizations" component={ClientLandingPage} />
       <Route path="/for-organisations" component={ClientLandingPage} />
+
+      <ProtectedRoute path="/moderation" component={ModerationDashboard} />
 
       <Route path="/*" component={NotFound} />
     </Switch>

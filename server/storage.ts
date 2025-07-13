@@ -1,7 +1,7 @@
 import { drizzle } from 'drizzle-orm/postgres-js';
 import postgres from 'postgres';
-import { users, programs, submissions, activities, notifications, wallets, transactions, withdrawals, publicMessages, triageServices, triageReports, triageCommunications, triageSubscriptions, triageAnalysts, type User, type InsertUser, type Program, type InsertProgram, type Submission, type InsertSubmission, type Activity, type InsertActivity, type Notification, type InsertNotification, type Wallet, type Transaction, type InsertTransaction, type Withdrawal, type InsertWithdrawal, type CompanyWallet, type InsertCompanyWallet, type CompanyTransaction, type InsertCompanyTransaction, companyWallets, companyTransactions, paymentMethods, escrowAccounts, paymentIntents, payouts, commissions, transactionLogs, paymentDisputes, paymentRateLimits, type PaymentMethod, type InsertPaymentMethod, type EscrowAccount, type InsertEscrowAccount, type PaymentIntent, type InsertPaymentIntent, type Payout, type InsertPayout, type Commission, type InsertCommission, type TransactionLog, type PaymentDispute, type InsertPaymentDispute, type PublicMessage, type InsertPublicMessage, type TriageService, type InsertTriageService, type TriageReport, type InsertTriageReport, type TriageCommunication, type InsertTriageCommunication, type TriageSubscription, type InsertTriageSubscription, type TriageAnalyst, type InsertTriageAnalyst } from '@shared/schema';
-import { and, eq, desc, sql } from "drizzle-orm";
+import { users, programs, submissions, activities, notifications, wallets, transactions, withdrawals, publicMessages, triageServices, triageReports, triageCommunications, triageSubscriptions, triageAnalysts, moderationTeam, moderationReviews, moderationComments, moderationAuditLog, moderationNotifications, type User, type InsertUser, type Program, type InsertProgram, type Submission, type InsertSubmission, type Activity, type InsertActivity, type Notification, type InsertNotification, type Wallet, type Transaction, type InsertTransaction, type Withdrawal, type InsertWithdrawal, type CompanyWallet, type InsertCompanyWallet, type CompanyTransaction, type InsertCompanyTransaction, companyWallets, companyTransactions, paymentMethods, escrowAccounts, paymentIntents, payouts, commissions, transactionLogs, paymentDisputes, paymentRateLimits, type PaymentMethod, type InsertPaymentMethod, type EscrowAccount, type InsertEscrowAccount, type PaymentIntent, type InsertPaymentIntent, type Payout, type InsertPayout, type Commission, type InsertCommission, type TransactionLog, type PaymentDispute, type InsertPaymentDispute, type PublicMessage, type InsertPublicMessage, type TriageService, type InsertTriageReport, type TriageCommunication, type InsertTriageCommunication, type TriageSubscription, type InsertTriageSubscription, type TriageAnalyst, type InsertModerationTeam, type InsertModerationReview, type InsertModerationComment, type InsertModerationAuditLog, type InsertModerationNotification } from '@shared/schema';
+import { and, eq, desc, sql, alias } from "drizzle-orm";
 import createMemoryStore from "memorystore";
 import session from "express-session";
 import { encrypt, decrypt } from "./crypto-utils";
@@ -93,6 +93,10 @@ export interface IStorage {
 }
 
 // Note: These are simplified functions - using crypto-utils for production encryption
+
+// Create user table aliases for moderation queries
+const reviewerUsers = alias(users, 'reviewerUsers');
+const assignerUsers = alias(users, 'assignerUsers');
 
 export const storage = {
   async createWallet(userId: number) {
@@ -1017,6 +1021,7 @@ export const storage = {
       }
     }
     return null;
+```python
   },
 
   async updatePayoutStatus(id: number, status: string, externalTransactionId?: string, failureReason?: string) {
@@ -1452,7 +1457,7 @@ export const storage = {
         .leftJoin(submissions, eq(triageReports.submissionId, submissions.id))
         .leftJoin(users, eq(triageReports.triageAnalystId, users.id))
         .where(eq(triageReports.id, id));
-        
+
         return report || null;
       } catch (error) {
         console.error('Error getting triage report:', error);
@@ -1753,6 +1758,531 @@ export const storage = {
         console.error('Error getting triage analyst by user ID:', error);
         return null;
       }
+    }
+    return null;
+  },
+
+  // Moderation System Functions
+  async getModerationTeamMember(userId: number) {
+    if (db) {
+    try {
+      const [member] = await db.select()
+        .from(moderationTeam)
+        .where(and(
+          eq(moderationTeam.userId, userId),
+          eq(moderationTeam.isActive, true)
+        ));
+      return member;
+    } catch (error) {
+      console.error('Error getting moderation team member:', error);
+      return null;
+    }
+    }
+    return null;
+  },
+
+  async getModerationTeamMembers(department?: string) {
+    if (db) {
+    try {
+      let query = db.select({
+        id: moderationTeam.id,
+        userId: moderationTeam.userId,
+        username: users.username,
+        role: moderationTeam.role,
+        department: moderationTeam.department,
+        permissions: moderationTeam.permissions,
+        specializations: moderationTeam.specializations,
+        maxAssignments: moderationTeam.maxAssignments,
+        currentAssignments: moderationTeam.currentAssignments,
+        isActive: moderationTeam.isActive,
+        createdAt: moderationTeam.createdAt
+      })
+      .from(moderationTeam)
+      .leftJoin(users, eq(moderationTeam.userId, users.id))
+      .where(eq(moderationTeam.isActive, true));
+
+      if (department) {
+        query = query.where(eq(moderationTeam.department, department));
+      }
+
+      return await query;
+    } catch (error) {
+      console.error('Error getting moderation team members:', error);
+      return [];
+    }
+    }
+    return [];
+  },
+
+  async createModerationTeamMember(data: InsertModerationTeam) {
+    if (db) {
+    try {
+      const [member] = await db.insert(moderationTeam)
+        .values({
+          ...data,
+          createdAt: new Date(),
+          updatedAt: new Date()
+        })
+        .returning();
+      return member;
+    } catch (error) {
+      console.error('Error creating moderation team member:', error);
+      return null;
+    }
+    }
+    return null;
+  },
+
+  async updateModerationTeamMember(id: number, data: Partial<InsertModerationTeam>) {
+    if (db) {
+    try {
+      const [updated] = await db.update(moderationTeam)
+        .set({
+          ...data,
+          updatedAt: new Date()
+        })
+        .where(eq(moderationTeam.id, id))
+        .returning();
+      return updated;
+    } catch (error) {
+      console.error('Error updating moderation team member:', error);
+      return null;
+    }
+    }
+    return null;
+  },
+
+  async getModerationReviews(filters: {
+    reviewerId?: number;
+    status?: string;
+    priority?: string;
+    category?: string;
+    limit?: number;
+    offset?: number;
+  } = {}) {
+    if (db) {
+    try {
+      const { reviewerId, status, priority, category, limit = 50, offset = 0 } = filters;
+
+      let query = db.select({
+        id: moderationReviews.id,
+        submissionId: moderationReviews.submissionId,
+        submissionTitle: submissions.title,
+        submissionDescription: submissions.description,
+        submissionType: submissions.type,
+        submissionSeverity: submissions.severity,
+        submissionStatus: submissions.status,
+        submissionCreatedAt: submissions.createdAt,
+        submissionUserId: submissions.userId,
+        submissionUserUsername: users.username,
+        reviewerId: moderationReviews.reviewerId,
+        reviewerUsername: reviewerUsers.username,
+        assignedBy: moderationReviews.assignedBy,
+        assignedByUsername: assignerUsers.username,
+        status: moderationReviews.status,
+        priority: moderationReviews.priority,
+        category: moderationReviews.category,
+        severity: moderationReviews.severity,
+        decision: moderationReviews.decision,
+        decisionReason: moderationReviews.decisionReason,
+        internalNotes: moderationReviews.internalNotes,
+        publicResponse: moderationReviews.publicResponse,
+        estimatedReward: moderationReviews.estimatedReward,
+        actualReward: moderationReviews.actualReward,
+        reviewStarted: moderationReviews.reviewStarted,
+        reviewCompleted: moderationReviews.reviewCompleted,
+        dueDate: moderationReviews.dueDate,
+        tags: moderationReviews.tags,
+        createdAt: moderationReviews.createdAt,
+        updatedAt: moderationReviews.updatedAt
+      })
+      .from(moderationReviews)
+      .leftJoin(submissions, eq(moderationReviews.submissionId, submissions.id))
+      .leftJoin(users, eq(submissions.userId, users.id))
+      .leftJoin(reviewerUsers, eq(moderationReviews.reviewerId, reviewerUsers.id))
+      .leftJoin(assignerUsers, eq(moderationReviews.assignedBy, assignerUsers.id))
+      .orderBy(desc(moderationReviews.createdAt))
+      .limit(limit)
+      .offset(offset);
+
+      const conditions = [];
+      if (reviewerId) conditions.push(eq(moderationReviews.reviewerId, reviewerId));
+      if (status) conditions.push(eq(moderationReviews.status, status));
+      if (priority) conditions.push(eq(moderationReviews.priority, priority));
+      if (category) conditions.push(eq(moderationReviews.category, category));
+
+      if (conditions.length > 0) {
+        query = query.where(and(...conditions));
+      }
+
+      return await query;
+    } catch (error) {
+      console.error('Error getting moderation reviews:', error);
+      return [];
+    }
+    }
+    return [];
+  },
+
+  async getModerationReview(id: number) {
+    if (db) {
+    try {
+      const [review] = await db.select({
+        id: moderationReviews.id,
+        submissionId: moderationReviews.submissionId,
+        submissionTitle: submissions.title,
+        submissionDescription: submissions.description,
+        submissionType: submissions.type,
+        submissionSeverity: submissions.severity,
+        submissionStatus: submissions.status,
+        submissionCreatedAt: submissions.createdAt,
+        submissionUserId: submissions.userId,
+        submissionUserUsername: users.username,
+        reviewerId: moderationReviews.reviewerId,
+        reviewerUsername: reviewerUsers.username,
+        assignedBy: moderationReviews.assignedBy,
+        assignedByUsername: assignerUsers.username,
+        status: moderationReviews.status,
+        priority: moderationReviews.priority,
+        category: moderationReviews.category,
+        severity: moderationReviews.severity,
+        decision: moderationReviews.decision,
+        decisionReason: moderationReviews.decisionReason,
+        internalNotes: moderationReviews.internalNotes,
+        publicResponse: moderationReviews.publicResponse,
+        estimatedReward: moderationReviews.estimatedReward,
+        actualReward: moderationReviews.actualReward,
+        reviewStarted: moderationReviews.reviewStarted,
+        reviewCompleted: moderationReviews.reviewCompleted,
+        dueDate: moderationReviews.dueDate,
+        tags: moderationReviews.tags,
+        attachments: moderationReviews.attachments,
+        createdAt: moderationReviews.createdAt,
+        updatedAt: moderationReviews.updatedAt
+      })
+      .from(moderationReviews)
+      .leftJoin(submissions, eq(moderationReviews.submissionId, submissions.id))
+      .leftJoin(users, eq(submissions.userId, users.id))
+      .leftJoin(reviewerUsers, eq(moderationReviews.reviewerId, reviewerUsers.id))
+      .leftJoin(assignerUsers, eq(moderationReviews.assignedBy, assignerUsers.id))
+      .where(eq(moderationReviews.id, id));
+
+      return review;
+    } catch (error) {
+      console.error('Error getting moderation review:', error);
+      return null;
+    }
+    }
+    return null;
+  },
+
+  async createModerationReview(data: InsertModerationReview) {
+    if (db) {
+    try {
+      const [review] = await db.insert(moderationReviews)
+        .values({
+          ...data,
+          createdAt: new Date(),
+          updatedAt: new Date()
+        })
+        .returning();
+      return review;
+    } catch (error) {
+      console.error('Error creating moderation review:', error);
+      return null;
+    }
+    }
+    return null;
+  },
+
+  async updateModerationReview(id: number, data: Partial<InsertModerationReview>) {
+    if (db) {
+    try {
+      const [updated] = await db.update(moderationReviews)
+        .set({
+          ...data,
+          updatedAt: new Date()
+        })
+        .where(eq(moderationReviews.id, id))        .returning();
+      return updated;
+    } catch (error) {
+      console.error('Error updating moderation review:', error);
+      return null;
+    }
+    }
+    return null;
+  },
+
+  async assignModerationReview(reviewId: number, reviewerId: number, assignedBy: number) {
+    if (db) {
+    try {
+      const [updated] = await db.update(moderationReviews)
+        .set({
+          reviewerId,
+          assignedBy,
+          status: 'assigned',
+          reviewStarted: new Date(),
+          updatedAt: new Date()
+        })
+        .where(eq(moderationReviews.id, reviewId))
+        .returning();
+
+      // Update reviewer's assignment count
+      await db.update(moderationTeam)
+        .set({
+          currentAssignments: sql`${moderationTeam.currentAssignments} + 1`,
+          updatedAt: new Date()
+        })
+        .where(eq(moderationTeam.userId, reviewerId));
+
+      return updated;
+    } catch (error) {
+      console.error('Error assigning moderation review:', error);
+      return null;
+    }
+    }
+    return null;
+  },
+
+  async getModerationComments(reviewId: number) {
+    if (db) {
+    try {
+      return await db.select({
+        id: moderationComments.id,
+        reviewId: moderationComments.reviewId,
+        authorId: moderationComments.authorId,
+        authorUsername: users.username,
+        content: moderationComments.content,
+        commentType: moderationComments.commentType,
+        isResolved: moderationComments.isResolved,
+        resolvedBy: moderationComments.resolvedBy,
+        resolvedAt: moderationComments.resolvedAt,
+        mentions: moderationComments.mentions,
+        attachments: moderationComments.attachments,
+        createdAt: moderationComments.createdAt,
+        updatedAt: moderationComments.updatedAt
+      })
+      .from(moderationComments)
+      .leftJoin(users, eq(moderationComments.authorId, users.id))
+      .where(eq(moderationComments.reviewId, reviewId))
+      .orderBy(moderationComments.createdAt);
+    } catch (error) {
+      console.error('Error getting moderation comments:', error);
+      return [];
+    }
+    }
+    return [];
+  },
+
+  async createModerationComment(data: InsertModerationComment) {
+    if (db) {
+    try {
+      const [comment] = await db.insert(moderationComments)
+        .values({
+          ...data,
+          createdAt: new Date(),
+          updatedAt: new Date()
+        })
+        .returning();
+      return comment;
+    } catch (error) {
+      console.error('Error creating moderation comment:', error);
+      return null;
+    }
+    }
+    return null;
+  },
+
+  async updateModerationComment(id: number, data: Partial<InsertModerationComment>) {
+    if (db) {
+    try {
+      const [updated] = await db.update(moderationComments)
+        .set({
+          ...data,
+          updatedAt: new Date()
+        })
+        .where(eq(moderationComments.id, id))
+        .returning();
+      return updated;
+    } catch (error) {
+      console.error('Error updating moderation comment:', error);
+      return null;
+    }
+    }
+    return null;
+  },
+
+  async createModerationAuditLog(data: InsertModerationAuditLog) {
+    if (db) {
+    try {
+      const [log] = await db.insert(moderationAuditLog)
+        .values({
+          ...data,
+          createdAt: new Date()
+        })
+        .returning();
+      return log;
+    } catch (error) {
+      console.error('Error creating moderation audit log:', error);
+      return null;
+    }
+    }
+    return null;
+  },
+
+  async getModerationAuditLogs(reviewId?: number, submissionId?: number, limit = 50) {
+    if (db) {
+    try {
+      let query = db.select({
+        id: moderationAuditLog.id,
+        reviewId: moderationAuditLog.reviewId,
+        submissionId: moderationAuditLog.submissionId,
+        userId: moderationAuditLog.userId,
+        username: users.username,
+        action: moderationAuditLog.action,
+        oldValue: moderationAuditLog.oldValue,
+        newValue: moderationAuditLog.newValue,
+        description: moderationAuditLog.description,
+        metadata: moderationAuditLog.metadata,
+        createdAt: moderationAuditLog.createdAt
+      })
+      .from(moderationAuditLog)
+      .leftJoin(users, eq(moderationAuditLog.userId, users.id))
+      .orderBy(desc(moderationAuditLog.createdAt))
+      .limit(limit);
+
+      if (reviewId) {
+        query = query.where(eq(moderationAuditLog.reviewId, reviewId));
+      } else if (submissionId) {
+        query = query.where(eq(moderationAuditLog.submissionId, submissionId));
+      }
+
+      return await query;
+    } catch (error) {
+      console.error('Error getting moderation audit logs:', error);
+      return [];
+    }
+    }
+    return [];
+  },
+
+  async getModerationNotifications(userId: number, limit = 50) {
+    if (db) {
+    try {
+      return await db.select()
+        .from(moderationNotifications)
+        .where(eq(moderationNotifications.recipientId, userId))
+        .orderBy(desc(moderationNotifications.createdAt))
+        .limit(limit);
+    } catch (error) {
+      console.error('Error getting moderation notifications:', error);
+      return [];
+    }
+    }
+    return [];
+  },
+
+  async createModerationNotification(data: InsertModerationNotification) {
+    if (db) {
+    try {
+      const [notification] = await db.insert(moderationNotifications)
+        .values({
+          ...data,
+          createdAt: new Date()
+        })
+        .returning();
+      return notification;
+    } catch (error) {
+      console.error('Error creating moderation notification:', error);
+      return null;
+    }
+    }
+    return null;
+  },
+
+  async markNotificationAsRead(id: number) {
+    if (db) {
+    try {
+      const [updated] = await db.update(moderationNotifications)
+        .set({
+          isRead: true,
+          readAt: new Date()
+        })
+        .where(eq(moderationNotifications.id, id))
+        .returning();
+      return updated;
+    } catch (error) {
+      console.error('Error marking moderation notification as read:', error);
+      return null;
+    }
+    }
+    return null;
+  },
+
+  async getAvailableReviewers(specialization?: string) {
+    if (db) {
+    try {
+      let query = db.select({
+        id: moderationTeam.id,
+        userId: moderationTeam.userId,
+        username: users.username,
+        role: moderationTeam.role,
+        department: moderationTeam.department,
+        specializations: moderationTeam.specializations,
+        maxAssignments: moderationTeam.maxAssignments,
+        currentAssignments: moderationTeam.currentAssignments
+      })
+      .from(moderationTeam)
+      .leftJoin(users, eq(moderationTeam.userId, users.id))
+      .where(and(
+        eq(moderationTeam.isActive, true),
+        sql`${moderationTeam.currentAssignments} < ${moderationTeam.maxAssignments}`
+      ))
+      .orderBy(moderationTeam.currentAssignments);
+
+      if (specialization) {
+        query = query.where(sql`${moderationTeam.specializations} @> ${JSON.stringify([specialization])}`);
+      }
+
+      return await query;
+    } catch (error) {
+      console.error('Error getting available reviewers:', error);
+      return [];
+    }
+    }
+    return [];
+  },
+
+  async getModerationStats(reviewerId?: number, dateFrom?: Date, dateTo?: Date) {
+    if (db) {
+    try {
+      let query = db.select({
+        total: count(),
+        pending: count(sql`case when ${moderationReviews.status} = 'pending' then 1 end`),
+        inReview: count(sql`case when ${moderationReviews.status} = 'in_review' then 1 end`),
+        approved: count(sql`case when ${moderationReviews.status} = 'approved' then 1 end`),
+        rejected: count(sql`case when ${moderationReviews.status} = 'rejected' then 1 end`),
+        criticalPriority: count(sql`case when ${moderationReviews.priority} = 'critical' then 1 end`),
+        highPriority: count(sql`case when ${moderationReviews.priority} = 'high' then 1 end`),
+        avgReviewTime: avg(sql`EXTRACT(EPOCH FROM (${moderationReviews.reviewCompleted} - ${moderationReviews.reviewStarted}))/3600`)
+      })
+      .from(moderationReviews);
+
+      const conditions = [];
+      if (reviewerId) conditions.push(eq(moderationReviews.reviewerId, reviewerId));
+      if (dateFrom) conditions.push(gte(moderationReviews.createdAt, dateFrom));
+      if (dateTo) conditions.push(lte(moderationReviews.createdAt, dateTo));
+
+      if (conditions.length > 0) {
+        query = query.where(and(...conditions));
+      }
+
+      const [stats] = await query;
+      return stats;
+    } catch (error) {
+      console.error('Error getting moderation stats:', error);
+      return null;
+    }
     }
     return null;
   },

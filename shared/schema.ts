@@ -614,3 +614,177 @@ export type InsertTriageSubscription = z.infer<typeof insertTriageSubscriptionSc
 
 export type TriageAnalyst = typeof triageAnalysts.$inferSelect;
 export type InsertTriageAnalyst = z.infer<typeof insertTriageAnalystSchema>;
+
+// Moderation System Tables
+export const moderationTeam = pgTable("moderation_team", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").notNull().references(() => users.id),
+  role: text("role").notNull().default("reviewer"), // admin, analyst, reviewer
+  department: text("department").default("security"), // security, compliance, technical
+  permissions: jsonb("permissions").default([]), // Array of permission strings
+  isActive: boolean("is_active").default(true),
+  specializations: jsonb("specializations").default([]), // Array of expertise areas
+  maxAssignments: integer("max_assignments").default(10),
+  currentAssignments: integer("current_assignments").default(0),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at")
+});
+
+export const moderationReviews = pgTable("moderation_reviews", {
+  id: serial("id").primaryKey(),
+  submissionId: integer("submission_id").notNull().references(() => submissions.id),
+  reviewerId: integer("reviewer_id").notNull().references(() => users.id),
+  assignedBy: integer("assigned_by").references(() => users.id),
+  status: text("status").notNull().default("pending"), // pending, in_review, approved, rejected, needs_info
+  priority: text("priority").notNull().default("medium"), // low, medium, high, critical
+  category: text("category").default("vulnerability"), // vulnerability, duplicate, spam, invalid
+  severity: text("severity").default("unknown"), // critical, high, medium, low, info
+  decision: text("decision"), // accept, reject, duplicate, invalid, needs_clarification
+  decisionReason: text("decision_reason"),
+  internalNotes: text("internal_notes"),
+  publicResponse: text("public_response"),
+  estimatedReward: integer("estimated_reward"), // in cents
+  actualReward: integer("actual_reward"), // in cents
+  reviewStarted: timestamp("review_started"),
+  reviewCompleted: timestamp("review_completed"),
+  dueDate: timestamp("due_date"),
+  tags: jsonb("tags").default([]), // Array of tags for categorization
+  attachments: jsonb("attachments").default([]), // Array of file attachments
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at")
+});
+
+export const moderationComments = pgTable("moderation_comments", {
+  id: serial("id").primaryKey(),
+  reviewId: integer("review_id").notNull().references(() => moderationReviews.id),
+  authorId: integer("author_id").notNull().references(() => users.id),
+  content: text("content").notNull(),
+  commentType: text("comment_type").default("internal"), // internal, external, system
+  isResolved: boolean("is_resolved").default(false),
+  resolvedBy: integer("resolved_by").references(() => users.id),
+  resolvedAt: timestamp("resolved_at"),
+  mentions: jsonb("mentions").default([]), // Array of user IDs mentioned
+  attachments: jsonb("attachments").default([]),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at")
+});
+
+export const moderationAuditLog = pgTable("moderation_audit_log", {
+  id: serial("id").primaryKey(),
+  reviewId: integer("review_id").references(() => moderationReviews.id),
+  submissionId: integer("submission_id").references(() => submissions.id),
+  userId: integer("user_id").notNull().references(() => users.id),
+  action: text("action").notNull(), // assigned, status_changed, comment_added, decision_made
+  oldValue: text("old_value"),
+  newValue: text("new_value"),
+  description: text("description"),
+  metadata: jsonb("metadata").default({}),
+  ipAddress: text("ip_address"),
+  userAgent: text("user_agent"),
+  createdAt: timestamp("created_at").defaultNow()
+});
+
+export const moderationWorkflow = pgTable("moderation_workflow", {
+  id: serial("id").primaryKey(),
+  name: text("name").notNull(),
+  description: text("description"),
+  steps: jsonb("steps").notNull(), // Array of workflow steps
+  triggerConditions: jsonb("trigger_conditions").default([]),
+  isActive: boolean("is_active").default(true),
+  createdBy: integer("created_by").notNull().references(() => users.id),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at")
+});
+
+export const moderationNotifications = pgTable("moderation_notifications", {
+  id: serial("id").primaryKey(),
+  recipientId: integer("recipient_id").notNull().references(() => users.id),
+  senderId: integer("sender_id").references(() => users.id),
+  reviewId: integer("review_id").references(() => moderationReviews.id),
+  type: text("type").notNull(), // assignment, status_change, comment, deadline, mention
+  title: text("title").notNull(),
+  message: text("message").notNull(),
+  priority: text("priority").default("normal"), // low, normal, high, urgent
+  isRead: boolean("is_read").default(false),
+  readAt: timestamp("read_at"),
+  actionUrl: text("action_url"),
+  metadata: jsonb("metadata").default({}),
+  createdAt: timestamp("created_at").defaultNow()
+});
+
+// Insert schemas for moderation system
+export const insertModerationTeamSchema = createInsertSchema(moderationTeam).pick({
+  userId: true,
+  role: true,
+  department: true,
+  permissions: true,
+  specializations: true,
+  maxAssignments: true
+});
+
+export const insertModerationReviewSchema = createInsertSchema(moderationReviews).pick({
+  submissionId: true,
+  reviewerId: true,
+  assignedBy: true,
+  status: true,
+  priority: true,
+  category: true,
+  severity: true,
+  decision: true,
+  decisionReason: true,
+  internalNotes: true,
+  publicResponse: true,
+  estimatedReward: true,
+  dueDate: true,
+  tags: true
+});
+
+export const insertModerationCommentSchema = createInsertSchema(moderationComments).pick({
+  reviewId: true,
+  authorId: true,
+  content: true,
+  commentType: true,
+  mentions: true,
+  attachments: true
+});
+
+export const insertModerationAuditLogSchema = createInsertSchema(moderationAuditLog).pick({
+  reviewId: true,
+  submissionId: true,
+  userId: true,
+  action: true,
+  oldValue: true,
+  newValue: true,
+  description: true,
+  metadata: true,
+  ipAddress: true,
+  userAgent: true
+});
+
+export const insertModerationNotificationSchema = createInsertSchema(moderationNotifications).pick({
+  recipientId: true,
+  senderId: true,
+  reviewId: true,
+  type: true,
+  title: true,
+  message: true,
+  priority: true,
+  actionUrl: true,
+  metadata: true
+});
+
+// Type exports for moderation system
+export type ModerationTeam = typeof moderationTeam.$inferSelect;
+export type InsertModerationTeam = z.infer<typeof insertModerationTeamSchema>;
+
+export type ModerationReview = typeof moderationReviews.$inferSelect;
+export type InsertModerationReview = z.infer<typeof insertModerationReviewSchema>;
+
+export type ModerationComment = typeof moderationComments.$inferSelect;
+export type InsertModerationComment = z.infer<typeof insertModerationCommentSchema>;
+
+export type ModerationAuditLog = typeof moderationAuditLog.$inferSelect;
+export type InsertModerationAuditLog = z.infer<typeof insertModerationAuditLogSchema>;
+
+export type ModerationNotification = typeof moderationNotifications.$inferSelect;
+export type InsertModerationNotification = z.infer<typeof insertModerationNotificationSchema>;
