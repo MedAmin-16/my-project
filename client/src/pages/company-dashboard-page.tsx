@@ -138,7 +138,7 @@ export default function CompanyDashboardPage() {
         onValueChange={setActiveTab}
         className="w-full"
       >
-        <TabsList className="grid grid-cols-4 mb-6 bg-black border border-matrix/20">
+        <TabsList className="grid grid-cols-5 mb-6 bg-black border border-matrix/20">
           <TabsTrigger value="overview" className="data-[state=active]:bg-matrix/20 data-[state=active]:text-matrix">
             <BarChart3 className="mr-2 h-4 w-4" />
             Overview
@@ -150,6 +150,10 @@ export default function CompanyDashboardPage() {
           <TabsTrigger value="submissions" className="data-[state=active]:bg-matrix/20 data-[state=active]:text-matrix">
             <BugIcon className="mr-2 h-4 w-4" />
             Submissions
+          </TabsTrigger>
+          <TabsTrigger value="triage" className="data-[state=active]:bg-matrix/20 data-[state=active]:text-matrix">
+            <Shield className="mr-2 h-4 w-4" />
+            Triage Service
           </TabsTrigger>
           <TabsTrigger value="settings" className="data-[state=active]:bg-matrix/20 data-[state=active]:text-matrix">
             <Settings className="mr-2 h-4 w-4" />
@@ -370,12 +374,43 @@ export default function CompanyDashboardPage() {
                     variant="outline"
                     className="w-full border-matrix/30 hover:bg-matrix/20 hover:text-matrix"
                   >
-                    🔍 Triage Dashboard
+                    🔍 Managed Triage Service
                   </Button>
                 </div>
               </CardContent>
             </Card>
           </div>
+
+          <Card className="bg-black border border-matrix/20">
+            <CardHeader>
+              <CardTitle className="flex items-center">
+                <Shield className="h-5 w-5 text-matrix mr-2" />
+                Managed Triage Service
+              </CardTitle>
+              <CardDescription>Professional vulnerability assessment for your security programs</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <p className="text-dim-gray text-sm mb-4">
+                Don't have a security team? Let our experts handle vulnerability triage, validation, and prioritization for you.
+              </p>
+              <div className="flex gap-2">
+                <Button 
+                  onClick={() => setLocation("/triage-dashboard")}
+                  className="glow-button flex-1"
+                >
+                  <Shield className="mr-2 h-4 w-4" />
+                  Access Triage Dashboard
+                </Button>
+                <Button 
+                  variant="outline"
+                  className="border-matrix/30 hover:bg-matrix/20 hover:text-matrix"
+                  onClick={() => setActiveTab("triage")}
+                >
+                  Learn More
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
         </TabsContent>
 
         {/* Programs Tab */}
@@ -580,6 +615,68 @@ export default function CompanyDashboardPage() {
               </Button>
             </div>
           )}
+        </TabsContent>
+
+        {/* Triage Service Tab */}
+        <TabsContent value="triage" className="space-y-6">
+          <div className="text-center py-8">
+            <Shield className="h-16 w-16 text-matrix mx-auto mb-4" />
+            <h2 className="text-2xl font-bold mb-4">Managed Vulnerability Triage Service</h2>
+            <p className="text-dim-gray mb-6 max-w-2xl mx-auto">
+              Professional vulnerability assessment and triage services for companies without dedicated security teams. 
+              Our experts will review, validate, and prioritize vulnerability reports on your behalf.
+            </p>
+            <div className="flex justify-center gap-4">
+              <Button 
+                onClick={() => setLocation("/triage-dashboard")}
+                className="glow-button"
+              >
+                <Shield className="mr-2 h-4 w-4" />
+                Access Triage Dashboard
+              </Button>
+              <Button 
+                variant="outline"
+                className="border-matrix/30 hover:bg-matrix/20 hover:text-matrix"
+              >
+                Learn More
+              </Button>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-8 max-w-4xl mx-auto">
+              <Card className="bg-black border border-matrix/20">
+                <CardContent className="pt-6">
+                  <div className="text-center">
+                    <CheckCircle className="h-8 w-8 text-green-500 mx-auto mb-2" />
+                    <h3 className="font-medium mb-2">Expert Validation</h3>
+                    <p className="text-sm text-dim-gray">
+                      Professional security analysts validate and assess every vulnerability report
+                    </p>
+                  </div>
+                </CardContent>
+              </Card>
+              <Card className="bg-black border border-matrix/20">
+                <CardContent className="pt-6">
+                  <div className="text-center">
+                    <Clock className="h-8 w-8 text-blue-500 mx-auto mb-2" />
+                    <h3 className="font-medium mb-2">24-Hour Response</h3>
+                    <p className="text-sm text-dim-gray">
+                      Get initial triage assessments within 24 hours of submission
+                    </p>
+                  </div>
+                </CardContent>
+              </Card>
+              <Card className="bg-black border border-matrix/20">
+                <CardContent className="pt-6">
+                  <div className="text-center">
+                    <DollarSign className="h-8 w-8 text-matrix mx-auto mb-2" />
+                    <h3 className="font-medium mb-2">Flexible Pricing</h3>
+                    <p className="text-sm text-dim-gray">
+                      Pay per report or choose monthly/annual subscription plans
+                    </p>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          </div>
         </TabsContent>
 
         {/* Settings Tab */}

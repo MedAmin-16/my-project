@@ -15,6 +15,7 @@ import { z } from "zod";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/api";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/hooks/use-auth";
 import { 
   Shield, 
   Clock, 
@@ -46,10 +47,24 @@ type TriageServiceFormData = z.infer<typeof triageServiceSchema>;
 
 function TriageDashboardPage() {
   const { toast } = useToast();
+  const { user } = useAuth();
   const queryClient = useQueryClient();
   const [selectedTab, setSelectedTab] = useState("overview");
   const [isCreateServiceOpen, setIsCreateServiceOpen] = useState(false);
   const [selectedReport, setSelectedReport] = useState<any>(null);
+
+  // Redirect if not a company user
+  if (!user || user.userType !== 'company') {
+    return (
+      <div className="min-h-screen bg-terminal text-matrix flex items-center justify-center">
+        <div className="text-center">
+          <Shield className="h-16 w-16 text-red-500 mx-auto mb-4" />
+          <h1 className="text-2xl font-bold mb-2">Access Denied</h1>
+          <p className="text-matrix/80">Only company users can access the triage dashboard.</p>
+        </div>
+      </div>
+    );
+  }
 
   const form = useForm<TriageServiceFormData>({
     resolver: zodResolver(triageServiceSchema),
