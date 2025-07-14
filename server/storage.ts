@@ -723,7 +723,8 @@ export const storage = {
             const [wallet] = await db.insert(companyWallets).values({
                 companyId,
                 balance: 0,
-                totalPaid: 0
+                totalPaid: 0,
+                lastUpdated: new Date()
             }).returning();
             return wallet;
         } catch (error) {

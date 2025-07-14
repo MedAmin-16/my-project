@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/ui/card';
 import { Button } from '../components/ui/button';
@@ -7,136 +8,233 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '.
 import { Badge } from '../components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../components/ui/tabs';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '../components/ui/dialog';
-import { QrCode, Wallet, TrendingUp, Clock, CheckCircle, XCircle, ExternalLink } from 'lucide-react';
+import { CreditCard, Wallet, Clock, CheckCircle, XCircle, AlertTriangle, ExternalLink, Copy } from 'lucide-react';
 import { useAuth } from '../hooks/use-auth';
+import { useToast } from '../hooks/use-toast';
 import { MatrixBackground } from '../components/matrix-background';
 import { Navbar } from '../components/layout/navbar';
 
+interface CompanyWallet {
+  id: number;
+  companyId: number;
+  balance: number;
+  totalPaid: number;
+  lastUpdated: string;
+}
+
+interface CompanyTransaction {
+  id: number;
+  companyId: number;
+  amount: number;
+  type: string;
+  note: string;
+  createdAt: string;
+}
+
+interface CryptoPaymentIntent {
+  id: number;
+  companyId: number;
+  amount: number;
+  currency: string;
+  status: string;
+  providerOrderId: string;
+  merchantOrderId: string;
+  metadata: any;
+  createdAt: string;
+}
+
 interface CryptoNetwork {
   id: number;
-  network: string;
+  networkName: string;
   displayName: string;
   currency: string;
   isActive: boolean;
   minWithdrawal: number;
   maxWithdrawal: number;
-  networkFee: number;
-}
-
-interface CryptoPaymentIntent {
-  id: number;
-  amount: number;
-  currency: string;
-  status: string;
-  purpose: string;
-  providerOrderId: string;
-  transactionId?: string;
-  metadata?: any;
-  createdAt: string;
-  completedAt?: string;
+  feePercentage: number;
 }
 
 export default function CryptoPaymentPage() {
   const { user } = useAuth();
-  const [cryptoNetworks, setCryptoNetworks] = useState<CryptoNetwork[]>([]);
+  const { toast } = useToast();
+  const [companyWallet, setCompanyWallet] = useState<CompanyWallet | null>(null);
+  const [transactions, setTransactions] = useState<CompanyTransaction[]>([]);
   const [paymentIntents, setPaymentIntents] = useState<CryptoPaymentIntent[]>([]);
+  const [cryptoNetworks, setCryptoNetworks] = useState<CryptoNetwork[]>([]);
   const [loading, setLoading] = useState(false);
-  const [showPaymentDialog, setShowPaymentDialog] = useState(false);
-  const [currentPayment, setCurrentPayment] = useState<any>(null);
-
-  // Payment form state
-  const [amount, setAmount] = useState('');
-  const [currency, setCurrency] = useState('USDT');
-  const [purpose, setPurpose] = useState('wallet_topup');
+  const [paymentLoading, setPaymentLoading] = useState(false);
+  
+  // Payment form states
+  const [paymentAmount, setPaymentAmount] = useState('');
+  const [selectedCurrency, setSelectedCurrency] = useState('USDT');
+  const [isPaymentDialogOpen, setIsPaymentDialogOpen] = useState(false);
 
   useEffect(() => {
-    fetchCryptoNetworks();
-    fetchPaymentHistory();
-  }, []);
+    if (user?.userType === 'company') {
+      fetchCompanyWallet();
+      fetchTransactions();
+      fetchPaymentIntents();
+      fetchCryptoNetworks();
+    }
+  }, [user]);
+
+  const fetchCompanyWallet = async () => {
+    try {
+      const response = await fetch('/api/company/wallet');
+      if (response.ok) {
+        const data = await response.json();
+        setCompanyWallet(data);
+      }
+    } catch (error) {
+      console.error('Error fetching company wallet:', error);
+    }
+  };
+
+  const fetchTransactions = async () => {
+    try {
+      const response = await fetch('/api/company/transactions');
+      if (response.ok) {
+        const data = await response.json();
+        setTransactions(data);
+      }
+    } catch (error) {
+      console.error('Error fetching transactions:', error);
+    }
+  };
+
+  const fetchPaymentIntents = async () => {
+    try {
+      const response = await fetch('/api/crypto/payments');
+      if (response.ok) {
+        const data = await response.json();
+        setPaymentIntents(data);
+      }
+    } catch (error) {
+      console.error('Error fetching payment intents:', error);
+    }
+  };
 
   const fetchCryptoNetworks = async () => {
     try {
       const response = await fetch('/api/crypto/networks');
       if (response.ok) {
-        const networks = await response.json();
-        setCryptoNetworks(networks);
+        const data = await response.json();
+        setCryptoNetworks(data);
       }
     } catch (error) {
       console.error('Error fetching crypto networks:', error);
     }
   };
 
-  const fetchPaymentHistory = async () => {
-    try {
-      const response = await fetch('/api/crypto/payments');
-      if (response.ok) {
-        const payments = await response.json();
-        setPaymentIntents(payments);
-      }
-    } catch (error) {
-      console.error('Error fetching payment history:', error);
-    }
-  };
-
-  const createPaymentIntent = async () => {
-    if (!amount || parseFloat(amount) <= 0) {
-      alert('Please enter a valid amount');
+  const handleCreatePayment = async () => {
+    if (!paymentAmount || parseFloat(paymentAmount) <= 0) {
+      toast({
+        title: "Invalid Amount",
+        description: "Please enter a valid payment amount",
+        variant: "destructive",
+      });
       return;
     }
 
-    setLoading(true);
+    setPaymentLoading(true);
     try {
       const response = await fetch('/api/crypto/payment-intent', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+        },
         body: JSON.stringify({
-          amount: Math.round(parseFloat(amount) * 100), // Convert to cents
-          currency,
-          purpose
-        })
+          amount: Math.round(parseFloat(paymentAmount) * 100), // Convert to cents
+          currency: selectedCurrency,
+          purpose: 'wallet_topup'
+        }),
       });
 
       if (response.ok) {
-        const result = await response.json();
-        setCurrentPayment(result);
-        setShowPaymentDialog(true);
-        fetchPaymentHistory();
-        setAmount('');
+        const data = await response.json();
+        
+        // Open Binance Pay checkout in new window
+        if (data.binancePayData?.checkoutUrl) {
+          window.open(data.binancePayData.checkoutUrl, '_blank');
+        }
+
+        toast({
+          title: "Payment Created",
+          description: "Redirecting to Binance Pay. Complete the payment to fund your wallet.",
+        });
+
+        setIsPaymentDialogOpen(false);
+        setPaymentAmount('');
+        fetchPaymentIntents();
       } else {
         const error = await response.json();
-        alert(error.error || 'Failed to create payment');
+        toast({
+          title: "Payment Failed",
+          description: error.error || "Failed to create payment",
+          variant: "destructive",
+        });
       }
     } catch (error) {
-      console.error('Error creating payment intent:', error);
-      alert('Network error occurred');
+      console.error('Error creating payment:', error);
+      toast({
+        title: "Payment Error",
+        description: "Failed to create payment intent",
+        variant: "destructive",
+      });
     } finally {
-      setLoading(false);
+      setPaymentLoading(false);
     }
   };
 
-  const getStatusBadge = (status: string) => {
+  const copyToClipboard = (text: string) => {
+    navigator.clipboard.writeText(text);
+    toast({
+      title: "Copied",
+      description: "Copied to clipboard",
+    });
+  };
+
+  const getStatusColor = (status: string) => {
     switch (status) {
       case 'completed':
-        return <Badge className="bg-green-600"><CheckCircle className="h-3 w-3 mr-1" />Completed</Badge>;
+        return 'bg-green-500/20 text-green-400 border-green-500/30';
       case 'pending':
-        return <Badge className="bg-yellow-600"><Clock className="h-3 w-3 mr-1" />Pending</Badge>;
+        return 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30';
       case 'failed':
-        return <Badge className="bg-red-600"><XCircle className="h-3 w-3 mr-1" />Failed</Badge>;
-      case 'expired':
-        return <Badge className="bg-gray-600"><XCircle className="h-3 w-3 mr-1" />Expired</Badge>;
+        return 'bg-red-500/20 text-red-400 border-red-500/30';
       default:
-        return <Badge>{status}</Badge>;
+        return 'bg-gray-500/20 text-gray-400 border-gray-500/30';
     }
   };
 
-  const formatAmount = (amount: number, currency: string) => {
-    return `${(amount / 100).toFixed(2)} ${currency}`;
+  const getStatusIcon = (status: string) => {
+    switch (status) {
+      case 'completed':
+        return <CheckCircle className="h-4 w-4" />;
+      case 'pending':
+        return <Clock className="h-4 w-4" />;
+      case 'failed':
+        return <XCircle className="h-4 w-4" />;
+      default:
+        return <AlertTriangle className="h-4 w-4" />;
+    }
   };
 
-  const openBinancePayment = () => {
-    if (currentPayment?.binancePayData?.checkoutUrl) {
-      window.open(currentPayment.binancePayData.checkoutUrl, '_blank');
+  const formatCurrency = (amount: number, currency: string = 'USD') => {
+    if (currency === 'USD') {
+      return `$${(amount / 100).toFixed(2)}`;
     }
+    return `${amount.toFixed(2)} ${currency}`;
+  };
+
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
   };
 
   if (user?.userType !== 'company') {
@@ -161,219 +259,221 @@ export default function CryptoPaymentPage() {
 
       <main className="max-w-7xl mx-auto px-4 py-8 relative z-10">
         <div className="mb-8">
-            <h1 className="text-3xl font-mono font-bold text-matrix mb-2">Cryptocurrency Payments</h1>
-            <p className="text-dim-gray">Fund your bounty wallet using cryptocurrency via Binance Pay</p>
-            <div className="mt-4 p-4 border border-yellow-600/30 rounded-lg bg-yellow-600/10">
-              <div className="flex items-center gap-2 text-yellow-400 mb-2">
-                <span className="font-mono">📋 Payment Process</span>
-              </div>
-              <p className="text-sm text-dim-gray">
-                Your payment will be sent to our secure Binance account. Once confirmed, your wallet balance will be updated by our admin team within 24 hours.
-              </p>
+          <h1 className="text-3xl font-mono font-bold text-matrix mb-2">Company Crypto Wallet</h1>
+          <p className="text-dim-gray">Fund your bounty program with cryptocurrency via Binance Pay</p>
+          <div className="mt-4 p-4 border border-blue-600/30 rounded-lg bg-blue-600/10">
+            <div className="flex items-center gap-2 text-blue-400 mb-2">
+              <span className="font-mono">💰 Binance Pay Integration</span>
             </div>
+            <p className="text-sm text-dim-gray">
+              Fund your wallet using Binance Pay. Payments go directly to our admin account and your wallet balance is updated manually after confirmation.
+            </p>
           </div>
+        </div>
 
-        <Tabs defaultValue="payment" className="space-y-6">
-          <TabsList className="terminal-tabs">
-            <TabsTrigger value="payment" className="terminal-tab">
-              <Wallet className="h-4 w-4 mr-2" />
-              Make Payment
-            </TabsTrigger>
-            <TabsTrigger value="history" className="terminal-tab">
-              <TrendingUp className="h-4 w-4 mr-2" />
-              Payment History
-            </TabsTrigger>
-          </TabsList>
-
-          <TabsContent value="payment">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              <Card className="terminal-card">
-                <CardHeader>
-                  <CardTitle className="text-xl font-mono text-matrix">Create Payment</CardTitle>
-                  <CardDescription className="text-dim-gray">
-                    Fund your wallet using cryptocurrency via Binance Pay
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div>
-                    <Label className="text-light-gray font-mono">Amount (USD)</Label>
-                    <Input
-                      type="number"
-                      placeholder="100.00"
-                      value={amount}
-                      onChange={(e) => setAmount(e.target.value)}
-                      className="terminal-input mt-1"
-                      min="1"
-                      step="0.01"
-                    />
-                  </div>
-
-                  <div>
-                    <Label className="text-light-gray font-mono">Currency</Label>
-                    <Select value={currency} onValueChange={setCurrency}>
-                      <SelectTrigger className="terminal-input mt-1">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent className="terminal-select">
-                        <SelectItem value="USDT">USDT (Tether)</SelectItem>
-                        <SelectItem value="BTC">BTC (Bitcoin)</SelectItem>
-                        <SelectItem value="ETH">ETH (Ethereum)</SelectItem>
-                        <SelectItem value="BNB">BNB (Binance Coin)</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  <div>
-                    <Label className="text-light-gray font-mono">Purpose</Label>
-                    <Select value={purpose} onValueChange={setPurpose}>
-                      <SelectTrigger className="terminal-input mt-1">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent className="terminal-select">
-                        <SelectItem value="wallet_topup">Wallet Top-up</SelectItem>
-                        <SelectItem value="bounty_payment">Direct Bounty Payment</SelectItem>
-                        <SelectItem value="subscription">Service Subscription</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  <Button 
-                    onClick={createPaymentIntent}
-                    disabled={loading || !amount}
-                    className="terminal-button w-full"
-                  >
-                    {loading ? 'Creating Payment...' : 'Create Crypto Payment'}
-                  </Button>
-                </CardContent>
-              </Card>
-
-              <Card className="terminal-card">
-                <CardHeader>
-                  <CardTitle className="text-xl font-mono text-matrix">Supported Networks</CardTitle>
-                  <CardDescription className="text-dim-gray">
-                    Available cryptocurrency networks and fees
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-3">
-                    {cryptoNetworks.map((network) => (
-                      <div key={network.id} className="flex items-center justify-between p-3 border border-dark-terminal rounded-lg">
-                        <div>
-                          <span className="font-mono text-light-gray">{network.displayName}</span>
-                          <p className="text-sm text-dim-gray">{network.currency}</p>
-                        </div>
-                        <div className="text-right">
-                          <p className="text-sm text-matrix">Fee: ${(network.networkFee / 100).toFixed(2)}</p>
-                          <p className="text-xs text-dim-gray">Min: ${(network.minWithdrawal / 100).toFixed(0)}</p>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-          </TabsContent>
-
-          <TabsContent value="history">
-            <Card className="terminal-card">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          {/* Wallet Overview */}
+          <div className="lg:col-span-1">
+            <Card className="bg-dark-bg/50 border-matrix/20">
               <CardHeader>
-                <CardTitle className="text-xl font-mono text-matrix">Payment History</CardTitle>
-                <CardDescription className="text-dim-gray">
-                  Your cryptocurrency payment transactions
-                </CardDescription>
+                <CardTitle className="text-matrix flex items-center gap-2">
+                  <Wallet className="h-5 w-5" />
+                  Wallet Balance
+                </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="space-y-4">
-                  {paymentIntents.length === 0 ? (
-                    <div className="text-center py-8">
-                      <p className="text-dim-gray">No payment history found</p>
-                    </div>
-                  ) : (
-                    paymentIntents.map((payment) => (
-                      <div key={payment.id} className="flex items-center justify-between p-4 border border-dark-terminal rounded-lg">
-                        <div className="flex-1">
-                          <div className="flex items-center gap-3 mb-2">
-                            <span className="font-mono text-light-gray">
-                              {formatAmount(payment.amount, payment.currency)}
-                            </span>
-                            {getStatusBadge(payment.status)}
-                          </div>
-                          <p className="text-sm text-dim-gray">{payment.purpose.replace('_', ' ')}</p>
-                          <p className="text-xs text-dim-gray">
-                            {new Date(payment.createdAt).toLocaleDateString()}
-                          </p>
-                        </div>
-                        <div className="text-right">
-                          {payment.transactionId && (
-                            <p className="text-xs text-matrix font-mono">
-                              {payment.transactionId.substring(0, 16)}...
-                            </p>
-                          )}
-                        </div>
-                      </div>
-                    ))
-                  )}
+                <div className="text-3xl font-bold text-matrix mb-2">
+                  {companyWallet ? formatCurrency(companyWallet.balance) : '$0.00'}
                 </div>
+                <div className="text-sm text-dim-gray">
+                  Total Paid: {companyWallet ? formatCurrency(companyWallet.totalPaid) : '$0.00'}
+                </div>
+                <div className="text-xs text-dim-gray mt-1">
+                  Last Updated: {companyWallet ? formatDate(companyWallet.lastUpdated) : 'Never'}
+                </div>
+                
+                <Dialog open={isPaymentDialogOpen} onOpenChange={setIsPaymentDialogOpen}>
+                  <DialogTrigger asChild>
+                    <Button className="w-full mt-4 bg-matrix/20 border-matrix/30 hover:bg-matrix/30 text-matrix">
+                      <CreditCard className="h-4 w-4 mr-2" />
+                      Fund Wallet
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent className="bg-deep-black border-matrix/20">
+                    <DialogHeader>
+                      <DialogTitle className="text-matrix">Fund Wallet via Binance Pay</DialogTitle>
+                      <DialogDescription className="text-dim-gray">
+                        Add funds to your wallet using cryptocurrency via Binance Pay
+                      </DialogDescription>
+                    </DialogHeader>
+                    <div className="space-y-4">
+                      <div>
+                        <Label htmlFor="amount" className="text-dim-gray">Amount (USD)</Label>
+                        <Input
+                          id="amount"
+                          type="number"
+                          placeholder="Enter amount"
+                          value={paymentAmount}
+                          onChange={(e) => setPaymentAmount(e.target.value)}
+                          className="bg-dark-bg/50 border-matrix/20 text-light-gray"
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="currency" className="text-dim-gray">Currency</Label>
+                        <Select value={selectedCurrency} onValueChange={setSelectedCurrency}>
+                          <SelectTrigger className="bg-dark-bg/50 border-matrix/20 text-light-gray">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent className="bg-deep-black border-matrix/20">
+                            <SelectItem value="USDT">USDT (Tether)</SelectItem>
+                            <SelectItem value="BTC">BTC (Bitcoin)</SelectItem>
+                            <SelectItem value="ETH">ETH (Ethereum)</SelectItem>
+                            <SelectItem value="BNB">BNB (Binance Coin)</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div className="p-3 bg-blue-600/10 border border-blue-600/30 rounded-lg">
+                        <p className="text-sm text-blue-400">
+                          <strong>Note:</strong> Payment will redirect to Binance Pay. After successful payment, your wallet balance will be updated manually by our admin team.
+                        </p>
+                      </div>
+                      <Button 
+                        onClick={handleCreatePayment} 
+                        disabled={paymentLoading}
+                        className="w-full bg-matrix/20 border-matrix/30 hover:bg-matrix/30 text-matrix"
+                      >
+                        {paymentLoading ? 'Creating Payment...' : 'Create Binance Pay Order'}
+                      </Button>
+                    </div>
+                  </DialogContent>
+                </Dialog>
               </CardContent>
             </Card>
-          </TabsContent>
-        </Tabs>
+          </div>
+
+          {/* Payment History & Transactions */}
+          <div className="lg:col-span-2">
+            <Tabs defaultValue="payments" className="w-full">
+              <TabsList className="grid w-full grid-cols-2 bg-dark-bg/50 border-matrix/20">
+                <TabsTrigger value="payments" className="text-dim-gray data-[state=active]:text-matrix">
+                  Crypto Payments
+                </TabsTrigger>
+                <TabsTrigger value="transactions" className="text-dim-gray data-[state=active]:text-matrix">
+                  Transactions
+                </TabsTrigger>
+              </TabsList>
+
+              <TabsContent value="payments" className="mt-4">
+                <Card className="bg-dark-bg/50 border-matrix/20">
+                  <CardHeader>
+                    <CardTitle className="text-matrix">Crypto Payment History</CardTitle>
+                    <CardDescription className="text-dim-gray">
+                      View all your Binance Pay payment attempts
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-4">
+                      {paymentIntents.length === 0 ? (
+                        <p className="text-dim-gray text-center py-8">No payment attempts yet</p>
+                      ) : (
+                        paymentIntents.map((payment) => (
+                          <div key={payment.id} className="p-4 border border-matrix/20 rounded-lg bg-dark-bg/30">
+                            <div className="flex justify-between items-start mb-2">
+                              <div>
+                                <div className="flex items-center gap-2">
+                                  <span className="font-mono text-matrix">
+                                    {formatCurrency(payment.amount)} {payment.currency}
+                                  </span>
+                                  <Badge className={getStatusColor(payment.status)}>
+                                    {getStatusIcon(payment.status)}
+                                    {payment.status}
+                                  </Badge>
+                                </div>
+                                <div className="text-sm text-dim-gray mt-1">
+                                  Order ID: {payment.merchantOrderId}
+                                  <Button 
+                                    variant="ghost" 
+                                    size="sm"
+                                    onClick={() => copyToClipboard(payment.merchantOrderId)}
+                                    className="ml-2 h-6 w-6 p-0"
+                                  >
+                                    <Copy className="h-3 w-3" />
+                                  </Button>
+                                </div>
+                              </div>
+                              <div className="text-right">
+                                <div className="text-sm text-dim-gray">
+                                  {formatDate(payment.createdAt)}
+                                </div>
+                                {payment.metadata?.checkoutUrl && payment.status === 'pending' && (
+                                  <Button 
+                                    variant="outline" 
+                                    size="sm"
+                                    onClick={() => window.open(payment.metadata.checkoutUrl, '_blank')}
+                                    className="mt-2 border-matrix/30 text-matrix hover:bg-matrix/20"
+                                  >
+                                    <ExternalLink className="h-3 w-3 mr-1" />
+                                    Pay Now
+                                  </Button>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+                        ))
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
+              </TabsContent>
+
+              <TabsContent value="transactions" className="mt-4">
+                <Card className="bg-dark-bg/50 border-matrix/20">
+                  <CardHeader>
+                    <CardTitle className="text-matrix">Transaction History</CardTitle>
+                    <CardDescription className="text-dim-gray">
+                      View all wallet transactions and balance updates
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-4">
+                      {transactions.length === 0 ? (
+                        <p className="text-dim-gray text-center py-8">No transactions yet</p>
+                      ) : (
+                        transactions.map((transaction) => (
+                          <div key={transaction.id} className="p-4 border border-matrix/20 rounded-lg bg-dark-bg/30">
+                            <div className="flex justify-between items-start">
+                              <div>
+                                <div className="flex items-center gap-2">
+                                  <span className={`font-mono ${
+                                    transaction.amount > 0 ? 'text-green-400' : 'text-red-400'
+                                  }`}>
+                                    {transaction.amount > 0 ? '+' : ''}{formatCurrency(transaction.amount)}
+                                  </span>
+                                  <Badge variant="outline" className="border-matrix/20 text-dim-gray">
+                                    {transaction.type.replace('_', ' ')}
+                                  </Badge>
+                                </div>
+                                <div className="text-sm text-dim-gray mt-1">
+                                  {transaction.note}
+                                </div>
+                              </div>
+                              <div className="text-right">
+                                <div className="text-sm text-dim-gray">
+                                  {formatDate(transaction.createdAt)}
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        ))
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
+              </TabsContent>
+            </Tabs>
+          </div>
+        </div>
       </main>
-
-      {/* Payment Dialog */}
-      <Dialog open={showPaymentDialog} onOpenChange={setShowPaymentDialog}>
-        <DialogContent className="terminal-card max-w-md">
-          <DialogHeader>
-            <DialogTitle className="text-xl font-mono text-matrix">Complete Payment</DialogTitle>
-            <DialogDescription className="text-dim-gray">
-              Use Binance Pay to complete your cryptocurrency payment
-            </DialogDescription>
-          </DialogHeader>
-
-          {currentPayment && (
-            <div className="space-y-4">
-              <div className="text-center">
-                <div className="bg-white p-4 rounded-lg inline-block mb-4">
-                  <QrCode className="h-32 w-32 text-black" />
-                </div>
-                <p className="text-sm text-dim-gray">Scan QR code with Binance app</p>
-              </div>
-
-              <div className="space-y-2">
-                <div className="flex justify-between">
-                  <span className="text-dim-gray">Amount:</span>
-                  <span className="text-matrix font-mono">
-                    {formatAmount(currentPayment.paymentIntent.amount, currentPayment.paymentIntent.currency)}
-                  </span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-dim-gray">Order ID:</span>
-                  <span className="text-light-gray font-mono text-sm">
-                    {currentPayment.paymentIntent.merchantOrderId}
-                  </span>
-                </div>
-              </div>
-
-              <div className="flex gap-2">
-                <Button 
-                  onClick={openBinancePayment} 
-                  className="terminal-button flex-1"
-                >
-                  <ExternalLink className="h-4 w-4 mr-2" />
-                  Open Binance Pay
-                </Button>
-                <Button 
-                  variant="outline" 
-                  onClick={() => setShowPaymentDialog(false)}
-                  className="terminal-button-outline"
-                >
-                  Close
-                </Button>
-              </div>
-            </div>
-          )}
-        </DialogContent>
-      </Dialog>
     </div>
   );
 }
