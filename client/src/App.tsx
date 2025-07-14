@@ -122,6 +122,7 @@ function Router() {
       <ProtectedRoute path="/admin/withdrawals" component={AdminWithdrawalsPage} />
       <ProtectedRoute path="/admin/payments" component={AdminPaymentDashboard} />
       <ProtectedRoute path="/crypto/payments" component={CryptoPaymentPage} />
+      <ProtectedRoute path="/crypto/payment" component={CryptoPaymentPage} />
       <ProtectedRoute path="/crypto/withdrawals" component={CryptoWithdrawalPage} />
       <Route path="/terms-of-service">
         {() => <TermsOfServicePage />}
