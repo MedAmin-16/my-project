@@ -23,8 +23,8 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
-import Navbar from '@/components/layout/navbar';
-import MatrixBackground from '@/components/matrix-background';
+import { Navbar } from '@/components/layout/navbar';
+import { MatrixBackground } from '@/components/matrix-background';
 import { apiRequest } from '@/lib/queryClient';
 
 // Form schema for profile update

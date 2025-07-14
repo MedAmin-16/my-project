@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Link } from "wouter";
-import Navbar from "@/components/layout/navbar";
-import MatrixBackground from "@/components/matrix-background";
+import { Navbar } from "@/components/layout/navbar";
+import { MatrixBackground } from "@/components/matrix-background";
 import {
   Search,
   HelpCircle,

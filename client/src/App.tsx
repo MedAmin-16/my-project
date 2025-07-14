@@ -34,8 +34,6 @@ import AdminWithdrawalsPage from "@/pages/admin-withdrawals-page";
 import AdminPaymentDashboard from './pages/admin-payment-dashboard';
 import CryptoPaymentPage from './pages/crypto-payment-page';
 import CryptoWithdrawalPage from './pages/crypto-withdrawal-page';
-import TermsOfServicePage from './pages/terms-of-service';
-import { Redirect } from 'wouter';
 import PaymentDashboardPage from "./pages/payment-dashboard-page";
 import ResearcherPayoutsPage from "./pages/researcher-payouts-page";
 import CompanyWalletPage from "@/pages/company-wallet-page";
@@ -120,7 +118,6 @@ function Router() {
       <ProtectedRoute path="/activities" component={ActivitiesPage} />
       <ProtectedRoute path="/wallet" component={WalletComponent} />
       <ProtectedRoute path="/company/wallet" component={CompanyWalletPage} />
-      <ProtectedRoute path="/company/wallet" component={CompanyWalletPage} />
       <ProtectedRoute path="/admin/company-wallets" component={AdminCompanyWalletsPage} />
       <ProtectedRoute path="/admin/withdrawals" component={AdminWithdrawalsPage} />
       <ProtectedRoute path="/admin/payments" component={AdminPaymentDashboard} />
@@ -138,9 +135,6 @@ function Router() {
       <Route path="/auth" component={AuthPage} />
       <Route path="/forgot-password" component={ForgotPasswordPage} />
       <Route path="/verify-email" component={VerifyEmailPage} />
-      <Route path="/terms-of-service">
-        {() => <TermsOfServicePage />}
-      </Route>
       <Route path="/privacy-policy">
         {() => <PrivacyPolicyPage />}
       </Route>

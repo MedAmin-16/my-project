@@ -1,7 +1,7 @@
 
 import { useAuth } from "@/hooks/use-auth";
-import Navbar from "@/components/layout/navbar";
-import MatrixBackground from "@/components/matrix-background";
+import { Navbar } from "@/components/layout/navbar";
+import { MatrixBackground } from "@/components/matrix-background";
 import { Zap, Bug, Code, Target, Shield, Award, Trophy } from "lucide-react";
 
 // All possible badges

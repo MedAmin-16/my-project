@@ -1,7 +1,7 @@
 
 import { Link } from "wouter";
-import Navbar from "@/components/layout/navbar";
-import MatrixBackground from "@/components/matrix-background";
+import { Navbar } from "@/components/layout/navbar";
+import { MatrixBackground } from "@/components/matrix-background";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
 

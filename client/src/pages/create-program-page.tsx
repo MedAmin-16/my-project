@@ -6,7 +6,7 @@ import { z } from "zod";
 import { useLocation } from "wouter";
 import { useAuth } from "@/hooks/use-auth";
 import { useToast } from "@/hooks/use-toast";
-import MatrixBackground from "@/components/matrix-background";
+import { MatrixBackground } from "@/components/matrix-background";
 import {
   Form,
   FormControl,

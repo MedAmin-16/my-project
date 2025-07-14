@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { Link } from "wouter";
-import Navbar from "@/components/layout/navbar";
-import MatrixBackground from "@/components/matrix-background";
+import { Navbar } from "@/components/layout/navbar";
+import { MatrixBackground } from "@/components/matrix-background";
 import { useQuery } from "@tanstack/react-query";
 import { Program } from "@shared/schema";
 

@@ -1,6 +1,6 @@
 
 import { Link } from "wouter";
-import MatrixBackground from "@/components/matrix-background";
+import { MatrixBackground } from "@/components/matrix-background";
 import { Button } from "@/components/ui/button";
 
 export default function NotFoundPage() {

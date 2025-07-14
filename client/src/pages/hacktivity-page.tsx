@@ -1,7 +1,7 @@
 
 import { useState, useMemo } from "react";
-import Navbar from "@/components/layout/navbar";
-import MatrixBackground from "@/components/matrix-background";
+import { Navbar } from "@/components/layout/navbar";
+import { MatrixBackground } from "@/components/matrix-background";
 import { Search, Filter, Bug, Shield, Eye, Calendar, User, Building2, Award } from "lucide-react";
 
 // Mock data for bug disclosures

@@ -3,7 +3,7 @@ import { useLocation } from "wouter";
 import { apiRequest } from "@/lib/queryClient";
 import { Loader2, CheckCircle, XCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import MatrixBackground from "@/components/matrix-background";
+import { MatrixBackground } from "@/components/matrix-background";
 
 enum VerificationStatus {
   VERIFYING = "verifying",

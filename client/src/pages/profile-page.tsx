@@ -18,8 +18,8 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 import { User, Submission, Activity as UserActivity } from '@shared/schema';
-import Navbar from '@/components/layout/navbar';
-import MatrixBackground from '@/components/matrix-background';
+import { Navbar } from '@/components/layout/navbar';
+import { MatrixBackground } from '@/components/matrix-background';
 
 export default function ProfilePage() {
   const params = useParams();

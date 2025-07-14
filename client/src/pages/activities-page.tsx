@@ -2,8 +2,8 @@
 import { useQuery } from "@tanstack/react-query";
 import { Activity } from "@shared/schema";
 import { useAuth } from "@/hooks/use-auth";
-import Navbar from "@/components/layout/navbar";
-import MatrixBackground from "@/components/matrix-background";
+import { Navbar } from "@/components/layout/navbar";
+import { MatrixBackground } from "@/components/matrix-background";
 import ActivityItem from "@/components/ui/activity-item";
 import { Clock, CheckCircle, XCircle, Activity as ActivityIcon } from "lucide-react";
 

@@ -7,7 +7,7 @@ import { insertUserSchema } from "@shared/schema";
 import { z } from "zod";
 import { Redirect, useLocation } from "wouter";
 import { Loader2, Monitor, User, Eye, EyeOff, ArrowLeft, Github } from "lucide-react";
-import MatrixBackground from "@/components/matrix-background";
+import { MatrixBackground } from "@/components/matrix-background";
 import { useToast } from "@/hooks/use-toast";
 import {
   Form,

@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "wouter";
 import { useAuth } from "@/hooks/use-auth";
-import Navbar from "@/components/layout/navbar";
+import { Navbar } from "@/components/layout/navbar";
 import ProgramCard from "@/components/ui/program-card";
 import ActivityItem from "@/components/ui/activity-item";
 import { Program, Activity } from "@shared/schema";
@@ -12,7 +12,7 @@ import {
   Server, Code, Target, CheckCircle, XCircle, Megaphone
 } from "lucide-react";
 import { Loader2 } from "lucide-react";
-import MatrixBackground from "@/components/matrix-background";
+import { MatrixBackground } from "@/components/matrix-background";
 import PublicChat from "@/components/public-chat";
 import { 
   Tabs, 

@@ -1,6 +1,6 @@
 import { Link } from "wouter";
-import Navbar from "@/components/layout/navbar";
-import MatrixBackground from "@/components/matrix-background";
+import { Navbar } from "@/components/layout/navbar";
+import { MatrixBackground } from "@/components/matrix-background";
 import { Shield, Globe, Terminal, Code, ChevronRight, Users, Award, Zap } from "lucide-react";
 
 export default function AboutPage() {

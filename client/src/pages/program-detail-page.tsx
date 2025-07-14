@@ -9,8 +9,8 @@ import {
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Program, Submission } from '@shared/schema';
-import Navbar from '@/components/layout/navbar';
-import MatrixBackground from '@/components/matrix-background';
+import { Navbar } from '@/components/layout/navbar';
+import { MatrixBackground } from '@/components/matrix-background';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/use-auth';
 

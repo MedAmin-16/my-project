@@ -1,6 +1,6 @@
 import { Link, Redirect } from "wouter";
 import { ArrowRight, Shield, Bug, Trophy, Lock } from "lucide-react";
-import MatrixBackground from "@/components/matrix-background";
+import { MatrixBackground } from "@/components/matrix-background";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/use-auth";
 

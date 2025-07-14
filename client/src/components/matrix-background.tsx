@@ -5,7 +5,7 @@ interface MatrixBackgroundProps {
   className?: string;
 }
 
-export default function MatrixBackground({ className }: MatrixBackgroundProps) {
+export function MatrixBackground({ className }: MatrixBackgroundProps) {
   const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {

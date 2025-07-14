@@ -4,7 +4,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { Link, useLocation } from "wouter";
 import { Loader2, Shield, Eye, EyeOff, ArrowLeft, Terminal, Lock } from "lucide-react";
-import MatrixBackground from "@/components/matrix-background";
+import { MatrixBackground } from "@/components/matrix-background";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 
