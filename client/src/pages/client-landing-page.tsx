@@ -575,9 +575,9 @@ export default function ClientLandingPage() {
         </div>
       </section>
 
-          
-
-          {/* Key Benefits Grid */}
+      {/* Key Benefits Section */}
+      <section className="relative z-10 py-16 bg-gradient-to-b from-black to-terminal">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid md:grid-cols-3 gap-8">
             <div className="text-center">
               <div className="w-16 h-16 rounded-full bg-matrix/10 flex items-center justify-center mx-auto mb-4 border border-matrix/30">
