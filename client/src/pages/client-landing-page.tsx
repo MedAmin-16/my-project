@@ -429,9 +429,17 @@ export default function ClientLandingPage() {
             <h2 className="text-4xl font-mono font-bold text-light-gray mb-6">
               <span className="text-matrix">_</span> Enterprise Vulnerability Management
             </h2>
-            <p className="text-dim-gray text-xl max-w-4xl mx-auto">
-              Let our security experts manage your entire vulnerability program while you focus on your core business
-            </p>
+            <div className="max-w-4xl mx-auto">
+              <p className="text-dim-gray text-xl mb-4">
+                Our Enterprise Vulnerability Management is a premium service designed for organizations that require dedicated triage, tailored SLAs, and advanced security support.
+              </p>
+              <div className="inline-flex items-center px-6 py-3 rounded-full border border-matrix/30 bg-matrix/10 mb-4">
+                <span className="text-matrix font-mono text-lg font-bold">Premium Service - Starting at $2,999/month</span>
+              </div>
+              <p className="text-dim-gray text-lg">
+                Let our security experts manage your entire vulnerability program while you focus on your core business
+              </p>
+            </div>
           </div>
 
           <div className="grid lg:grid-cols-2 gap-16 items-center mb-16">
@@ -485,8 +493,11 @@ export default function ClientLandingPage() {
             <div className="terminal-card p-8 rounded-xl border border-matrix/30 bg-gradient-to-br from-matrix/10 to-green-400/10">
               <div className="text-center mb-8">
                 <Shield className="h-16 w-16 text-matrix mx-auto mb-4" />
-                <h3 className="text-2xl font-mono text-matrix font-bold mb-2">Get Started in 3 Steps</h3>
-                <p className="text-dim-gray">Launch your managed program today</p>
+                <h3 className="text-2xl font-mono text-matrix font-bold mb-2">Premium Enterprise Service</h3>
+                <p className="text-dim-gray mb-2">Dedicated managed security program</p>
+                <div className="inline-flex items-center px-4 py-2 rounded-full border border-matrix/30 bg-black/40">
+                  <span className="text-matrix font-mono text-sm font-bold">Starting at $2,999/month</span>
+                </div>
               </div>
               
               <div className="space-y-6">
@@ -524,11 +535,11 @@ export default function ClientLandingPage() {
               <div className="mt-8 pt-6 border-t border-matrix/20">
                 <Link href="/auth?mode=register">
                   <Button className="w-full glow-button text-lg font-mono py-4">
-                    Schedule Consultation <ArrowRight className="ml-2 h-5 w-5" />
+                    Schedule Enterprise Consultation <ArrowRight className="ml-2 h-5 w-5" />
                   </Button>
                 </Link>
                 <p className="text-center text-dim-gray text-sm mt-3">
-                  Free consultation • No commitment required
+                  Free consultation • Custom enterprise pricing
                 </p>
               </div>
             </div>
