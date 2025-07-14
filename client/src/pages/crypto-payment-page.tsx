@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/ui/card';
 import { Button } from '../components/ui/button';
@@ -159,12 +158,20 @@ export default function CryptoPaymentPage() {
     <div className="min-h-screen bg-deep-black relative">
       <MatrixBackground className="opacity-20" />
       <Navbar />
-      
+
       <main className="max-w-7xl mx-auto px-4 py-8 relative z-10">
         <div className="mb-8">
-          <h1 className="text-3xl font-mono font-bold text-matrix mb-2">Cryptocurrency Payments</h1>
-          <p className="text-dim-gray">Manage your crypto payments and fund your bounty wallet</p>
-        </div>
+            <h1 className="text-3xl font-mono font-bold text-matrix mb-2">Cryptocurrency Payments</h1>
+            <p className="text-dim-gray">Fund your bounty wallet using cryptocurrency via Binance Pay</p>
+            <div className="mt-4 p-4 border border-yellow-600/30 rounded-lg bg-yellow-600/10">
+              <div className="flex items-center gap-2 text-yellow-400 mb-2">
+                <span className="font-mono">📋 Payment Process</span>
+              </div>
+              <p className="text-sm text-dim-gray">
+                Your payment will be sent to our secure Binance account. Once confirmed, your wallet balance will be updated by our admin team within 24 hours.
+              </p>
+            </div>
+          </div>
 
         <Tabs defaultValue="payment" className="space-y-6">
           <TabsList className="terminal-tabs">
@@ -200,7 +207,7 @@ export default function CryptoPaymentPage() {
                       step="0.01"
                     />
                   </div>
-                  
+
                   <div>
                     <Label className="text-light-gray font-mono">Currency</Label>
                     <Select value={currency} onValueChange={setCurrency}>
@@ -322,7 +329,7 @@ export default function CryptoPaymentPage() {
               Use Binance Pay to complete your cryptocurrency payment
             </DialogDescription>
           </DialogHeader>
-          
+
           {currentPayment && (
             <div className="space-y-4">
               <div className="text-center">
@@ -331,7 +338,7 @@ export default function CryptoPaymentPage() {
                 </div>
                 <p className="text-sm text-dim-gray">Scan QR code with Binance app</p>
               </div>
-              
+
               <div className="space-y-2">
                 <div className="flex justify-between">
                   <span className="text-dim-gray">Amount:</span>

@@ -50,6 +50,52 @@ export default function WalletPage() {
     }
   };
 
+  const formatCurrency = (cents: number) => {
+    return `$${(cents / 100).toFixed(2)}`;
+  };
+
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString();
+  };
+
+  // Redirect hackers to crypto withdrawal page
+  if (user?.userType === 'hacker') {
+    return (
+      <div className="min-h-screen bg-deep-black relative">
+        <MatrixBackground className="opacity-20" />
+        <Navbar />
+        <div className="flex items-center justify-center min-h-[80vh]">
+          <div className="terminal-card p-8 text-center max-w-md">
+            <h2 className="text-2xl font-mono text-matrix mb-4">Crypto Withdrawals Only</h2>
+            <p className="text-dim-gray mb-6">
+              Researchers can only withdraw earnings via cryptocurrency. Please use the crypto withdrawal page to manage your funds.
+            </p>
+            <Button 
+              onClick={() => window.location.href = '/crypto/withdrawals'}
+              className="terminal-button"
+            >
+              Go to Crypto Withdrawals
+            </Button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (walletLoading) {
+    return (
+      <div className="min-h-screen bg-deep-black relative">
+        <MatrixBackground className="opacity-20" />
+        <div className="flex items-center justify-center min-h-screen">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-matrix mx-auto mb-4"></div>
+            <p className="text-dim-gray">Loading wallet...</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-deep-black relative">
       <MatrixBackground />

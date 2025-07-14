@@ -183,7 +183,7 @@ export function registerRoutes(app: Express): Server {
   });
 
   // Triage Service Routes
-  
+
   // Get company triage services
   app.get("/api/triage-services", async (req, res) => {
     try {
@@ -325,7 +325,7 @@ export function registerRoutes(app: Express): Server {
       }
 
       const { submissionId, triageServiceId } = req.body;
-      
+
       // Check if submission exists and belongs to the company
       const submission = await storage.getSubmission(submissionId);
       if (!submission) {
@@ -540,7 +540,7 @@ export function registerRoutes(app: Express): Server {
         // Look for company's triage services
         const services = await storage.getTriageServicesByCompany(program.companyId || 0);
         const autoTriageService = services.find(s => s.autoAssignTriage && s.isActive);
-        
+
         if (autoTriageService) {
           // Auto-create triage report
           const availableAnalysts = await storage.getAvailableTriageAnalysts();
@@ -558,7 +558,7 @@ export function registerRoutes(app: Express): Server {
           };
 
           await storage.createTriageReport(reportData);
-          
+
           if (analyst) {
             await storage.updateTriageAnalystWorkload(analyst.id, analyst.currentWorkload + 1);
           }
@@ -573,7 +573,7 @@ export function registerRoutes(app: Express): Server {
   });
 
   // Moderation System Routes
-  
+
   // Get moderation team members
   app.get("/api/moderation/team", async (req, res) => {
     try {
@@ -663,7 +663,7 @@ export function registerRoutes(app: Express): Server {
 
       const reviewId = parseInt(req.params.id);
       const review = await storage.getModerationReview(reviewId);
-      
+
       if (!review) {
         return res.status(404).json({ error: "Review not found" });
       }
@@ -698,7 +698,7 @@ export function registerRoutes(app: Express): Server {
       };
 
       const review = await storage.createModerationReview(reviewData);
-      
+
       // Log the action
       await storage.createModerationAuditLog({
         reviewId: review.id,
@@ -743,7 +743,7 @@ export function registerRoutes(app: Express): Server {
 
       const reviewId = parseInt(req.params.id);
       const existingReview = await storage.getModerationReview(reviewId);
-      
+
       if (!existingReview) {
         return res.status(404).json({ error: "Review not found" });
       }
@@ -789,7 +789,7 @@ export function registerRoutes(app: Express): Server {
       const { reviewerId } = req.body;
 
       const updatedReview = await storage.assignModerationReview(reviewId, reviewerId, user.id);
-      
+
       // Log the action
       await storage.createModerationAuditLog({
         reviewId: reviewId,
@@ -859,7 +859,7 @@ export function registerRoutes(app: Express): Server {
       };
 
       const comment = await storage.createModerationComment(commentData);
-      
+
       // Log the action
       await storage.createModerationAuditLog({
         reviewId: reviewId,
@@ -1006,7 +1006,7 @@ export function registerRoutes(app: Express): Server {
       if (email === "admin@cyberhunt.com" && password === "AdminSecure123!") {
         // Create a simple admin token
         const adminToken = Buffer.from(`admin:${Date.now()}`).toString('base64');
-        
+
         // Store admin session
         req.session.adminUser = { 
           id: 1, 
@@ -1062,7 +1062,7 @@ export function registerRoutes(app: Express): Server {
       if (req.session.adminUser) {
         delete req.session.adminUser;
       }
-      
+
       res.json({ success: true, message: "Admin logout successful" });
     } catch (error) {
       console.error("Admin logout error:", error);
@@ -1104,7 +1104,7 @@ export function registerRoutes(app: Express): Server {
       }
 
       const users = await storage.getAllUsers() || [];
-      
+
       // Remove sensitive information
       const sanitizedUsers = users.map(user => ({
         id: user.id,
@@ -1123,7 +1123,7 @@ export function registerRoutes(app: Express): Server {
   });
 
   // Cryptocurrency Payment Routes
-  
+
   // Get crypto network settings
   app.get("/api/crypto/networks", async (req, res) => {
     try {
@@ -1303,7 +1303,7 @@ export function registerRoutes(app: Express): Server {
       const body = JSON.stringify(req.body);
 
       const { CryptoPaymentService } = await import('./crypto-payment-service');
-      
+
       // Verify webhook signature
       const isValid = CryptoPaymentService.verifyWebhookSignature(signature, timestamp, body);
       if (!isValid) {
@@ -1334,6 +1334,101 @@ export function registerRoutes(app: Express): Server {
       res.json(stats);
     } catch (error) {
       console.error("Error fetching crypto statistics:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  // Company Crypto Wallet Routes
+  app.get("/api/company/wallet", async (req, res) => {
+    try {
+      if (!req.session?.user?.id) {
+        return res.status(401).json({ error: "Authentication required" });
+      }
+
+      const user = await storage.getUser(req.session.user.id);
+      if (!user || user.userType !== 'company') {
+        return res.status(403).json({ error: "Company access required" });
+      }
+
+      let wallet = await storage.getCompanyWallet(user.id);
+      if (!wallet) {
+        wallet = await storage.createCompanyWallet(user.id);
+      }
+
+      res.json(wallet);
+    } catch (error) {
+      console.error("Error fetching company wallet:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  app.get("/api/company/transactions", async (req, res) => {
+    try {
+      if (!req.session?.user?.id) {
+        return res.status(401).json({ error: "Authentication required" });
+      }
+
+      const user = await storage.getUser(req.session.user.id);
+      if (!user || user.userType !== 'company') {
+        return res.status(403).json({ error: "Company access required" });
+      }
+
+      const transactions = await storage.getCompanyTransactions(user.id);
+      res.json(transactions);
+    } catch (error) {
+      console.error("Error fetching company transactions:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  // Admin route to manually update company wallet balance
+  app.post("/api/admin/company-wallet/update", async (req, res) => {
+    try {
+      const authHeader = req.headers.authorization;
+      const token = authHeader?.replace('Bearer ', '');
+
+      if (!token || !req.session.adminUser) {
+        return res.status(401).json({ error: "Admin authentication required" });
+      }
+
+      const { companyId, amount, note } = req.body;
+
+      if (!companyId || typeof amount !== 'number') {
+        return res.status(400).json({ error: "Company ID and amount are required" });
+      }
+
+      // Update company wallet balance
+      await storage.updateCompanyWalletBalance(companyId, amount);
+
+      // Create transaction record
+      await storage.createCompanyTransaction({
+        companyId,
+        amount,
+        type: 'admin_adjustment',
+        note: note || 'Manual balance adjustment by admin'
+      });
+
+      res.json({ success: true, message: "Company wallet updated successfully" });
+    } catch (error) {
+      console.error("Error updating company wallet:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  // Admin route to get all company wallets
+  app.get("/api/admin/company-wallets", async (req, res) => {
+    try {
+      const authHeader = req.headers.authorization;
+      const token = authHeader?.replace('Bearer ', '');
+
+      if (!token || !req.session.adminUser) {
+        return res.status(401).json({ error: "Admin authentication required" });
+      }
+
+      const wallets = await storage.getAllCompanyWallets();
+      res.json(wallets);
+    } catch (error) {
+      console.error("Error fetching company wallets:", error);
       res.status(500).json({ error: "Internal server error" });
     }
   });

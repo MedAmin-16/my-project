@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/ui/card';
 import { Button } from '../components/ui/button';
@@ -228,11 +227,19 @@ export default function CryptoWithdrawalPage() {
     <div className="min-h-screen bg-deep-black relative">
       <MatrixBackground className="opacity-20" />
       <Navbar />
-      
+
       <main className="max-w-7xl mx-auto px-4 py-8 relative z-10">
         <div className="mb-8">
           <h1 className="text-3xl font-mono font-bold text-matrix mb-2">Crypto Withdrawals</h1>
           <p className="text-dim-gray">Withdraw your bounty earnings to your cryptocurrency wallets</p>
+          <div className="mt-4 p-4 border border-green-600/30 rounded-lg bg-green-600/10">
+            <div className="flex items-center gap-2 text-green-400 mb-2">
+              <span className="font-mono">🔐 Crypto Only</span>
+            </div>
+            <p className="text-sm text-dim-gray">
+              All researcher payments are processed exclusively through cryptocurrency. Add your crypto wallet to receive bounty payments.
+            </p>
+          </div>
         </div>
 
         <Tabs defaultValue="withdrawal" className="space-y-6">
@@ -273,7 +280,7 @@ export default function CryptoWithdrawalPage() {
                       step="0.01"
                     />
                   </div>
-                  
+
                   <div>
                     <Label className="text-light-gray font-mono">Currency</Label>
                     <Select value={withdrawalCurrency} onValueChange={setWithdrawalCurrency}>
@@ -474,7 +481,7 @@ export default function CryptoWithdrawalPage() {
               Add a new cryptocurrency wallet for withdrawals
             </DialogDescription>
           </DialogHeader>
-          
+
           <div className="space-y-4">
             <div>
               <Label className="text-light-gray font-mono">Wallet Type</Label>
@@ -547,7 +554,7 @@ export default function CryptoWithdrawalPage() {
               Please review and confirm your withdrawal details
             </DialogDescription>
           </DialogHeader>
-          
+
           {selectedWallet && (
             <div className="space-y-4">
               <div className="space-y-2">

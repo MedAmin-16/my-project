@@ -167,15 +167,26 @@ export class CryptoPaymentService {
           completedAt: new Date()
         });
 
-        // Update company wallet
-        await storage.updateCompanyWalletBalance(paymentIntent.companyId, paymentIntent.amount);
-
-        // Create transaction record
+        // Create transaction record for tracking (balance will be updated manually by admin)
         await storage.createCompanyTransaction({
           companyId: paymentIntent.companyId,
+          amount: 0, // No automatic balance update
+          type: 'crypto_payment_pending',
+          note: `Crypto payment received via Binance Pay: ${transactionId} - Amount: ${(paymentIntent.amount / 100).toFixed(2)} ${paymentIntent.currency} - Pending admin approval`
+        });
+
+        // Create crypto transaction record
+        await storage.createCryptoTransaction({
+          companyId: paymentIntent.companyId,
+          transactionType: 'payment_in',
           amount: paymentIntent.amount,
-          type: 'crypto_payment',
-          note: `Crypto payment via Binance Pay: ${transactionId}`
+          currency: paymentIntent.currency,
+          transactionHash: transactionId,
+          status: 'confirmed',
+          relatedPaymentIntentId: paymentIntent.id,
+          metadata: {
+            note: 'Payment to admin Binance account - requires manual wallet update'
+          }
         });
 
         return { success: true };

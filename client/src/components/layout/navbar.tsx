@@ -20,7 +20,6 @@ export function Navbar() {
     { name: "Dashboard", path: "/dashboard" },
     { name: "Programs", path: "/programs" },
     { name: "Leaderboard", path: "/leaderboard" },
-    { name: "Wallet", path: "/wallet" },
     { name: "Hacktivity", path: "/hacktivity" },
   ];
 
@@ -82,6 +81,39 @@ export function Navbar() {
                   </div>
                 </Link>
               ))}
+              {user?.userType === 'hacker' && (
+                <Link href="/crypto/withdrawals">
+                  <div className={`${
+                      isActive('/crypto/withdrawals')
+                        ? "text-light-gray border-matrix"
+                        : "text-dim-gray border-transparent hover:text-matrix"
+                    } border-b-2 px-3 pt-5 pb-3 text-sm font-mono cursor-pointer`}>
+                    Crypto Wallet
+                  </div>
+                </Link>
+              )}
+              {user?.userType === 'company' && (
+                <>
+                  <Link href="/company/dashboard">
+                    <div className={`${
+                      isActive('/company/dashboard')
+                        ? "text-light-gray border-matrix"
+                        : "text-dim-gray border-transparent hover:text-matrix"
+                    } border-b-2 px-3 pt-5 pb-3 text-sm font-mono cursor-pointer`}>
+                      Dashboard
+                    </div>
+                  </Link>
+                  <Link href="/crypto/payment">
+                    <div className={`${
+                      isActive('/crypto/payment')
+                        ? "text-light-gray border-matrix"
+                        : "text-dim-gray border-transparent hover:text-matrix"
+                    } border-b-2 px-3 pt-5 pb-3 text-sm font-mono cursor-pointer`}>
+                      Crypto Wallet
+                    </div>
+                  </Link>
+                </>
+              )}
             </div>
           </div>
 
@@ -157,6 +189,48 @@ export function Navbar() {
                 </div>
               </Link>
             ))}
+            {user?.userType === 'hacker' && (
+              <Link href="/crypto/withdrawals">
+                <div
+                  className={`block px-3 py-2 rounded-md text-base font-mono cursor-pointer ${
+                    isActive('/crypto/withdrawals')
+                      ? "text-light-gray bg-matrix/10 border-l-2 border-matrix"
+                      : "text-dim-gray hover:bg-matrix/10 hover:text-light-gray"
+                  }`}
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  Crypto Wallet
+                </div>
+              </Link>
+            )}
+            {user?.userType === 'company' && (
+              <>
+                <Link href="/company/dashboard">
+                  <div
+                    className={`block px-3 py-2 rounded-md text-base font-mono cursor-pointer ${
+                      isActive('/company/dashboard')
+                        ? "text-light-gray bg-matrix/10 border-l-2 border-matrix"
+                        : "text-dim-gray hover:bg-matrix/10 hover:text-light-gray"
+                    }`}
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    Dashboard
+                  </div>
+                </Link>
+                <Link href="/crypto/payment">
+                  <div
+                    className={`block px-3 py-2 rounded-md text-base font-mono cursor-pointer ${
+                      isActive('/crypto/payment')
+                        ? "text-light-gray bg-matrix/10 border-l-2 border-matrix"
+                        : "text-dim-gray hover:bg-matrix/10 hover:text-light-gray"
+                    }`}
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    Crypto Wallet
+                  </div>
+                </Link>
+              </>
+            )}
             <Link href="/profile">
               <div
                 className="block px-3 py-2 rounded-md text-base font-mono text-dim-gray hover:bg-matrix/10 hover:text-light-gray cursor-pointer"
