@@ -1,0 +1,442 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  --matrix-color: 14, 232, 109;
+  --accent-color: 255, 50, 120;
+  --primary-glow: 0 0 10px rgba(var(--matrix-color), 0.5), 0 0 20px rgba(var(--matrix-color), 0.3);
+  --accent-glow: 0 0 10px rgba(var(--accent-color), 0.5), 0 0 20px rgba(var(--accent-color), 0.3);
+  --scanner-line: rgba(var(--matrix-color), 0.6);
+  --scanner-speed: 4s;
+  --glitch-duration: 0.8s;
+  --background: #0b0b0e;
+  --background-dark: #050507;
+  --text-color: #e0e0e0;
+  --muted-text: #a0a0a0;
+  --border-color: rgba(var(--matrix-color), 0.3);
+  --accent-border-color: rgba(var(--accent-color), 0.3);
+}
+
+body {
+  font-family: var(--font-mono);
+  background-color: var(--background);
+  color: var(--text-color);
+  overflow-x: hidden;
+}
+
+/* Matrix Background */
+.matrix-canvas {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 0;
+  opacity: 0.15;
+  pointer-events: none;
+}
+
+/* Neon Effects */
+.neon-text {
+  color: rgb(var(--matrix-color));
+  text-shadow: var(--primary-glow);
+  letter-spacing: 2px;
+}
+
+.neon-border {
+  border: 1px solid var(--border-color);
+  box-shadow: var(--primary-glow);
+}
+
+/* Terminal Text Style */
+.terminal-text {
+  font-family: var(--font-mono);
+  color: rgb(var(--matrix-color));
+  line-height: 1.6;
+}
+
+/* Scanner effect for cards and sections */
+.scanner {
+  position: relative;
+  overflow: hidden;
+}
+
+.scanner::after {
+  content: "";
+  position: absolute;
+  top: -50%;
+  left: 0;
+  right: 0;
+  height: 200%;
+  background: linear-gradient(
+    to bottom,
+    transparent 0%,
+    var(--scanner-line) 50%,
+    transparent 100%
+  );
+  animation: scan var(--scanner-speed) ease-in-out infinite;
+  opacity: 0;
+  z-index: 1;
+  pointer-events: none;
+}
+
+.scanner:hover::after {
+  opacity: 0.5;
+}
+
+@keyframes scan {
+  0% {
+    transform: translateY(-50%);
+  }
+  100% {
+    transform: translateY(50%);
+  }
+}
+
+/* Typing animation for text */
+.typing-text {
+  overflow: hidden;
+  white-space: nowrap;
+  border-right: 3px solid rgb(var(--matrix-color));
+  width: 0;
+  animation: typing 3s steps(40, end) forwards, 
+             cursor 0.75s step-end infinite;
+}
+
+@keyframes typing {
+  from { width: 0 }
+  to { width: 100% }
+}
+
+@keyframes cursor {
+  from, to { border-color: transparent }
+  50% { border-color: rgb(var(--matrix-color)) }
+}
+
+/* Glitch effect for text headings */
+.glitch {
+  position: relative;
+  color: rgb(var(--matrix-color));
+  text-shadow: var(--primary-glow);
+}
+
+.glitch::before,
+.glitch::after {
+  content: attr(data-text);
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+
+.glitch::before {
+  left: 2px;
+  color: rgba(255, 0, 127, 0.8);
+  text-shadow: -1px 0 rgb(0, 255, 255);
+  animation: glitch-animation-1 var(--glitch-duration) infinite linear alternate-reverse;
+}
+
+.glitch::after {
+  left: -2px;
+  color: rgba(0, 255, 255, 0.8);
+  text-shadow: 1px 0 rgb(255, 0, 127);
+  animation: glitch-animation-2 var(--glitch-duration) infinite linear alternate-reverse;
+}
+
+@keyframes glitch-animation-1 {
+  0% {
+    clip-path: inset(78% 0 13% 0);
+  }
+  20% {
+    clip-path: inset(29% 0 41% 0);
+  }
+  40% {
+    clip-path: inset(54% 0 18% 0);
+  }
+  60% {
+    clip-path: inset(77% 0 0% 0);
+  }
+  80% {
+    clip-path: inset(15% 0 47% 0);
+  }
+  100% {
+    clip-path: inset(91% 0 6% 0);
+  }
+}
+
+@keyframes glitch-animation-2 {
+  0% {
+    clip-path: inset(75% 0 17% 0);
+  }
+  20% {
+    clip-path: inset(49% 0 36% 0);
+  }
+  40% {
+    clip-path: inset(19% 0 39% 0);
+  }
+  60% {
+    clip-path: inset(93% 0 4% 0);
+  }
+  80% {
+    clip-path: inset(0% 0 94% 0);
+  }
+  100% {
+    clip-path: inset(58% 0 5% 0);
+  }
+}
+
+/* Cyberpunk-style cards */
+.cyber-card {
+  background: rgba(0, 0, 0, 0.8);
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  padding: 1rem;
+  box-shadow: var(--primary-glow);
+  position: relative;
+  overflow: hidden;
+}
+
+.cyber-card::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgb(var(--matrix-color)),
+    transparent
+  );
+  opacity: 0.5;
+}
+
+/* Cyber buttons */
+.cyber-button {
+  background-color: rgba(var(--matrix-color), 0.1);
+  color: rgb(var(--matrix-color));
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  padding: 0.5rem 1rem;
+  font-family: var(--font-mono);
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  position: relative;
+  overflow: hidden;
+  transition: all 0.3s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.cyber-button:hover {
+  background-color: rgba(var(--matrix-color), 0.2);
+  box-shadow: var(--primary-glow);
+}
+
+.cyber-button:active {
+  transform: translateY(1px);
+}
+
+.cyber-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Dashboard components */
+.dashboard-section {
+  border-left: 2px solid rgba(var(--matrix-color), 0.5);
+  padding-left: 1rem;
+  margin-bottom: 2rem;
+}
+
+/* Form fields with cyberpunk styling */
+.cyber-input {
+  background-color: rgba(0, 0, 0, 0.5);
+  border: 1px solid var(--border-color);
+  color: var(--text-color);
+  border-radius: 4px;
+  padding: 0.75rem 1rem;
+  font-family: var(--font-mono);
+  transition: all 0.3s ease;
+  width: 100%;
+}
+
+.cyber-input:focus {
+  border-color: rgb(var(--matrix-color));
+  box-shadow: var(--primary-glow);
+  outline: none;
+}
+
+/* Outline button variant */
+.cyber-button-outline {
+  background-color: transparent;
+  color: var(--text-color);
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  padding: 0.5rem 1rem;
+  font-family: var(--font-mono);
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  position: relative;
+  overflow: hidden;
+  transition: all 0.3s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.cyber-button-outline:hover {
+  border-color: rgb(var(--matrix-color));
+  color: rgb(var(--matrix-color));
+  box-shadow: var(--primary-glow);
+}
+
+.cyber-button-outline:active {
+  transform: translateY(1px);
+}
+
+/* Terminal window for code displays */
+.cyber-terminal {
+  background-color: var(--background-dark);
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  padding: 1rem;
+  font-family: var(--font-mono);
+  color: var(--text-color);
+  line-height: 1.5;
+  position: relative;
+  overflow: hidden;
+}
+
+.cyber-terminal::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(
+    90deg,
+    rgb(var(--matrix-color)),
+    rgb(var(--accent-color))
+  );
+  opacity: 0.7;
+}
+
+.terminal-window {
+  background-color: var(--background-dark);
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  padding: 1rem;
+  font-family: var(--font-mono);
+  color: var(--text-color);
+  line-height: 1.5;
+}
+
+/* Multiple typing text animations with delays */
+.typing-text-1 {
+  overflow: hidden;
+  white-space: nowrap;
+  border-right: 3px solid rgb(var(--matrix-color));
+  width: 0;
+  animation: typing 2s steps(40, end) forwards, 
+             cursor 0.75s step-end infinite;
+}
+
+.typing-text-2 {
+  overflow: hidden;
+  white-space: nowrap;
+  border-right: 3px solid rgb(var(--matrix-color));
+  width: 0;
+  opacity: 0;
+  animation: typing 2s steps(40, end) 2s forwards, 
+             cursor 0.75s step-end 2s infinite,
+             fadeIn 0.1s linear 2s forwards;
+}
+
+.typing-text-3 {
+  overflow: hidden;
+  white-space: nowrap;
+  border-right: 3px solid rgb(var(--matrix-color));
+  width: 0;
+  opacity: 0;
+  animation: typing 2s steps(40, end) 4s forwards, 
+             cursor 0.75s step-end 4s infinite,
+             fadeIn 0.1s linear 4s forwards;
+}
+
+.typing-text-4 {
+  overflow: hidden;
+  white-space: nowrap;
+  border-right: 3px solid rgb(var(--matrix-color));
+  width: 0;
+  opacity: 0;
+  animation: typing 2s steps(40, end) 6s forwards, 
+             cursor 0.75s step-end 6s infinite,
+             fadeIn 0.1s linear 6s forwards;
+}
+
+.typing-text-5 {
+  overflow: hidden;
+  white-space: nowrap;
+  border-right: 3px solid rgb(var(--matrix-color));
+  width: 0;
+  opacity: 0;
+  animation: typing 2s steps(40, end) 8s forwards, 
+             cursor 0.75s step-end 8s infinite,
+             fadeIn 0.1s linear 8s forwards;
+}
+
+.typing-text-6 {
+  overflow: hidden;
+  white-space: nowrap;
+  border-right: 3px solid rgb(var(--matrix-color));
+  width: 0;
+  opacity: 0;
+  animation: typing 2s steps(40, end) 10s forwards, 
+             cursor 0.75s step-end 10s infinite,
+             fadeIn 0.1s linear 10s forwards;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0 }
+  to { opacity: 1 }
+}
+
+/* Fade-in animation */
+.fade-in {
+  animation: fadeIn 1s ease-in-out;
+}
+
+/* Loading animation */
+.cyber-loading {
+  display: inline-block;
+  position: relative;
+  width: 80px;
+  height: 80px;
+}
+
+.cyber-loading:after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  border: 2px solid rgba(var(--matrix-color), 0.2);
+  border-radius: 50%;
+  border-top-color: rgb(var(--matrix-color));
+  animation: cyber-spinner 1s linear infinite;
+}
+
+@keyframes cyber-spinner {
+  to {
+    transform: rotate(360deg);
+  }
+}

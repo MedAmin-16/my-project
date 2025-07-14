@@ -1,0 +1,39 @@
+npm run dev
+
+> rest-express@1.0.0 dev
+> tsx server/index.ts
+
+Failed to create email transporter: Error: Missing credentials for "PLAIN"
+    at SMTPConnection._formatError (/home/runner/workspace/node_modules/nodemailer/lib/smtp-connection/index.js:809:19)
+    at SMTPConnection.login (/home/runner/workspace/node_modules/nodemailer/lib/smtp-connection/index.js:454:38)
+    at /home/runner/workspace/node_modules/nodemailer/lib/smtp-transport/index.js:375:32
+    at SMTPConnection.<anonymous> (/home/runner/workspace/node_modules/nodemailer/lib/smtp-connection/index.js:215:17)
+    at Object.onceWrapper (node:events:632:28)
+    at SMTPConnection.emit (node:events:518:28)
+    at SMTPConnection._actionEHLO (/home/runner/workspace/node_modules/nodemailer/lib/smtp-connection/index.js:1371:14)
+    at SMTPConnection._processResponse (/home/runner/workspace/node_modules/nodemailer/lib/smtp-connection/index.js:993:20)
+    at SMTPConnection._onData (/home/runner/workspace/node_modules/nodemailer/lib/smtp-connection/index.js:774:14)
+    at SMTPConnection._onSocketData (/home/runner/workspace/node_modules/nodemailer/lib/smtp-connection/index.js:195:44) {
+  code: 'EAUTH',
+  command: 'API'
+}
+node:internal/process/promises:391
+    triggerUncaughtException(err, true /* fromPromise */);
+    ^
+
+Error: Missing credentials for "PLAIN"
+    at SMTPConnection._formatError (/home/runner/workspace/node_modules/nodemailer/lib/smtp-connection/index.js:809:19)
+    at SMTPConnection.login (/home/runner/workspace/node_modules/nodemailer/lib/smtp-connection/index.js:454:38)
+    at /home/runner/workspace/node_modules/nodemailer/lib/smtp-transport/index.js:375:32
+    at SMTPConnection.<anonymous> (/home/runner/workspace/node_modules/nodemailer/lib/smtp-connection/index.js:215:17)
+    at Object.onceWrapper (node:events:632:28)
+    at SMTPConnection.emit (node:events:518:28)
+    at SMTPConnection._actionEHLO (/home/runner/workspace/node_modules/nodemailer/lib/smtp-connection/index.js:1371:14)
+    at SMTPConnection._processResponse (/home/runner/workspace/node_modules/nodemailer/lib/smtp-connection/index.js:993:20)
+    at SMTPConnection._onData (/home/runner/workspace/node_modules/nodemailer/lib/smtp-connection/index.js:774:14)
+    at SMTPConnection._onSocketData (/home/runner/workspace/node_modules/nodemailer/lib/smtp-connection/index.js:195:44) {
+  code: 'EAUTH',
+  command: 'API'
+}
+
+Node.js v20.18.1
