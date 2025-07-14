@@ -427,123 +427,155 @@ export default function ClientLandingPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <h2 className="text-4xl font-mono font-bold text-light-gray mb-6">
-              <span className="text-matrix">_</span> Enterprise Vulnerability Management
+              🔐 <span className="text-matrix">Enterprise Vulnerability Management</span>
             </h2>
             <div className="max-w-4xl mx-auto">
-              <p className="text-dim-gray text-xl mb-4">
-                Our Enterprise Vulnerability Management is a premium service designed for organizations that require dedicated triage, tailored SLAs, and advanced security support.
-              </p>
-              <div className="inline-flex items-center px-6 py-3 rounded-full border border-matrix/30 bg-matrix/10 mb-4">
-                <span className="text-matrix font-mono text-lg font-bold">Premium Service - Starting at $2,999/month</span>
-              </div>
-              <p className="text-dim-gray text-lg">
-                Let our security experts manage your entire vulnerability program while you focus on your core business
+              <p className="text-dim-gray text-xl mb-8">
+                Our managed triage and enterprise support service is available through flexible pricing plans:
               </p>
             </div>
           </div>
 
-          <div className="grid lg:grid-cols-2 gap-16 items-center mb-16">
-            <div>
-              <div className="terminal-card p-8 rounded-xl border border-matrix/30">
-                <h3 className="text-2xl font-mono text-matrix font-bold mb-6">Fully Managed Service</h3>
-                <div className="space-y-6">
-                  <div className="flex items-start">
-                    <div className="w-8 h-8 rounded-full bg-matrix/20 flex items-center justify-center mr-4 mt-1 border border-matrix/30">
-                      <CheckCircle className="h-4 w-4 text-matrix" />
-                    </div>
-                    <div>
-                      <p className="text-light-gray font-mono text-lg mb-2">Expert Program Management</p>
-                      <p className="text-dim-gray text-sm">Our security specialists handle all aspects of your bug bounty program, from researcher vetting to report validation.</p>
-                    </div>
-                  </div>
-                  
-                  <div className="flex items-start">
-                    <div className="w-8 h-8 rounded-full bg-matrix/20 flex items-center justify-center mr-4 mt-1 border border-matrix/30">
-                      <CheckCircle className="h-4 w-4 text-matrix" />
-                    </div>
-                    <div>
-                      <p className="text-light-gray font-mono text-lg mb-2">AI-Powered Triage</p>
-                      <p className="text-dim-gray text-sm">Advanced AI filters and prioritizes reports, reducing noise by 85% and ensuring only valid issues reach your team.</p>
-                    </div>
-                  </div>
-                  
-                  <div className="flex items-start">
-                    <div className="w-8 h-8 rounded-full bg-matrix/20 flex items-center justify-center mr-4 mt-1 border border-matrix/30">
-                      <CheckCircle className="h-4 w-4 text-matrix" />
-                    </div>
-                    <div>
-                      <p className="text-light-gray font-mono text-lg mb-2">24/7 Security Coverage</p>
-                      <p className="text-dim-gray text-sm">Continuous monitoring and testing by our global network of vetted security researchers across all time zones.</p>
-                    </div>
-                  </div>
-                  
-                  <div className="flex items-start">
-                    <div className="w-8 h-8 rounded-full bg-matrix/20 flex items-center justify-center mr-4 mt-1 border border-matrix/30">
-                      <CheckCircle className="h-4 w-4 text-matrix" />
-                    </div>
-                    <div>
-                      <p className="text-light-gray font-mono text-lg mb-2">Complete Report Management</p>
-                      <p className="text-dim-gray text-sm">Detailed vulnerability reports with proof-of-concept, impact assessment, and remediation guidance.</p>
-                    </div>
-                  </div>
+          {/* Pricing Tiers */}
+          <div className="grid lg:grid-cols-3 gap-8 mb-16">
+            {/* Per-Report Plan */}
+            <div className="terminal-card p-8 rounded-xl border border-matrix/30 bg-black/60 backdrop-blur-sm">
+              <div className="text-center mb-6">
+                <div className="w-16 h-16 rounded-full bg-matrix/10 flex items-center justify-center mx-auto mb-4 border border-matrix/30">
+                  <span className="text-matrix font-mono text-2xl font-bold">•</span>
                 </div>
+                <h3 className="text-2xl font-mono text-light-gray font-bold mb-2">Per-Report Plan</h3>
+                <div className="text-4xl font-mono text-matrix font-bold mb-2">$150</div>
+                <p className="text-dim-gray text-sm">per report</p>
               </div>
+              <p className="text-dim-gray text-center mb-6">
+                Ideal for companies with occasional submissions.
+              </p>
+              <ul className="space-y-3 mb-8">
+                <li className="flex items-center text-dim-gray">
+                  <CheckCircle className="h-4 w-4 text-matrix mr-3 flex-shrink-0" />
+                  <span className="text-sm">Professional triage per report</span>
+                </li>
+                <li className="flex items-center text-dim-gray">
+                  <CheckCircle className="h-4 w-4 text-matrix mr-3 flex-shrink-0" />
+                  <span className="text-sm">Detailed vulnerability assessment</span>
+                </li>
+                <li className="flex items-center text-dim-gray">
+                  <CheckCircle className="h-4 w-4 text-matrix mr-3 flex-shrink-0" />
+                  <span className="text-sm">AI-powered validation</span>
+                </li>
+                <li className="flex items-center text-dim-gray">
+                  <CheckCircle className="h-4 w-4 text-matrix mr-3 flex-shrink-0" />
+                  <span className="text-sm">Standard reporting</span>
+                </li>
+              </ul>
+              <Button variant="outline" className="w-full border-matrix/50 text-matrix hover:bg-matrix/10 font-mono py-3">
+                Get Started
+              </Button>
             </div>
 
-            <div className="terminal-card p-8 rounded-xl border border-matrix/30 bg-gradient-to-br from-matrix/10 to-green-400/10">
-              <div className="text-center mb-8">
-                <Shield className="h-16 w-16 text-matrix mx-auto mb-4" />
-                <h3 className="text-2xl font-mono text-matrix font-bold mb-2">Premium Enterprise Service</h3>
-                <p className="text-dim-gray mb-2">Dedicated managed security program</p>
-                <div className="inline-flex items-center px-4 py-2 rounded-full border border-matrix/30 bg-black/40">
-                  <span className="text-matrix font-mono text-sm font-bold">Starting at $2,999/month</span>
+            {/* Monthly Plan */}
+            <div className="terminal-card p-8 rounded-xl border-2 border-matrix bg-gradient-to-br from-matrix/10 to-green-400/10 relative">
+              <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
+                <div className="bg-matrix text-black px-4 py-1 rounded-full text-sm font-mono font-bold">
+                  POPULAR
                 </div>
               </div>
-              
-              <div className="space-y-6">
-                <div className="flex items-center">
-                  <div className="w-8 h-8 rounded-full bg-matrix/20 flex items-center justify-center mr-4 border-2 border-matrix">
-                    <span className="text-matrix font-mono font-bold">1</span>
-                  </div>
-                  <div>
-                    <p className="text-light-gray font-mono font-bold">Consultation Call</p>
-                    <p className="text-dim-gray text-sm">30-minute security assessment with our experts</p>
-                  </div>
+              <div className="text-center mb-6">
+                <div className="w-16 h-16 rounded-full bg-matrix/20 flex items-center justify-center mx-auto mb-4 border-2 border-matrix">
+                  <span className="text-matrix font-mono text-2xl font-bold">•</span>
                 </div>
-                
-                <div className="flex items-center">
-                  <div className="w-8 h-8 rounded-full bg-matrix/20 flex items-center justify-center mr-4 border-2 border-matrix">
-                    <span className="text-matrix font-mono font-bold">2</span>
-                  </div>
-                  <div>
-                    <p className="text-light-gray font-mono font-bold">Program Design</p>
-                    <p className="text-dim-gray text-sm">Custom program setup tailored to your infrastructure</p>
-                  </div>
-                </div>
-                
-                <div className="flex items-center">
-                  <div className="w-8 h-8 rounded-full bg-matrix/20 flex items-center justify-center mr-4 border-2 border-matrix">
-                    <span className="text-matrix font-mono font-bold">3</span>
-                  </div>
-                  <div>
-                    <p className="text-light-gray font-mono font-bold">Launch & Monitor</p>
-                    <p className="text-dim-gray text-sm">Go live with 24/7 expert monitoring and management</p>
-                  </div>
-                </div>
+                <h3 className="text-2xl font-mono text-light-gray font-bold mb-2">Monthly Plan</h3>
+                <div className="text-4xl font-mono text-matrix font-bold mb-2">$2,999</div>
+                <p className="text-dim-gray text-sm">per month</p>
               </div>
-              
-              <div className="mt-8 pt-6 border-t border-matrix/20">
-                <Link href="/auth?mode=register">
-                  <Button className="w-full glow-button text-lg font-mono py-4">
-                    Schedule Enterprise Consultation <ArrowRight className="ml-2 h-5 w-5" />
-                  </Button>
-                </Link>
-                <p className="text-center text-dim-gray text-sm mt-3">
-                  Free consultation • Custom enterprise pricing
-                </p>
+              <p className="text-dim-gray text-center mb-6">
+                Unlimited triage reports + Dedicated security analyst.
+              </p>
+              <ul className="space-y-3 mb-8">
+                <li className="flex items-center text-dim-gray">
+                  <CheckCircle className="h-4 w-4 text-matrix mr-3 flex-shrink-0" />
+                  <span className="text-sm">Unlimited vulnerability triage</span>
+                </li>
+                <li className="flex items-center text-dim-gray">
+                  <CheckCircle className="h-4 w-4 text-matrix mr-3 flex-shrink-0" />
+                  <span className="text-sm">Dedicated security analyst</span>
+                </li>
+                <li className="flex items-center text-dim-gray">
+                  <CheckCircle className="h-4 w-4 text-matrix mr-3 flex-shrink-0" />
+                  <span className="text-sm">24/7 monitoring & response</span>
+                </li>
+                <li className="flex items-center text-dim-gray">
+                  <CheckCircle className="h-4 w-4 text-matrix mr-3 flex-shrink-0" />
+                  <span className="text-sm">Advanced AI triage</span>
+                </li>
+                <li className="flex items-center text-dim-gray">
+                  <CheckCircle className="h-4 w-4 text-matrix mr-3 flex-shrink-0" />
+                  <span className="text-sm">Monthly security reports</span>
+                </li>
+              </ul>
+              <Button className="w-full glow-button font-mono py-3">
+                Start Monthly Plan
+              </Button>
+            </div>
+
+            {/* Annual Plan */}
+            <div className="terminal-card p-8 rounded-xl border border-matrix/30 bg-black/60 backdrop-blur-sm">
+              <div className="text-center mb-6">
+                <div className="w-16 h-16 rounded-full bg-matrix/10 flex items-center justify-center mx-auto mb-4 border border-matrix/30">
+                  <span className="text-matrix font-mono text-2xl font-bold">•</span>
+                </div>
+                <h3 className="text-2xl font-mono text-light-gray font-bold mb-2">Annual Plan</h3>
+                <div className="text-4xl font-mono text-matrix font-bold mb-2">$29,990</div>
+                <p className="text-dim-gray text-sm">per year</p>
+                <div className="text-green-400 text-sm font-mono mt-1">Save $6,000/year</div>
               </div>
+              <p className="text-dim-gray text-center mb-6">
+                All monthly features + SLA-backed response times + Priority triage + Custom reporting.
+              </p>
+              <ul className="space-y-3 mb-8">
+                <li className="flex items-center text-dim-gray">
+                  <CheckCircle className="h-4 w-4 text-matrix mr-3 flex-shrink-0" />
+                  <span className="text-sm">Everything in Monthly Plan</span>
+                </li>
+                <li className="flex items-center text-dim-gray">
+                  <CheckCircle className="h-4 w-4 text-matrix mr-3 flex-shrink-0" />
+                  <span className="text-sm">SLA-backed response times</span>
+                </li>
+                <li className="flex items-center text-dim-gray">
+                  <CheckCircle className="h-4 w-4 text-matrix mr-3 flex-shrink-0" />
+                  <span className="text-sm">Priority triage queue</span>
+                </li>
+                <li className="flex items-center text-dim-gray">
+                  <CheckCircle className="h-4 w-4 text-matrix mr-3 flex-shrink-0" />
+                  <span className="text-sm">Custom reporting & analytics</span>
+                </li>
+                <li className="flex items-center text-dim-gray">
+                  <CheckCircle className="h-4 w-4 text-matrix mr-3 flex-shrink-0" />
+                  <span className="text-sm">Dedicated account manager</span>
+                </li>
+              </ul>
+              <Button variant="outline" className="w-full border-matrix/50 text-matrix hover:bg-matrix/10 font-mono py-3">
+                Choose Annual
+              </Button>
             </div>
           </div>
+
+          {/* CTA Section */}
+          <div className="text-center">
+            <Link href="/auth?mode=register">
+              <Button className="glow-button text-xl font-mono py-6 px-12 rounded-lg mb-4">
+                Start a Free Consultation <ArrowRight className="ml-3 h-6 w-6" />
+              </Button>
+            </Link>
+            <p className="text-dim-gray text-sm">
+              Free 30-minute security assessment • No commitment required • Custom enterprise solutions available
+            </p>
+          </div>
+        </div>
+      </section>
+
+          
 
           {/* Key Benefits Grid */}
           <div className="grid md:grid-cols-3 gap-8">
