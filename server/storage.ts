@@ -1099,17 +1099,17 @@ export const storage = {
       try {
         // Simple approach without complex SQL templates
         const collectedCommissions = await db.select().from(commissions).where(eq(commissions.status, 'collected'));
-        
+
         let filteredCommissions = collectedCommissions;
         if (startDate && endDate) {
           filteredCommissions = collectedCommissions.filter(c => 
             c.createdAt && c.createdAt >= startDate && c.createdAt <= endDate
           );
         }
-        
+
         const totalCommissions = filteredCommissions.reduce((sum, c) => sum + (c.commissionAmount || 0), 0);
         const count = filteredCommissions.length;
-        
+
         return { totalCommissions, count };
       } catch (error) {
         console.error('Error getting total commissions:', error);
@@ -1236,7 +1236,7 @@ export const storage = {
               eq(paymentRateLimits.actionType, actionType)
             )
           );
-        
+
         const existing = results.find(r => r.windowStart && r.windowStart > windowStart);
 
         if (existing) {
@@ -1291,7 +1291,7 @@ export const storage = {
         // Filter by date if provided
         let filteredPayments = allPayments;
         let filteredPayouts = allPayouts;
-        
+
         if (startDate && endDate) {
           filteredPayments = allPayments.filter(p => p.createdAt && p.createdAt >= startDate && p.createdAt <= endDate);
           filteredPayouts = allPayouts.filter(p => p.createdAt && p.createdAt >= startDate && p.createdAt <= endDate);
@@ -2292,4 +2292,102 @@ export const storage = {
     }
     return null;
   },
+   async getUserByUsername(username: string) {
+    if (db) {
+      try {
+        const result = await db.select().from(users).where(eq(users.username, username));
+        return result[0] || null;
+      } catch (error) {
+        console.error('Error getting user by username:', error);
+        return null;
+      }
+    }
+    return memoryStorage.users.get(username) || null;
+  },
+  async updateTriageAnalystWorkload(analystId: number, workload: number) {
+    if (db) {
+      try {
+        const [analyst] = await db
+          .update(triageAnalysts)
+          .set({ currentWorkload: workload, updatedAt: new Date() })
+          .where(eq(triageAnalysts.id, analystId))
+          .returning();
+        return analyst;
+      } catch (error) {
+        console.error('Error updating triage analyst workload:', error);
+        return null;
+      }
+    }
+    return null;
+  },
+   // Admin-specific methods
+   async getUserCount() {
+    if (db) {
+    try {
+      const [{ value }] = await db.select({ value: count() }).from(users);
+      return value;
+    } catch (error) {
+      console.error("Error getting user count:", error);
+      return 0;
+    }
+    }
+    return 0;
+  },
+
+  async getActiveProgramsCount() {
+    if (db) {
+    try {
+      const [{ value }] = await db.select({ value: count() })
+        .from(programs)
+        .where(eq(programs.status, 'active'));
+      return value;
+    } catch (error) {
+      console.error("Error getting active programs count:", error);
+      return 0;
+    }
+    }
+    return 0;
+  },
+
+  async getSubmissionsCount() {
+    if (db) {
+    try {
+      const [{ value }] = await db.select({ value: count() }).from(submissions);
+      return value;
+    } catch (error) {
+      console.error("Error getting submissions count:", error);
+      return 0;
+    }
+    }
+    return 0;
+  },
+
+  async getPendingReviewsCount() {
+    if (db) {
+    try {
+      // If moderation reviews table exists
+      const [{ value }] = await db.select({ value: count() })
+        .from(moderationReviews)
+        .where(eq(moderationReviews.status, 'pending'));
+      return value;
+    } catch (error) {
+      console.error("Error getting pending reviews count:", error);
+      return 0;
+    }
+    }
+    return 0;
+  },
+
+  async getAllUsers() {
+    if (db) {
+    try {
+      const allUsers = await db.select().from(users).orderBy(desc(users.createdAt));
+      return allUsers;
+    } catch (error) {
+      console.error("Error getting all users:", error);
+      return [];
+    }
+    }
+    return [];
+  }
 };

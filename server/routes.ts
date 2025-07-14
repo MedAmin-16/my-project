@@ -997,6 +997,131 @@ export function registerRoutes(app: Express): Server {
     }
   });
 
+  // Admin Authentication Routes
+  app.post("/api/admin/login", async (req, res) => {
+    try {
+      const { email, password } = req.body;
+
+      // For demo purposes - in production, use proper admin authentication
+      if (email === "admin@cyberhunt.com" && password === "AdminSecure123!") {
+        // Create a simple admin token
+        const adminToken = Buffer.from(`admin:${Date.now()}`).toString('base64');
+        
+        // Store admin session
+        req.session.adminUser = { 
+          id: 1, 
+          email: email, 
+          userType: 'admin',
+          loginTime: new Date().toISOString()
+        };
+
+        res.json({ 
+          success: true, 
+          token: adminToken, 
+          message: "Admin login successful" 
+        });
+      } else {
+        res.status(401).json({ 
+          success: false, 
+          message: "Invalid admin credentials" 
+        });
+      }
+    } catch (error) {
+      console.error("Admin login error:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  app.get("/api/admin/verify", async (req, res) => {
+    try {
+      const authHeader = req.headers.authorization;
+      const token = authHeader?.replace('Bearer ', '');
+
+      if (!token) {
+        return res.status(401).json({ error: "No token provided" });
+      }
+
+      // Check if admin session exists
+      if (req.session.adminUser) {
+        res.json({ 
+          valid: true, 
+          user: req.session.adminUser 
+        });
+      } else {
+        res.status(401).json({ error: "Invalid admin session" });
+      }
+    } catch (error) {
+      console.error("Admin verification error:", error);
+      res.status(401).json({ error: "Token verification failed" });
+    }
+  });
+
+  app.post("/api/admin/logout", async (req, res) => {
+    try {
+      // Clear admin session
+      if (req.session.adminUser) {
+        delete req.session.adminUser;
+      }
+      
+      res.json({ success: true, message: "Admin logout successful" });
+    } catch (error) {
+      console.error("Admin logout error:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  app.get("/api/admin/stats", async (req, res) => {
+    try {
+      const authHeader = req.headers.authorization;
+      const token = authHeader?.replace('Bearer ', '');
+
+      if (!token || !req.session.adminUser) {
+        return res.status(401).json({ error: "Admin authentication required" });
+      }
+
+      // Get admin statistics
+      const stats = {
+        totalUsers: await storage.getUserCount() || 0,
+        activePrograms: await storage.getActiveProgramsCount() || 0,
+        totalSubmissions: await storage.getSubmissionsCount() || 0,
+        pendingReviews: await storage.getPendingReviewsCount() || 0
+      };
+
+      res.json(stats);
+    } catch (error) {
+      console.error("Error fetching admin stats:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  app.get("/api/admin/users", async (req, res) => {
+    try {
+      const authHeader = req.headers.authorization;
+      const token = authHeader?.replace('Bearer ', '');
+
+      if (!token || !req.session.adminUser) {
+        return res.status(401).json({ error: "Admin authentication required" });
+      }
+
+      const users = await storage.getAllUsers() || [];
+      
+      // Remove sensitive information
+      const sanitizedUsers = users.map(user => ({
+        id: user.id,
+        username: user.username,
+        email: user.email,
+        userType: user.userType,
+        createdAt: user.createdAt,
+        emailVerified: user.emailVerified
+      }));
+
+      res.json(sanitizedUsers);
+    } catch (error) {
+      console.error("Error fetching admin users:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
   const server = createServer(app);
   return server;
 }

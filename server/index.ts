@@ -70,12 +70,20 @@ app.use(session({
   secret: process.env.SESSION_SECRET || 'your-secret-key',
   resave: false,
   saveUninitialized: false,
+  saveUninitialized: false,
   cookie: {
     secure: process.env.NODE_ENV === 'production',
     sameSite: 'lax',
     maxAge: 24 * 60 * 60 * 1000 // 24 hours
   }
 }));
+
+declare module "express-session" {
+  interface SessionData {
+    user?: { id: number; userType?: string; };
+    adminUser?: { id: number; email: string; userType: string; loginTime: string; };
+  }
+}
 
 
 
