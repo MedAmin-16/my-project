@@ -143,7 +143,15 @@ app.use((req, res, next) => {
   // this serves both the API and the client.
   // It is the only port that is not firewalled.
   const port = 5000;
-  server.listen(port, "0.0.0.0", () => {
+  server.listen(port, "0.0.0.0", async () => {
     log(`serving on port ${port}`);
+
+    // Initialize crypto networks on startup
+    try {
+      const { initializeCryptoNetworks } = await import('./init-crypto-networks');
+      await initializeCryptoNetworks();
+    } catch (error) {
+      console.warn('Failed to initialize crypto networks:', error);
+    }
   });
 })();

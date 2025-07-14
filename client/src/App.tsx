@@ -31,7 +31,11 @@ import ActivitiesPage from "@/pages/activities-page";
 import AboutPage from "@/pages/about-page";
 import AdminCompanyWalletsPage from "@/pages/admin-company-wallets-page";
 import AdminWithdrawalsPage from "@/pages/admin-withdrawals-page";
-import AdminPaymentDashboard from "./pages/admin-payment-dashboard";
+import AdminPaymentDashboard from './pages/admin-payment-dashboard';
+import CryptoPaymentPage from './pages/crypto-payment-page';
+import CryptoWithdrawalPage from './pages/crypto-withdrawal-page';
+import TermsOfServicePage from './pages/terms-of-service';
+import { Redirect } from 'wouter';
 import PaymentDashboardPage from "./pages/payment-dashboard-page";
 import ResearcherPayoutsPage from "./pages/researcher-payouts-page";
 import CompanyWalletPage from "@/pages/company-wallet-page";
@@ -119,7 +123,15 @@ function Router() {
       <ProtectedRoute path="/company/wallet" component={CompanyWalletPage} />
       <ProtectedRoute path="/admin/company-wallets" component={AdminCompanyWalletsPage} />
       <ProtectedRoute path="/admin/withdrawals" component={AdminWithdrawalsPage} />
-       <ProtectedRoute path="/admin/payments" component={AdminPaymentDashboard} />
+      <ProtectedRoute path="/admin/payments" component={AdminPaymentDashboard} />
+      <ProtectedRoute path="/crypto/payments" component={CryptoPaymentPage} />
+      <ProtectedRoute path="/crypto/withdrawals" component={CryptoWithdrawalPage} />
+      <Route path="/terms-of-service">
+        {() => <TermsOfServicePage />}
+      </Route>
+      <Route path="/terms">
+        {() => <Redirect to="/terms-of-service" />}
+      </Route>
       <ProtectedRoute path="/payment-dashboard" component={PaymentDashboardPage} />
       <ProtectedRoute path="/researcher-payouts" component={ResearcherPayoutsPage} />
       <Route path="/admin" component={AdminLoginPage} />

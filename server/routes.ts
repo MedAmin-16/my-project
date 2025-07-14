@@ -1122,6 +1122,222 @@ export function registerRoutes(app: Express): Server {
     }
   });
 
+  // Cryptocurrency Payment Routes
+  
+  // Get crypto network settings
+  app.get("/api/crypto/networks", async (req, res) => {
+    try {
+      const networks = await storage.getCryptoNetworkSettings();
+      res.json(networks);
+    } catch (error) {
+      console.error("Error fetching crypto networks:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  // Create Binance Pay order for companies
+  app.post("/api/crypto/payment-intent", async (req, res) => {
+    try {
+      if (!req.session?.user?.id) {
+        return res.status(401).json({ error: "Authentication required" });
+      }
+
+      const user = await storage.getUser(req.session.user.id);
+      if (!user || user.userType !== 'company') {
+        return res.status(403).json({ error: "Company access required" });
+      }
+
+      const { amount, currency = 'USDT', purpose = 'wallet_topup' } = req.body;
+
+      if (!amount || amount <= 0) {
+        return res.status(400).json({ error: "Invalid amount" });
+      }
+
+      const { CryptoPaymentService } = await import('./crypto-payment-service');
+      const result = await CryptoPaymentService.createBinancePayOrder(
+        user.id,
+        amount,
+        currency,
+        purpose
+      );
+
+      res.json(result);
+    } catch (error) {
+      console.error("Error creating crypto payment intent:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  // Get company crypto payment history
+  app.get("/api/crypto/payments", async (req, res) => {
+    try {
+      if (!req.session?.user?.id) {
+        return res.status(401).json({ error: "Authentication required" });
+      }
+
+      const user = await storage.getUser(req.session.user.id);
+      if (!user || user.userType !== 'company') {
+        return res.status(403).json({ error: "Company access required" });
+      }
+
+      const payments = await storage.getCryptoPaymentIntentsByCompany(user.id);
+      res.json(payments);
+    } catch (error) {
+      console.error("Error fetching crypto payments:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  // Add user crypto wallet
+  app.post("/api/crypto/wallets", async (req, res) => {
+    try {
+      if (!req.session?.user?.id) {
+        return res.status(401).json({ error: "Authentication required" });
+      }
+
+      const { walletType, walletAddress, network } = req.body;
+
+      if (!walletType || !walletAddress || !network) {
+        return res.status(400).json({ error: "Missing required fields" });
+      }
+
+      const { CryptoPaymentService } = await import('./crypto-payment-service');
+      const wallet = await CryptoPaymentService.addUserWallet(req.session.user.id, {
+        walletType,
+        walletAddress,
+        network
+      });
+
+      res.status(201).json(wallet);
+    } catch (error) {
+      console.error("Error adding crypto wallet:", error);
+      res.status(500).json({ error: error.message || "Internal server error" });
+    }
+  });
+
+  // Get user crypto wallets
+  app.get("/api/crypto/wallets", async (req, res) => {
+    try {
+      if (!req.session?.user?.id) {
+        return res.status(401).json({ error: "Authentication required" });
+      }
+
+      const { CryptoPaymentService } = await import('./crypto-payment-service');
+      const wallets = await CryptoPaymentService.getUserWallets(req.session.user.id);
+      res.json(wallets);
+    } catch (error) {
+      console.error("Error fetching crypto wallets:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  // Create crypto withdrawal
+  app.post("/api/crypto/withdrawals", async (req, res) => {
+    try {
+      if (!req.session?.user?.id) {
+        return res.status(401).json({ error: "Authentication required" });
+      }
+
+      const { amount, currency, walletAddress, network } = req.body;
+
+      if (!amount || !currency || !walletAddress || !network) {
+        return res.status(400).json({ error: "Missing required fields" });
+      }
+
+      if (amount <= 0) {
+        return res.status(400).json({ error: "Invalid amount" });
+      }
+
+      const { CryptoPaymentService } = await import('./crypto-payment-service');
+      const withdrawal = await CryptoPaymentService.createCryptoWithdrawal({
+        userId: req.session.user.id,
+        amount,
+        currency,
+        walletAddress,
+        network
+      });
+
+      res.status(201).json(withdrawal);
+    } catch (error) {
+      console.error("Error creating crypto withdrawal:", error);
+      res.status(500).json({ error: error.message || "Internal server error" });
+    }
+  });
+
+  // Get user crypto withdrawals
+  app.get("/api/crypto/withdrawals", async (req, res) => {
+    try {
+      if (!req.session?.user?.id) {
+        return res.status(401).json({ error: "Authentication required" });
+      }
+
+      const { CryptoPaymentService } = await import('./crypto-payment-service');
+      const withdrawals = await CryptoPaymentService.getCryptoWithdrawals(req.session.user.id);
+      res.json(withdrawals);
+    } catch (error) {
+      console.error("Error fetching crypto withdrawals:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  // Get user crypto transactions
+  app.get("/api/crypto/transactions", async (req, res) => {
+    try {
+      if (!req.session?.user?.id) {
+        return res.status(401).json({ error: "Authentication required" });
+      }
+
+      const transactions = await storage.getCryptoTransactionsByUser(req.session.user.id);
+      res.json(transactions);
+    } catch (error) {
+      console.error("Error fetching crypto transactions:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  // Binance Pay webhook
+  app.post("/api/crypto/webhooks/binance", async (req, res) => {
+    try {
+      const signature = req.headers['binancepay-signature'] as string;
+      const timestamp = req.headers['binancepay-timestamp'] as string;
+      const body = JSON.stringify(req.body);
+
+      const { CryptoPaymentService } = await import('./crypto-payment-service');
+      
+      // Verify webhook signature
+      const isValid = CryptoPaymentService.verifyWebhookSignature(signature, timestamp, body);
+      if (!isValid) {
+        return res.status(401).json({ error: "Invalid signature" });
+      }
+
+      // Process webhook
+      const result = await CryptoPaymentService.handleBinancePayWebhook(req.body);
+      res.json(result);
+    } catch (error) {
+      console.error("Error handling Binance Pay webhook:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  // Admin crypto statistics
+  app.get("/api/admin/crypto/stats", async (req, res) => {
+    try {
+      const authHeader = req.headers.authorization;
+      const token = authHeader?.replace('Bearer ', '');
+
+      if (!token || !req.session.adminUser) {
+        return res.status(401).json({ error: "Admin authentication required" });
+      }
+
+      const { CryptoPaymentService } = await import('./crypto-payment-service');
+      const stats = await CryptoPaymentService.getCryptoStatistics();
+      res.json(stats);
+    } catch (error) {
+      console.error("Error fetching crypto statistics:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
   const server = createServer(app);
   return server;
 }

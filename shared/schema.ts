@@ -788,3 +788,178 @@ export type InsertModerationAuditLog = z.infer<typeof insertModerationAuditLogSc
 
 export type ModerationNotification = typeof moderationNotifications.$inferSelect;
 export type InsertModerationNotification = z.infer<typeof insertModerationNotificationSchema>;
+
+// Cryptocurrency Payment Tables
+export const cryptoWallets = pgTable("crypto_wallets", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").notNull().references(() => users.id),
+  walletType: text("wallet_type").notNull(), // binance, metamask, trust_wallet, etc.
+  walletAddress: text("wallet_address").notNull(), // encrypted
+  network: text("network").notNull(), // bitcoin, ethereum, bsc, tron, etc.
+  isVerified: boolean("is_verified").default(false),
+  verificationCode: text("verification_code"),
+  lastUsed: timestamp("last_used"),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at")
+});
+
+export const cryptoPaymentIntents = pgTable("crypto_payment_intents", {
+  id: serial("id").primaryKey(),
+  companyId: integer("company_id").notNull().references(() => users.id),
+  amount: integer("amount").notNull(), // in cents
+  currency: text("currency").default("USDT"), // USDT, BTC, ETH, BNB, etc.
+  purpose: text("purpose").notNull(), // wallet_topup, bounty_payment, subscription
+  status: text("status").default("pending"), // pending, completed, failed, expired
+  provider: text("provider").notNull().default("binance_pay"), // binance_pay, coinbase, etc.
+  providerOrderId: text("provider_order_id").unique(),
+  merchantOrderId: text("merchant_order_id").unique(),
+  transactionId: text("transaction_id"), // blockchain transaction ID
+  metadata: jsonb("metadata"), // provider-specific data
+  completedAt: timestamp("completed_at"),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at")
+});
+
+export const cryptoWithdrawals = pgTable("crypto_withdrawals", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").notNull().references(() => users.id),
+  amount: integer("amount").notNull(), // in cents
+  currency: text("currency").notNull(), // USDT, BTC, ETH, BNB, etc.
+  walletAddress: text("wallet_address").notNull(), // encrypted destination address
+  network: text("network").notNull(), // bitcoin, ethereum, bsc, tron, etc.
+  status: text("status").default("pending"), // pending, processing, completed, failed, cancelled
+  provider: text("provider").notNull().default("binance_pay"),
+  transactionId: text("transaction_id"), // blockchain transaction ID
+  providerWithdrawalId: text("provider_withdrawal_id"), // provider's withdrawal ID
+  networkFee: integer("network_fee").default(0), // network fee in cents
+  failureReason: text("failure_reason"),
+  scheduledFor: timestamp("scheduled_for"),
+  completedAt: timestamp("completed_at"),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at")
+});
+
+export const cryptoTransactions = pgTable("crypto_transactions", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").references(() => users.id),
+  companyId: integer("company_id").references(() => users.id),
+  transactionType: text("transaction_type").notNull(), // payment_in, withdrawal_out, fee, commission
+  amount: integer("amount").notNull(), // in cents
+  currency: text("currency").notNull(),
+  fromAddress: text("from_address"),
+  toAddress: text("to_address"),
+  transactionHash: text("transaction_hash"),
+  blockNumber: integer("block_number"),
+  networkFee: integer("network_fee").default(0),
+  confirmations: integer("confirmations").default(0),
+  requiredConfirmations: integer("required_confirmations").default(1),
+  status: text("status").default("pending"), // pending, confirmed, failed
+  relatedPaymentIntentId: integer("related_payment_intent_id").references(() => cryptoPaymentIntents.id),
+  relatedWithdrawalId: integer("related_withdrawal_id").references(() => cryptoWithdrawals.id),
+  metadata: jsonb("metadata"),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at")
+});
+
+export const cryptoWalletVerifications = pgTable("crypto_wallet_verifications", {
+  id: serial("id").primaryKey(),
+  walletId: integer("wallet_id").notNull().references(() => cryptoWallets.id),
+  verificationMethod: text("verification_method").notNull(), // signature, micro_transaction, message_signing
+  verificationData: text("verification_data"), // signature, transaction hash, etc.
+  status: text("status").default("pending"), // pending, verified, failed
+  attempts: integer("attempts").default(0),
+  maxAttempts: integer("max_attempts").default(3),
+  expiresAt: timestamp("expires_at"),
+  verifiedAt: timestamp("verified_at"),
+  createdAt: timestamp("created_at").defaultNow()
+});
+
+export const cryptoNetworkSettings = pgTable("crypto_network_settings", {
+  id: serial("id").primaryKey(),
+  network: text("network").notNull().unique(), // bitcoin, ethereum, bsc, tron, etc.
+  displayName: text("display_name").notNull(),
+  currency: text("currency").notNull(), // BTC, ETH, BNB, TRX, etc.
+  isActive: boolean("is_active").default(true),
+  minWithdrawal: integer("min_withdrawal").notNull(), // minimum withdrawal in cents
+  maxWithdrawal: integer("max_withdrawal").notNull(), // maximum withdrawal in cents
+  networkFee: integer("network_fee").notNull(), // standard network fee in cents
+  confirmationsRequired: integer("confirmations_required").default(1),
+  processingTimeMinutes: integer("processing_time_minutes").default(30),
+  metadata: jsonb("metadata"), // network-specific configuration
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at")
+});
+
+// Insert schemas for crypto tables
+export const insertCryptoWalletSchema = createInsertSchema(cryptoWallets).pick({
+  userId: true,
+  walletType: true,
+  walletAddress: true,
+  network: true,
+  isVerified: true
+});
+
+export const insertCryptoPaymentIntentSchema = createInsertSchema(cryptoPaymentIntents).pick({
+  companyId: true,
+  amount: true,
+  currency: true,
+  purpose: true,
+  provider: true,
+  providerOrderId: true,
+  merchantOrderId: true,
+  metadata: true
+});
+
+export const insertCryptoWithdrawalSchema = createInsertSchema(cryptoWithdrawals).pick({
+  userId: true,
+  amount: true,
+  currency: true,
+  walletAddress: true,
+  network: true,
+  provider: true,
+  scheduledFor: true
+});
+
+export const insertCryptoTransactionSchema = createInsertSchema(cryptoTransactions).pick({
+  userId: true,
+  companyId: true,
+  transactionType: true,
+  amount: true,
+  currency: true,
+  fromAddress: true,
+  toAddress: true,
+  transactionHash: true,
+  networkFee: true,
+  relatedPaymentIntentId: true,
+  relatedWithdrawalId: true,
+  metadata: true
+});
+
+export const insertCryptoNetworkSettingsSchema = createInsertSchema(cryptoNetworkSettings).pick({
+  network: true,
+  displayName: true,
+  currency: true,
+  isActive: true,
+  minWithdrawal: true,
+  maxWithdrawal: true,
+  networkFee: true,
+  confirmationsRequired: true,
+  processingTimeMinutes: true,
+  metadata: true
+});
+
+// Type exports for crypto system
+export type CryptoWallet = typeof cryptoWallets.$inferSelect;
+export type InsertCryptoWallet = z.infer<typeof insertCryptoWalletSchema>;
+
+export type CryptoPaymentIntent = typeof cryptoPaymentIntents.$inferSelect;
+export type InsertCryptoPaymentIntent = z.infer<typeof insertCryptoPaymentIntentSchema>;
+
+export type CryptoWithdrawal = typeof cryptoWithdrawals.$inferSelect;
+export type InsertCryptoWithdrawal = z.infer<typeof insertCryptoWithdrawalSchema>;
+
+export type CryptoTransaction = typeof cryptoTransactions.$inferSelect;
+export type InsertCryptoTransaction = z.infer<typeof insertCryptoTransactionSchema>;
+
+export type CryptoNetworkSettings = typeof cryptoNetworkSettings.$inferSelect;
+export type InsertCryptoNetworkSettings = z.infer<typeof insertCryptoNetworkSettingsSchema>;

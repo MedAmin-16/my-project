@@ -1,11 +1,13 @@
 import { drizzle } from 'drizzle-orm/postgres-js';
+import { eq, desc, asc, gte, lte, and, or, like, sql, count, sum } from "drizzle-orm";
 import postgres from 'postgres';
-import { users, programs, submissions, activities, notifications, wallets, transactions, withdrawals, publicMessages, triageServices, triageReports, triageCommunications, triageSubscriptions, triageAnalysts, moderationTeam, moderationReviews, moderationComments, moderationAuditLog, moderationNotifications, type User, type InsertUser, type Program, type InsertProgram, type Submission, type InsertSubmission, type Activity, type InsertActivity, type Notification, type InsertNotification, type Wallet, type Transaction, type InsertTransaction, type Withdrawal, type InsertWithdrawal, type CompanyWallet, type InsertCompanyWallet, type CompanyTransaction, type InsertCompanyTransaction, companyWallets, companyTransactions, paymentMethods, escrowAccounts, paymentIntents, payouts, commissions, transactionLogs, paymentDisputes, paymentRateLimits, type PaymentMethod, type InsertPaymentMethod, type EscrowAccount, type InsertEscrowAccount, type PaymentIntent, type InsertPaymentIntent, type Payout, type InsertPayout, type Commission, type InsertCommission, type TransactionLog, type PaymentDispute, type InsertPaymentDispute, type PublicMessage, type InsertPublicMessage, type TriageService, type InsertTriageReport, type TriageCommunication, type InsertTriageCommunication, type TriageSubscription, type InsertTriageSubscription, type TriageAnalyst, type InsertModerationTeam, type InsertModerationReview, type InsertModerationComment, type InsertModerationAuditLog, type InsertModerationNotification } from '@shared/schema';
-import { and, eq, desc, sql, gte, lte, count, avg } from "drizzle-orm";
+import { users, programs, submissions, activities, notifications, wallets, transactions, withdrawals, publicMessages, triageServices, triageReports, triageCommunications, triageSubscriptions, triageAnalysts, moderationTeam, moderationReviews, moderationComments, moderationAuditLog, moderationNotifications, type User, type InsertUser, type Program, type InsertProgram, type Submission, type InsertSubmission, type Activity, type InsertActivity, type Notification, type InsertNotification, type Wallet, type Transaction, type InsertTransaction, type Withdrawal, type InsertWithdrawal, type CompanyWallet, type InsertCompanyWallet, type CompanyTransaction, type InsertCompanyTransaction, companyWallets, companyTransactions, paymentMethods, escrowAccounts, paymentIntents, payouts, commissions, transactionLogs, paymentDisputes, paymentRateLimits, type PaymentMethod, type InsertPaymentMethod, type EscrowAccount, type InsertEscrowAccount, type PaymentIntent, type InsertPaymentIntent, type Payout, type InsertPayout, type Commission, type InsertCommission, type TransactionLog, type PaymentDispute, type InsertPaymentDispute, type PublicMessage, type InsertPublicMessage, type TriageService, type InsertTriageReport, type TriageCommunication, type InsertTriageCommunication, type TriageSubscription, type InsertTriageSubscription, type TriageAnalyst, type InsertModerationTeam, type InsertModerationReview, type InsertModerationComment, type InsertModerationAuditLog, type InsertModerationNotification, cryptoWallets, cryptoPaymentIntents,
+  cryptoWithdrawals, cryptoTransactions, cryptoNetworkSettings, type CryptoWallet, type InsertCryptoWallet, type CryptoPaymentIntent,
+  type InsertCryptoPaymentIntent, type CryptoWithdrawal, type InsertCryptoWithdrawal, type CryptoTransaction,
+  type InsertCryptoTransaction, type CryptoNetworkSettings, type InsertCryptoNetworkSettings } from '@shared/schema';
 import createMemoryStore from "memorystore";
 import session from "express-session";
 import { encrypt, decrypt } from "./crypto-utils";
-import crypto from "crypto";
 import Database from "@replit/database";
 
 const replitDb = new Database();
@@ -2135,8 +2137,10 @@ export const storage = {
     return null;
   },
 
-  async getModerationAuditLogs(reviewId?: number, submissionId?: number, limit = 50) {
-    if (db) {
+// Get moderation audit logs
+  async getModerationAuditLogs(reviewId?: number, submissionId?: number, limit: number = 50) {
+    if (!db) return [];
+
     try {
       let query = db.select({
         id: moderationAuditLog.id,
@@ -2167,132 +2171,284 @@ export const storage = {
       console.error('Error getting moderation audit logs:', error);
       return [];
     }
-    }
-    return [];
-  },
+  }
 
-  async getModerationNotifications(userId: number, limit = 50) {
+  // Cryptocurrency storage methods
+
+  // Crypto Wallets
+  ,async createCryptoWallet(walletData: InsertCryptoWallet) {
     if (db) {
     try {
-      return await db.select()
-        .from(moderationNotifications)
-        .where(eq(moderationNotifications.recipientId, userId))
-        .orderBy(desc(moderationNotifications.createdAt))
+      const [wallet] = await db.insert(cryptoWallets).values(walletData).returning();
+      return wallet;
+    } catch (error) {
+      console.error('Error creating crypto wallet:', error);
+      return null;
+    }
+    }
+    return null;
+  }
+
+  ,async getCryptoWalletsByUser(userId: number) {
+    if (db) {
+    try {
+      return await db.select().from(cryptoWallets)
+        .where(eq(cryptoWallets.userId, userId))
+        .orderBy(desc(cryptoWallets.createdAt));
+    } catch (error) {
+      console.error('Error getting user crypto wallets:', error);
+      return [];
+    }
+    }
+    return [];
+  }
+
+  ,async getCryptoWalletByAddress(walletAddress: string) {
+    if (db) {
+    try {
+      const [wallet] = await db.select().from(cryptoWallets)
+        .where(eq(cryptoWallets.walletAddress, walletAddress))
+        .limit(1);
+      return wallet || null;
+    } catch (error) {
+      console.error('Error getting crypto wallet by address:', error);
+      return null;
+    }
+    }
+    return null;
+  }
+
+  ,async updateCryptoWallet(walletId: number, updateData: Partial<CryptoWallet>) {
+    if (db) {
+    try {
+      const [wallet] = await db.update(cryptoWallets)
+        .set({ ...updateData, updatedAt: new Date() })
+        .where(eq(cryptoWallets.id, walletId))
+        .returning();
+      return wallet;
+    } catch (error) {
+      console.error('Error updating crypto wallet:', error);
+      return null;
+    }
+    }
+    return null;
+  }
+
+  // Crypto Payment Intents
+  ,async createCryptoPaymentIntent(intentData: InsertCryptoPaymentIntent) {
+    if (db) {
+    try {
+      const [intent] = await db.insert(cryptoPaymentIntents).values(intentData).returning();
+      return intent;
+    } catch (error) {
+      console.error('Error creating crypto payment intent:', error);
+      return null;
+    }
+    }
+    return null;
+  }
+
+  ,async getCryptoPaymentIntentByMerchantOrderId(merchantOrderId: string) {
+    if (db) {
+    try {
+      const [intent] = await db.select().from(cryptoPaymentIntents)
+        .where(eq(cryptoPaymentIntents.merchantOrderId, merchantOrderId))
+        .limit(1);
+      return intent || null;
+    } catch (error) {
+      console.error('Error getting crypto payment intent:', error);
+      return null;
+    }
+    }
+    return null;
+  }
+
+  ,async updateCryptoPaymentIntent(intentId: number, updateData: Partial<CryptoPaymentIntent>) {
+    if (db) {
+    try {
+      const [intent] = await db.update(cryptoPaymentIntents)
+        .set({ ...updateData, updatedAt: new Date() })
+        .where(eq(cryptoPaymentIntents.id, intentId))
+        .returning();
+      return intent;
+    } catch (error) {
+      console.error('Error updating crypto payment intent:', error);
+      return null;
+    }
+    }
+    return null;
+  }
+
+  ,async getCryptoPaymentIntentsByCompany(companyId: number, limit: number = 50) {
+    if (db) {
+    try {
+      return await db.select().from(cryptoPaymentIntents)
+        .where(eq(cryptoPaymentIntents.companyId, companyId))
+        .orderBy(desc(cryptoPaymentIntents.createdAt))
         .limit(limit);
     } catch (error) {
-      console.error('Error getting moderation notifications:', error);
+      console.error('Error getting company crypto payment intents:', error);
       return [];
     }
     }
     return [];
-  },
+  }
 
-  async createModerationNotification(data: InsertModerationNotification) {
+  // Crypto Withdrawals
+  ,async createCryptoWithdrawal(withdrawalData: InsertCryptoWithdrawal) {
     if (db) {
     try {
-      const [notification] = await db.insert(moderationNotifications)
-        .values({
-          ...data,
-          createdAt: new Date()
-        })
-        .returning();
-      return notification;
+      const [withdrawal] = await db.insert(cryptoWithdrawals).values(withdrawalData).returning();
+      return withdrawal;
     } catch (error) {
-      console.error('Error creating moderation notification:', error);
+      console.error('Error creating crypto withdrawal:', error);
       return null;
     }
     }
     return null;
-  },
+  }
 
-  async markNotificationAsRead(id: number) {
+  ,async updateCryptoWithdrawal(withdrawalId: number, updateData: Partial<CryptoWithdrawal>) {
     if (db) {
     try {
-      const [updated] = await db.update(moderationNotifications)
-        .set({
-          isRead: true,
-          readAt: new Date()
-        })
-        .where(eq(moderationNotifications.id, id))
+      const [withdrawal] = await db.update(cryptoWithdrawals)
+        .set({ ...updateData, updatedAt: new Date() })
+        .where(eq(cryptoWithdrawals.id, withdrawalId))
         .returning();
-      return updated;
+      return withdrawal;
     } catch (error) {
-      console.error('Error marking moderation notification as read:', error);
+      console.error('Error updating crypto withdrawal:', error);
       return null;
     }
     }
     return null;
-  },
+  }
 
-  async getAvailableReviewers(specialization?: string) {
+  ,async getCryptoWithdrawalsByUser(userId: number, limit: number = 50) {
     if (db) {
     try {
-      let query = db.select({
-        id: moderationTeam.id,
-        userId: moderationTeam.userId,
-        username: users.username,
-        role: moderationTeam.role,
-        department: moderationTeam.department,
-        specializations: moderationTeam.specializations,
-        maxAssignments: moderationTeam.maxAssignments,
-        currentAssignments: moderationTeam.currentAssignments
-      })
-      .from(moderationTeam)
-      .leftJoin(users, eq(moderationTeam.userId, users.id))
-      .where(eq(moderationTeam.isActive, true))
-      .orderBy(moderationTeam.currentAssignments);
-
-      if (specialization) {
-        // Simple filtering - get all and filter in JavaScript
-        const allTeam = await query;
-        return allTeam.filter(member => 
-          member.specializations && 
-          Array.isArray(member.specializations) &&
-          member.specializations.includes(specialization)
-        );
-      }
-
-      return await query;
+      return await db.select().from(cryptoWithdrawals)
+        .where(eq(cryptoWithdrawals.userId, userId))
+        .orderBy(desc(cryptoWithdrawals.createdAt))
+        .limit(limit);
     } catch (error) {
-      console.error('Error getting available reviewers:', error);
+      console.error('Error getting user crypto withdrawals:', error);
       return [];
     }
     }
     return [];
-  },
+  }
 
-  async getModerationStats(reviewerId?: number, dateFrom?: Date, dateTo?: Date) {
+  ,async getRecentCryptoWithdrawals(userId: number, hours: number = 24) {
     if (db) {
     try {
-      // Simple approach without complex SQL templates
-      const conditions = [];
-      if (reviewerId) conditions.push(eq(moderationReviews.reviewerId, reviewerId));
-      if (dateFrom) conditions.push(gte(moderationReviews.createdAt, dateFrom));
-      if (dateTo) conditions.push(lte(moderationReviews.createdAt, dateTo));
+      const hoursAgo = new Date(Date.now() - hours * 60 * 60 * 1000);
+      return await db.select().from(cryptoWithdrawals)
+        .where(
+          and(
+            eq(cryptoWithdrawals.userId, userId),
+            gte(cryptoWithdrawals.createdAt, hoursAgo)
+          )
+        )
+        .orderBy(desc(cryptoWithdrawals.createdAt));
+    } catch (error) {
+      console.error('Error getting recent crypto withdrawals:', error);
+      return [];
+    }
+    }
+    return [];
+  }
 
-      const whereClause = conditions.length > 0 ? and(...conditions) : undefined;
-      const allReviews = await db.select().from(moderationReviews).where(whereClause);
+  // Crypto Transactions
+  ,async createCryptoTransaction(transactionData: InsertCryptoTransaction) {
+    if (db) {
+    try {
+      const [transaction] = await db.insert(cryptoTransactions).values(transactionData).returning();
+      return transaction;
+    } catch (error) {
+      console.error('Error creating crypto transaction:', error);
+      return null;
+    }
+    }
+    return null;
+  }
 
-      const stats = {
-        total: allReviews.length,
-        pending: allReviews.filter(r => r.status === 'pending').length,
-        inReview: allReviews.filter(r => r.status === 'in_review').length,
-        approved: allReviews.filter(r => r.status === 'approved').length,
-        rejected: allReviews.filter(r => r.status === 'rejected').length,
-        criticalPriority: allReviews.filter(r => r.priority === 'critical').length,
-        highPriority: allReviews.filter(r => r.priority === 'high').length,
-        avgReviewTime: 0 // Simplified - can be calculated if needed
+  ,async getCryptoTransactionsByUser(userId: number, limit: number = 50) {
+    if (db) {
+    try {
+      return await db.select().from(cryptoTransactions)
+        .where(eq(cryptoTransactions.userId, userId))
+        .orderBy(desc(cryptoTransactions.createdAt))
+        .limit(limit);
+    } catch (error) {
+      console.error('Error getting user crypto transactions:', error);
+      return [];
+    }
+    }
+    return [];
+  }
+
+  // Crypto Network Settings
+  ,async createCryptoNetworkSettings(settingsData: InsertCryptoNetworkSettings) {
+    if (db) {
+    try {
+      const [settings] = await db.insert(cryptoNetworkSettings).values(settingsData).returning();
+      return settings;
+    } catch (error) {
+      console.error('Error creating crypto network settings:', error);
+      return null;
+    }
+    }
+    return null;
+  }
+
+  ,async getCryptoNetworkSettings() {
+    if (db) {
+    try {
+      return await db.select().from(cryptoNetworkSettings)
+        .where(eq(cryptoNetworkSettings.isActive, true))
+        .orderBy(cryptoNetworkSettings.displayName);
+    } catch (error) {
+      console.error('Error getting crypto network settings:', error);
+      return [];
+    }
+    }
+    return [];
+  }
+
+  // Crypto Statistics
+  ,async getCryptoStatistics() {
+    if (db) {
+    try {
+      const [paymentStats] = await db.select({
+        totalPayments: count(cryptoPaymentIntents.id),
+        totalPaymentVolume: sum(cryptoPaymentIntents.amount)
+      }).from(cryptoPaymentIntents)
+        .where(eq(cryptoPaymentIntents.status, 'completed'));
+
+      const [withdrawalStats] = await db.select({
+        totalWithdrawals: count(cryptoWithdrawals.id),
+        totalWithdrawalVolume: sum(cryptoWithdrawals.amount),
+        pendingWithdrawals: count(cryptoWithdrawals.id)
+      }).from(cryptoWithdrawals)
+        .where(eq(cryptoWithdrawals.status, 'pending'));
+
+      return {
+        totalPayments: paymentStats?.totalPayments || 0,
+        totalPaymentVolume: paymentStats?.totalPaymentVolume || 0,
+        totalWithdrawals: withdrawalStats?.totalWithdrawals || 0,
+        totalWithdrawalVolume: withdrawalStats?.totalWithdrawalVolume || 0,
+        pendingWithdrawals: withdrawalStats?.pendingWithdrawals || 0,
+        totalVolume: (paymentStats?.totalPaymentVolume || 0) + (withdrawalStats?.totalWithdrawalVolume || 0)
       };
-
-      return stats;
     } catch (error) {
-      console.error('Error getting moderation stats:', error);
-      return null;
+      console.error('Error getting crypto statistics:', error);
+      return {};
     }
     }
-    return null;
-  },
-   async getUserByUsername(username: string) {
+    return {};
+  }
+   ,async getUserByUsername(username: string) {
     if (db) {
       try {
         const result = await db.select().from(users).where(eq(users.username, username));
@@ -2303,8 +2459,8 @@ export const storage = {
       }
     }
     return memoryStorage.users.get(username) || null;
-  },
-  async updateTriageAnalystWorkload(analystId: number, workload: number) {
+  }
+  ,async updateTriageAnalystWorkload(analystId: number, workload: number) {
     if (db) {
       try {
         const [analyst] = await db
@@ -2319,9 +2475,9 @@ export const storage = {
       }
     }
     return null;
-  },
+  }
    // Admin-specific methods
-   async getUserCount() {
+   ,async getUserCount() {
     if (db) {
     try {
       const [{ value }] = await db.select({ value: count() }).from(users);
@@ -2332,9 +2488,9 @@ export const storage = {
     }
     }
     return 0;
-  },
+  }
 
-  async getActiveProgramsCount() {
+  ,async getActiveProgramsCount() {
     if (db) {
     try {
       const [{ value }] = await db.select({ value: count() })
@@ -2347,9 +2503,9 @@ export const storage = {
     }
     }
     return 0;
-  },
+  }
 
-  async getSubmissionsCount() {
+  ,async getSubmissionsCount() {
     if (db) {
     try {
       const [{ value }] = await db.select({ value: count() }).from(submissions);
@@ -2360,9 +2516,9 @@ export const storage = {
     }
     }
     return 0;
-  },
+  }
 
-  async getPendingReviewsCount() {
+  ,async getPendingReviewsCount() {
     if (db) {
     try {
       // If moderation reviews table exists
@@ -2376,9 +2532,9 @@ export const storage = {
     }
     }
     return 0;
-  },
+  }
 
-  async getAllUsers() {
+  ,async getAllUsers() {
     if (db) {
     try {
       const allUsers = await db.select().from(users).orderBy(desc(users.createdAt));
