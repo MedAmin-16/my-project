@@ -1609,6 +1609,63 @@ export function registerRoutes(app: Express): Server {
     }
   });
 
+  // User verification admin routes
+  app.get("/api/admin/company-users", async (req, res) => {
+    try {
+      const authHeader = req.headers.authorization;
+      const token = authHeader?.replace('Bearer ', '');
+
+      if (!token || !req.session.adminUser) {
+        return res.status(401).json({ error: "Admin authentication required" });
+      }
+
+      const companyUsers = await storage.getCompanyUsers();
+      res.json(companyUsers);
+    } catch (error) {
+      console.error("Error fetching company users:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  app.post("/api/admin/verify-user", async (req, res) => {
+    try {
+      const authHeader = req.headers.authorization;
+      const token = authHeader?.replace('Bearer ', '');
+
+      if (!token || !req.session.adminUser) {
+        return res.status(401).json({ error: "Admin authentication required" });
+      }
+
+      const { userId, verificationStatus } = req.body;
+
+      if (!userId || !verificationStatus) {
+        return res.status(400).json({ error: "User ID and verification status are required" });
+      }
+
+      if (!['pending', 'verified', 'rejected'].includes(verificationStatus)) {
+        return res.status(400).json({ error: "Invalid verification status" });
+      }
+
+      const updatedUser = await storage.updateUserVerificationStatus(userId, verificationStatus);
+      if (!updatedUser) {
+        return res.status(500).json({ error: "Failed to update user verification status" });
+      }
+
+      // Create notification for the user
+      await storage.createNotification({
+        userId: userId,
+        type: 'verification_status_update',
+        message: `Your company verification status has been updated to: ${verificationStatus}`,
+        link: '/profile'
+      });
+
+      res.json({ success: true, message: "User verification status updated successfully", user: updatedUser });
+    } catch (error) {
+      console.error("Error updating user verification status:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
   const server = createServer(app);
   return server;
 }

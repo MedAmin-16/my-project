@@ -16,9 +16,11 @@ export const users = pgTable("users", {
   isEmailVerified: boolean("is_email_verified").default(false),
   verificationToken: text("verification_token"),
   verificationTokenExpiry: timestamp("verification_token_expiry"),
+  verificationStatus: text("verification_status").default("pending"), // "pending", "verified", "rejected"
   reputation: integer("reputation").default(0),
   rank: text("rank").default("Newbie"),
-  createdAt: timestamp("created_at").defaultNow()
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow()
 });
 
 export const passwordSchema = z.string()

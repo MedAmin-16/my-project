@@ -1,10 +1,12 @@
 import { useState, useEffect } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Link, useLocation } from "wouter";
 import { Navbar } from "@/components/layout/navbar";
 import { MatrixBackground } from "@/components/matrix-background";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { useToast } from "@/hooks/use-toast";
 import { DollarSign, Coins, Building2 } from "lucide-react";
 import {
   Users,
@@ -30,6 +32,8 @@ export default function AdminDashboardPage() {
   const [, navigate] = useLocation();
   const [searchQuery, setSearchQuery] = useState("");
   const [activeTab, setActiveTab] = useState("overview");
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
 
   // Check admin authentication
   useEffect(() => {
@@ -109,6 +113,63 @@ export default function AdminDashboardPage() {
         throw new Error('Failed to fetch users');
       }
       return response.json();
+    }
+  });
+
+  // Fetch company users data
+  const { data: companyUsers = [], isLoading: companyUsersLoading, refetch: refetchCompanyUsers } = useQuery({
+    queryKey: ["/api/admin/company-users"],
+    queryFn: async () => {
+      const response = await fetch("/api/admin/company-users", {
+        headers: getAuthHeaders(),
+        credentials: 'include'
+      });
+      if (!response.ok) {
+        if (response.status === 401) {
+          localStorage.removeItem('adminToken');
+          navigate("/admin");
+          throw new Error('Admin session expired');
+        }
+        throw new Error('Failed to fetch company users');
+      }
+      return response.json();
+    }
+  });
+
+  // Mutation for updating user verification status
+  const verifyUserMutation = useMutation({
+    mutationFn: async ({ userId, verificationStatus }: { userId: number; verificationStatus: string }) => {
+      const response = await fetch("/api/admin/verify-user", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          ...getAuthHeaders()
+        },
+        credentials: 'include',
+        body: JSON.stringify({ userId, verificationStatus })
+      });
+      
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || "Failed to update verification status");
+      }
+      
+      return response.json();
+    },
+    onSuccess: (data) => {
+      toast({
+        title: "Success",
+        description: `User verification status updated successfully to ${data.user.verificationStatus}`,
+      });
+      // Refetch company users to update the UI
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/company-users"] });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to update verification status",
+        variant: "destructive",
+      });
     }
   });
 
@@ -243,7 +304,7 @@ export default function AdminDashboardPage() {
 
         {/* Admin Tabs */}
         <div className="space-y-6">
-          <div className="grid w-full grid-cols-4 bg-terminal border border-matrix/30 p-1">
+          <div className="grid w-full grid-cols-5 bg-terminal border border-matrix/30 p-1">
             <button
               onClick={() => setActiveTab("overview")}
               className={`font-mono uppercase tracking-wider py-3 px-6 transition-all duration-300 ${
@@ -263,6 +324,16 @@ export default function AdminDashboardPage() {
               }`}
             >
               [Users]
+            </button>
+            <button
+              onClick={() => setActiveTab("companies")}
+              className={`font-mono uppercase tracking-wider py-3 px-6 transition-all duration-300 ${
+                activeTab === "companies" 
+                  ? "bg-matrix/20 text-matrix border border-matrix/50 shadow-[0_0_10px_rgba(14,232,109,0.3)]" 
+                  : "text-dim-gray hover:text-matrix hover:bg-matrix/10"
+              }`}
+            >
+              [Companies]
             </button>
             <button
               onClick={() => setActiveTab("programs")}
@@ -371,6 +442,121 @@ export default function AdminDashboardPage() {
                     ))
                   )}
                 </div>
+              </div>
+            </div>
+          )}
+
+          {activeTab === "companies" && (
+            <div className="bg-terminal border border-matrix/30 p-6 relative overflow-hidden">
+              <div className="absolute inset-0 bg-gradient-to-br from-matrix/5 to-transparent"></div>
+              <div className="relative z-10">
+                <h3 className="text-lg font-mono font-bold text-matrix mb-6 uppercase tracking-wider">
+                  {">> Company_Verification_Console"}
+                </h3>
+                {companyUsersLoading ? (
+                  <div className="text-center py-12">
+                    <div className="text-dim-gray font-mono text-lg">[LOADING_COMPANY_DATA...]</div>
+                    <div className="mt-6 text-matrix font-mono text-xs">
+                      {">> Accessing company database..."}
+                    </div>
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between mb-4">
+                      <div className="text-dim-gray font-mono text-sm">
+                        {">> Found " + companyUsers.length + " registered companies"}
+                      </div>
+                      <div className="text-matrix font-mono text-xs">
+                        {"[REAL_TIME_MONITORING_ACTIVE]"}
+                      </div>
+                    </div>
+                    
+                    {companyUsers.length === 0 ? (
+                      <div className="text-center py-12">
+                        <div className="text-dim-gray font-mono text-lg">[NO_COMPANIES_FOUND]</div>
+                        <div className="text-dim-gray font-mono text-sm mt-2">No companies registered yet...</div>
+                      </div>
+                    ) : (
+                      <div className="overflow-x-auto">
+                        <table className="w-full border-collapse">
+                          <thead>
+                            <tr className="border-b border-matrix/30">
+                              <th className="text-left p-3 text-matrix font-mono uppercase tracking-wider">Company</th>
+                              <th className="text-left p-3 text-matrix font-mono uppercase tracking-wider">Email</th>
+                              <th className="text-left p-3 text-matrix font-mono uppercase tracking-wider">Status</th>
+                              <th className="text-left p-3 text-matrix font-mono uppercase tracking-wider">Registered</th>
+                              <th className="text-left p-3 text-matrix font-mono uppercase tracking-wider">Actions</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {companyUsers.map((company: any) => (
+                              <tr key={company.id} className="border-b border-matrix/20 hover:bg-matrix/5 transition-colors">
+                                <td className="p-3">
+                                  <div>
+                                    <div className="text-light-gray font-mono font-semibold">{company.companyName || company.username}</div>
+                                    <div className="text-dim-gray font-mono text-sm">@{company.username}</div>
+                                  </div>
+                                </td>
+                                <td className="p-3 text-dim-gray font-mono">{company.email}</td>
+                                <td className="p-3">
+                                  <Badge className={`font-mono ${
+                                    company.verificationStatus === 'verified' ? 'bg-green-500/20 text-green-400 border-green-500' : 
+                                    company.verificationStatus === 'rejected' ? 'bg-red-500/20 text-red-400 border-red-500' : 
+                                    'bg-yellow-500/20 text-yellow-400 border-yellow-500'
+                                  }`}>
+                                    {company.verificationStatus || 'pending'}
+                                  </Badge>
+                                </td>
+                                <td className="p-3 text-dim-gray font-mono text-sm">
+                                  {new Date(company.createdAt).toLocaleDateString()}
+                                </td>
+                                <td className="p-3">
+                                  <div className="flex gap-2">
+                                    {company.verificationStatus !== 'verified' && (
+                                      <Button
+                                        size="sm"
+                                        onClick={() => verifyUserMutation.mutate({ userId: company.id, verificationStatus: 'verified' })}
+                                        disabled={verifyUserMutation.isPending}
+                                        className="bg-green-500/20 text-green-400 border-green-500 hover:bg-green-500/30 font-mono text-xs"
+                                      >
+                                        <CheckCircle className="h-3 w-3 mr-1" />
+                                        Approve
+                                      </Button>
+                                    )}
+                                    {company.verificationStatus !== 'rejected' && (
+                                      <Button
+                                        size="sm"
+                                        variant="destructive"
+                                        onClick={() => verifyUserMutation.mutate({ userId: company.id, verificationStatus: 'rejected' })}
+                                        disabled={verifyUserMutation.isPending}
+                                        className="bg-red-500/20 text-red-400 border-red-500 hover:bg-red-500/30 font-mono text-xs"
+                                      >
+                                        <XCircle className="h-3 w-3 mr-1" />
+                                        Reject
+                                      </Button>
+                                    )}
+                                    {company.verificationStatus !== 'pending' && (
+                                      <Button
+                                        size="sm"
+                                        variant="outline"
+                                        onClick={() => verifyUserMutation.mutate({ userId: company.id, verificationStatus: 'pending' })}
+                                        disabled={verifyUserMutation.isPending}
+                                        className="bg-yellow-500/20 text-yellow-400 border-yellow-500 hover:bg-yellow-500/30 font-mono text-xs"
+                                      >
+                                        <AlertTriangle className="h-3 w-3 mr-1" />
+                                        Pending
+                                      </Button>
+                                    )}
+                                  </div>
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
             </div>
           )}

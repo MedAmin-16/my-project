@@ -2879,4 +2879,47 @@ export const storage = {
     }
     return null;
   }
+
+  // User verification methods
+  ,async updateUserVerificationStatus(userId: number, verificationStatus: string) {
+    if (db) {
+      try {
+        const [user] = await db
+          .update(users)
+          .set({ verificationStatus, updatedAt: new Date() })
+          .where(eq(users.id, userId))
+          .returning();
+        return user;
+      } catch (error) {
+        console.error('Error updating user verification status:', error);
+        return null;
+      }
+    }
+    return null;
+  }
+
+  ,async getCompanyUsers() {
+    if (db) {
+      try {
+        const companyUsers = await db
+          .select({
+            id: users.id,
+            username: users.username,
+            email: users.email,
+            companyName: users.companyName,
+            verificationStatus: users.verificationStatus,
+            createdAt: users.createdAt,
+            updatedAt: users.updatedAt
+          })
+          .from(users)
+          .where(eq(users.userType, 'company'))
+          .orderBy(desc(users.createdAt));
+        return companyUsers;
+      } catch (error) {
+        console.error('Error getting company users:', error);
+        return [];
+      }
+    }
+    return [];
+  }
 };
