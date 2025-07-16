@@ -6,7 +6,7 @@ export default function CompanyWalletPage() {
   const [, setLocation] = useLocation();
 
   useEffect(() => {
-    // Redirect to the crypto payment page
+    // Redirect to the simplified crypto payment page
     setLocation('/crypto/payment');
   }, [setLocation]);
 
