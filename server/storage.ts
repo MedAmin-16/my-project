@@ -225,6 +225,128 @@ export const storage = {
     return [];
   },
 
+  async getAdminCryptoWithdrawals(statusFilter?: string) {
+    if (db) {
+      try {
+        let query = db.select({
+          id: cryptoWithdrawals.id,
+          amount: cryptoWithdrawals.amount,
+          currency: cryptoWithdrawals.currency,
+          walletAddress: cryptoWithdrawals.walletAddress,
+          network: cryptoWithdrawals.network,
+          status: cryptoWithdrawals.status,
+          createdAt: cryptoWithdrawals.createdAt,
+          updatedAt: cryptoWithdrawals.updatedAt,
+          userId: cryptoWithdrawals.userId,
+          username: users.username,
+          email: users.email
+        })
+        .from(cryptoWithdrawals)
+        .leftJoin(users, eq(cryptoWithdrawals.userId, users.id))
+        .orderBy(desc(cryptoWithdrawals.createdAt));
+
+        if (statusFilter && statusFilter !== 'all') {
+          query = query.where(eq(cryptoWithdrawals.status, statusFilter));
+        }
+
+        const results = await query;
+
+        // Decrypt wallet addresses for admin view
+        return results.map(withdrawal => ({
+          ...withdrawal,
+          walletAddress: withdrawal.walletAddress ? this.decryptData(withdrawal.walletAddress) : ''
+        }));
+      } catch (error) {
+        console.error('Error getting admin crypto withdrawals:', error);
+        return [];
+      }
+    }
+    return [];
+  },
+
+  async getCryptoWithdrawalById(withdrawalId: number) {
+    if (db) {
+      try {
+        const [withdrawal] = await db
+          .select()
+          .from(cryptoWithdrawals)
+          .where(eq(cryptoWithdrawals.id, withdrawalId))
+          .limit(1);
+        return withdrawal;
+      } catch (error) {
+        console.error('Error getting crypto withdrawal by ID:', error);
+        return null;
+      }
+    }
+    return null;
+  },
+
+  async updateCryptoWithdrawalStatus(withdrawalId: number, status: string, notes?: string) {
+    if (db) {
+      try {
+        const updateData: any = { 
+          status, 
+          updatedAt: new Date() 
+        };
+
+        const [withdrawal] = await db
+          .update(cryptoWithdrawals)
+          .set(updateData)
+          .where(eq(cryptoWithdrawals.id, withdrawalId))
+          .returning();
+        return withdrawal;
+      } catch (error) {
+        console.error('Error updating crypto withdrawal status:', error);
+        return null;
+      }
+    }
+    return null;
+  },
+
+  async createAdminAuditLog(logData: {
+    adminId: number;
+    action: string;
+    targetType: string;
+    targetId: number;
+    details: any;
+  }) {
+    if (db) {
+      try {
+        const [log] = await db
+          .insert(transactionLogs)
+          .values({
+            transactionType: logData.targetType,
+            transactionId: logData.targetId,
+            userId: logData.adminId,
+            action: logData.action,
+            newState: logData.details,
+            metadata: { 
+              timestamp: new Date().toISOString(),
+              actionBy: 'admin'
+            }
+          })
+          .returning();
+        return log;
+      } catch (error) {
+        console.error('Error creating admin audit log:', error);
+        return null;
+      }
+    }
+    return null;
+  },
+
+  // Helper method to decrypt data (you'll need to implement this based on your crypto-utils)
+  decryptData(encryptedData: string): string {
+    try {
+      // Import decrypt function from crypto-utils
+      const { decrypt } = require('./crypto-utils');
+      return decrypt(encryptedData);
+    } catch (error) {
+      console.error('Error decrypting data:', error);
+      return encryptedData; // Return original if decryption fails
+    }
+  },
+
   async getWithdrawalById(withdrawalId: number) {
     if (db) {
       try {
@@ -673,34 +795,126 @@ export const storage = {
     return [];
   },
 
-  async getWithdrawalById(withdrawalId: number) {
+  async getAdminCryptoWithdrawals(statusFilter?: string) {
     if (db) {
       try {
-        const [withdrawal] = await db.select({
-          id: withdrawals.id,
-          amount: withdrawals.amount,
-          method: withdrawals.method,
-          destination: withdrawals.destination,
-          status: withdrawals.status,
-          notes: withdrawals.notes,
-          createdAt: withdrawals.createdAt,
-          updatedAt: withdrawals.updatedAt,
-          walletId: withdrawals.walletId,
-          userId: wallets.userId,
+        let query = db.select({
+          id: cryptoWithdrawals.id,
+          amount: cryptoWithdrawals.amount,
+          currency: cryptoWithdrawals.currency,
+          walletAddress: cryptoWithdrawals.walletAddress,
+          network: cryptoWithdrawals.network,
+          status: cryptoWithdrawals.status,
+          createdAt: cryptoWithdrawals.createdAt,
+          updatedAt: cryptoWithdrawals.updatedAt,
+          userId: cryptoWithdrawals.userId,
           username: users.username,
           email: users.email
         })
-        .from(withdrawals)
-        .leftJoin(wallets, eq(withdrawals.walletId, wallets.id))
-        .leftJoin(users, eq(wallets.userId, users.id))
-        .where(eq(withdrawals.id, withdrawalId));
+        .from(cryptoWithdrawals)
+        .leftJoin(users, eq(cryptoWithdrawals.userId, users.id))
+        .orderBy(desc(cryptoWithdrawals.createdAt));
+
+        if (statusFilter && statusFilter !== 'all') {
+          query = query.where(eq(cryptoWithdrawals.status, statusFilter));
+        }
+
+        const results = await query;
+
+        // Decrypt wallet addresses for admin view
+        return results.map(withdrawal => ({
+          ...withdrawal,
+          walletAddress: withdrawal.walletAddress ? this.decryptData(withdrawal.walletAddress) : ''
+        }));
+      } catch (error) {
+        console.error('Error getting admin crypto withdrawals:', error);
+        return [];
+      }
+    }
+    return [];
+  },
+
+  async getCryptoWithdrawalById(withdrawalId: number) {
+    if (db) {
+      try {
+        const [withdrawal] = await db
+          .select()
+          .from(cryptoWithdrawals)
+          .where(eq(cryptoWithdrawals.id, withdrawalId))
+          .limit(1);
         return withdrawal;
       } catch (error) {
-        console.error('Error getting withdrawal by ID:', error);
+        console.error('Error getting crypto withdrawal by ID:', error);
         return null;
       }
     }
     return null;
+  },
+
+  async updateCryptoWithdrawalStatus(withdrawalId: number, status: string, notes?: string) {
+    if (db) {
+      try {
+        const updateData: any = { 
+          status, 
+          updatedAt: new Date() 
+        };
+
+        const [withdrawal] = await db
+          .update(cryptoWithdrawals)
+          .set(updateData)
+          .where(eq(cryptoWithdrawals.id, withdrawalId))
+          .returning();
+        return withdrawal;
+      } catch (error) {
+        console.error('Error updating crypto withdrawal status:', error);
+        return null;
+      }
+    }
+    return null;
+  },
+
+  async createAdminAuditLog(logData: {
+    adminId: number;
+    action: string;
+    targetType: string;
+    targetId: number;
+    details: any;
+  }) {
+    if (db) {
+      try {
+        const [log] = await db
+          .insert(transactionLogs)
+          .values({
+            transactionType: logData.targetType,
+            transactionId: logData.targetId,
+            userId: logData.adminId,
+            action: logData.action,
+            newState: logData.details,
+            metadata: { 
+              timestamp: new Date().toISOString(),
+              actionBy: 'admin'
+            }
+          })
+          .returning();
+        return log;
+      } catch (error) {
+        console.error('Error creating admin audit log:', error);
+        return null;
+      }
+    }
+    return null;
+  },
+
+  // Helper method to decrypt data (you'll need to implement this based on your crypto-utils)
+  decryptData(encryptedData: string): string {
+    try {
+      // Import decrypt function from crypto-utils
+      const { decrypt } = require('./crypto-utils');
+      return decrypt(encryptedData);
+    } catch (error) {
+      console.error('Error decrypting data:', error);
+      return encryptedData; // Return original if decryption fails
+    }
   },
 
   // Company Wallet Methods

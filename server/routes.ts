@@ -1338,6 +1338,92 @@ export function registerRoutes(app: Express): Server {
     }
   });
 
+  // Admin crypto withdrawal management
+  app.get("/api/admin/crypto/withdrawals", async (req, res) => {
+    try {
+      const authHeader = req.headers.authorization;
+      const token = authHeader?.replace('Bearer ', '');
+
+      if (!token || !req.session.adminUser) {
+        return res.status(401).json({ error: "Admin authentication required" });
+      }
+
+      const status = req.query.status as string;
+      const withdrawals = await storage.getAdminCryptoWithdrawals(status);
+      res.json(withdrawals);
+    } catch (error) {
+      console.error("Error fetching admin crypto withdrawals:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  app.patch("/api/admin/crypto/withdrawals/:id/status", async (req, res) => {
+    try {
+      const authHeader = req.headers.authorization;
+      const token = authHeader?.replace('Bearer ', '');
+
+      if (!token || !req.session.adminUser) {
+        return res.status(401).json({ error: "Admin authentication required" });
+      }
+
+      const withdrawalId = parseInt(req.params.id);
+      const { status, notes } = req.body;
+
+      if (!withdrawalId || !status) {
+        return res.status(400).json({ error: "Withdrawal ID and status are required" });
+      }
+
+      // Get withdrawal details for logging
+      const withdrawal = await storage.getCryptoWithdrawalById(withdrawalId);
+      if (!withdrawal) {
+        return res.status(404).json({ error: "Withdrawal not found" });
+      }
+
+      // Update withdrawal status
+      const updatedWithdrawal = await storage.updateCryptoWithdrawalStatus(withdrawalId, status, notes);
+
+      // Create audit log
+      await storage.createAdminAuditLog({
+        adminId: req.session.adminUser.id,
+        action: 'crypto_withdrawal_status_update',
+        targetType: 'crypto_withdrawal',
+        targetId: withdrawalId,
+        details: {
+          previousStatus: withdrawal.status,
+          newStatus: status,
+          notes: notes || null,
+          withdrawalAmount: withdrawal.amount,
+          currency: withdrawal.currency,
+          userId: withdrawal.userId
+        }
+      });
+
+      // If approved, create transaction log
+      if (status === 'approved') {
+        await storage.createTransaction({
+          walletId: withdrawal.walletId || 0,
+          type: 'crypto_withdrawal_approved',
+          amount: -withdrawal.amount,
+          description: `Crypto withdrawal approved: ${(withdrawal.amount / 100).toFixed(2)} ${withdrawal.currency}`,
+          status: 'pending_payout'
+        });
+      }
+
+      // Create notification for user
+      await storage.createNotification({
+        userId: withdrawal.userId,
+        type: 'withdrawal_status_update',
+        message: `Your crypto withdrawal request has been ${status}`,
+        link: '/crypto/withdrawals'
+      });
+
+      res.json(updatedWithdrawal);
+    } catch (error) {
+      console.error("Error updating crypto withdrawal status:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
   // Company Crypto Wallet Routes
   app.get("/api/company/wallet", async (req, res) => {
     try {

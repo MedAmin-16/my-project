@@ -3,6 +3,9 @@ import { useQuery } from "@tanstack/react-query";
 import { Link, useLocation } from "wouter";
 import { Navbar } from "@/components/layout/navbar";
 import { MatrixBackground } from "@/components/matrix-background";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { DollarSign, Coins, Building2 } from "lucide-react";
 import {
   Users,
   Shield,
@@ -409,6 +412,107 @@ export default function AdminDashboardPage() {
           )}
         </div>
       </main>
+        {/* Quick Actions */}
+        <div className="mt-8">
+          <h2 className="text-2xl font-mono font-bold text-light-gray mb-4">
+            Quick Actions
+          </h2>
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+            <Card className="terminal-card cursor-pointer hover:border-matrix/50 transition-colors"
+                  onClick={() => window.location.href = '/admin/withdrawals'}>
+              <CardContent className="p-6">
+                <div className="flex items-center space-x-3">
+                  <div className="p-2 bg-matrix/20 rounded">
+                    <DollarSign className="h-6 w-6 text-matrix" />
+                  </div>
+                  <div>
+                    <h3 className="font-mono text-light-gray">Fiat Withdrawals</h3>
+                    <p className="text-sm text-dim-gray">Manage PayPal/Wise withdrawals</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="terminal-card cursor-pointer hover:border-matrix/50 transition-colors"
+                  onClick={() => window.location.href = '/admin/crypto/withdrawals'}>
+              <CardContent className="p-6">
+                <div className="flex items-center space-x-3">
+                  <div className="p-2 bg-matrix/20 rounded">
+                    <Coins className="h-6 w-6 text-matrix" />
+                  </div>
+                  <div>
+                    <h3 className="font-mono text-light-gray">Crypto Withdrawals</h3>
+                    <p className="text-sm text-dim-gray">Approve crypto withdrawal requests</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="terminal-card cursor-pointer hover:border-matrix/50 transition-colors"
+                  onClick={() => window.location.href = '/admin/company-wallets'}>
+              <CardContent className="p-6">
+                <div className="flex items-center space-x-3">
+                  <div className="p-2 bg-matrix/20 rounded">
+                    <Building2 className="h-6 w-6 text-matrix" />
+                  </div>
+                  <div>
+                    <h3 className="font-mono text-light-gray">Company Wallets</h3>
+                    <p className="text-sm text-dim-gray">Manage company balances</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+
+        {/* Users Management */}
+        <div className="mt-8">
+          <h2 className="text-2xl font-mono font-bold text-light-gray mb-4">
+            Users Management
+          </h2>
+          <div className="terminal-card p-6 rounded-lg border border-matrix/30">
+            {usersLoading ? (
+              <div className="text-center text-dim-gray">Loading users...</div>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="w-full">
+                  <thead>
+                    <tr className="border-b border-matrix/30">
+                      <th className="text-left p-3 text-light-gray">Username</th>
+                      <th className="text-left p-3 text-light-gray">Email</th>
+                      <th className="text-left p-3 text-light-gray">Type</th>
+                      <th className="text-left p-3 text-light-gray">Verified</th>
+                      <th className="text-left p-3 text-light-gray">Joined</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {users?.slice(0, 10).map((user: any) => (
+                      <tr key={user.id} className="border-b border-matrix/20">
+                        <td className="p-3 text-light-gray font-mono">{user.username}</td>
+                        <td className="p-3 text-dim-gray">{user.email}</td>
+                        <td className="p-3">
+                          <Badge className={user.userType === 'company' ? 'bg-blue-500' : 'bg-green-500'}>
+                            {user.userType}
+                          </Badge>
+                        </td>
+                        <td className="p-3">
+                          {user.emailVerified ? (
+                            <Badge className="bg-green-500">Verified</Badge>
+                          ) : (
+                            <Badge className="bg-red-500">Pending</Badge>
+                          )}
+                        </td>
+                        <td className="p-3 text-dim-gray text-sm">
+                          {new Date(user.createdAt).toLocaleDateString()}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
+        </div>
     </div>
   );
 }

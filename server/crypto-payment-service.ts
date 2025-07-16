@@ -229,55 +229,26 @@ export class CryptoPaymentService {
         throw new Error(`Withdrawal blocked: ${fraudCheck.reason}`);
       }
 
-      // Create withdrawal record
+      // Create withdrawal record with pending status for admin approval
       const withdrawal = await storage.createCryptoWithdrawal({
         userId,
         amount,
         currency,
         walletAddress: encrypt(walletAddress), // Encrypt wallet address
         network,
-        status: 'pending',
+        status: 'pending', // Always start as pending for admin approval
         provider: 'binance_pay'
       });
 
-      // Deduct from user wallet immediately (held in escrow)
-      await storage.updateWalletBalance(userId, -amount);
-
-      // Create transaction record
+      // Don't deduct from wallet yet - wait for admin approval
+      // Create transaction record as pending approval
       await storage.createTransaction({
         walletId: wallet.id,
-        type: 'crypto_withdrawal',
+        type: 'crypto_withdrawal_request',
         amount: -amount,
-        description: `Crypto withdrawal to ${walletAddress.substring(0, 10)}...`,
-        status: 'pending'
+        description: `Crypto withdrawal request to ${walletAddress.substring(0, 10)}... - Pending approval`,
+        status: 'pending_approval'
       });
-
-      // In production, submit to Binance Pay withdrawal API
-      // For now, simulate processing
-      setTimeout(async () => {
-        try {
-          const success = Math.random() > 0.1; // 90% success rate
-          
-          if (success) {
-            const mockTxId = `0x${Math.random().toString(16).substr(2, 40)}`;
-            await storage.updateCryptoWithdrawal(withdrawal.id, {
-              status: 'completed',
-              transactionId: mockTxId,
-              completedAt: new Date()
-            });
-          } else {
-            await storage.updateCryptoWithdrawal(withdrawal.id, {
-              status: 'failed',
-              failureReason: 'Network congestion',
-              completedAt: new Date()
-            });
-            // Refund to user wallet
-            await storage.updateWalletBalance(userId, amount);
-          }
-        } catch (error) {
-          console.error('Error processing withdrawal:', error);
-        }
-      }, 5000); // Simulate 5 second processing time
 
       return withdrawal;
     } catch (error) {
