@@ -1519,6 +1519,96 @@ export function registerRoutes(app: Express): Server {
     }
   });
 
+  // Crypto Payment Approval Admin Routes
+  app.get("/api/admin/crypto-payment-approvals", async (req, res) => {
+    try {
+      const authHeader = req.headers.authorization;
+      const token = authHeader?.replace('Bearer ', '');
+
+      if (!token || !req.session.adminUser) {
+        return res.status(401).json({ error: "Admin authentication required" });
+      }
+
+      const pendingApprovals = await storage.getPendingCryptoPaymentApprovals();
+      res.json(pendingApprovals);
+    } catch (error) {
+      console.error("Error fetching crypto payment approvals:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  app.post("/api/admin/crypto-payment-approvals/:id/approve", async (req, res) => {
+    try {
+      const authHeader = req.headers.authorization;
+      const token = authHeader?.replace('Bearer ', '');
+
+      if (!token || !req.session.adminUser) {
+        return res.status(401).json({ error: "Admin authentication required" });
+      }
+
+      const { id } = req.params;
+      const { adminNotes } = req.body;
+      const adminId = req.session.adminUser.id;
+
+      // Get the approval record first
+      const approval = await storage.getCryptoPaymentApprovalById(parseInt(id));
+      if (!approval) {
+        return res.status(404).json({ error: "Approval record not found" });
+      }
+
+      // Approve the payment
+      const updatedApproval = await storage.approveCryptoPayment(parseInt(id), adminId, adminNotes);
+      if (!updatedApproval) {
+        return res.status(500).json({ error: "Failed to approve payment" });
+      }
+
+      // Update company wallet balance
+      const wallet = await storage.getCompanyWallet(approval.companyId);
+      if (wallet) {
+        await storage.updateCompanyWalletBalance(approval.companyId, approval.amount);
+      }
+
+      // Create transaction record
+      await storage.createCompanyTransaction({
+        companyId: approval.companyId,
+        amount: approval.amount,
+        type: 'crypto_payment_approved',
+        note: `Crypto payment approved by admin: ${approval.amount / 100} ${approval.currency} - Memo: ${approval.paymentMemo}`
+      });
+
+      res.json({ success: true, message: "Payment approved successfully" });
+    } catch (error) {
+      console.error("Error approving crypto payment:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  app.post("/api/admin/crypto-payment-approvals/:id/reject", async (req, res) => {
+    try {
+      const authHeader = req.headers.authorization;
+      const token = authHeader?.replace('Bearer ', '');
+
+      if (!token || !req.session.adminUser) {
+        return res.status(401).json({ error: "Admin authentication required" });
+      }
+
+      const { id } = req.params;
+      const { adminNotes } = req.body;
+      const adminId = req.session.adminUser.id;
+
+      // Reject the payment
+      const updatedApproval = await storage.rejectCryptoPayment(parseInt(id), adminId, adminNotes);
+      if (!updatedApproval) {
+        return res.status(500).json({ error: "Failed to reject payment" });
+      }
+
+      res.json({ success: true, message: "Payment rejected successfully" });
+    } catch (error) {
+      console.error("Error rejecting crypto payment:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
   const server = createServer(app);
   return server;
 }

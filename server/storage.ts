@@ -1,9 +1,9 @@
 import { drizzle } from 'drizzle-orm/postgres-js';
 import { eq, desc, asc, gte, lte, and, or, like, sql, count, sum } from "drizzle-orm";
 import postgres from 'postgres';
-import { users, programs, submissions, activities, notifications, wallets, transactions, withdrawals, publicMessages, triageServices, triageReports, triageCommunications, triageSubscriptions, triageAnalysts, moderationTeam, moderationReviews, moderationComments, moderationAuditLog, moderationNotifications, type User, type InsertUser, type Program, type InsertProgram, type Submission, type InsertSubmission, type Activity, type InsertActivity, type Notification, type InsertNotification, type Wallet, type Transaction, type InsertTransaction, type Withdrawal, type InsertWithdrawal, type CompanyWallet, type InsertCompanyWallet, type CompanyTransaction, type InsertCompanyTransaction, companyWallets, companyTransactions, paymentMethods, escrowAccounts, paymentIntents, payouts, commissions, transactionLogs, paymentDisputes, paymentRateLimits, type PaymentMethod, type InsertPaymentMethod, type EscrowAccount, type InsertEscrowAccount, type PaymentIntent, type InsertPaymentIntent, type Payout, type InsertPayout, type Commission, type InsertCommission, type TransactionLog, type PaymentDispute, type InsertPaymentDispute, type PublicMessage, type InsertPublicMessage, type TriageService, type InsertTriageReport, type TriageCommunication, type InsertTriageCommunication, type TriageSubscription, type InsertTriageSubscription, type TriageAnalyst, type InsertModerationTeam, type InsertModerationReview, type InsertModerationComment, type InsertModerationAuditLog, type InsertModerationNotification, cryptoWallets, cryptoPaymentIntents,
+import { users, programs, submissions, activities, notifications, wallets, transactions, withdrawals, publicMessages, triageServices, triageReports, triageCommunications, triageSubscriptions, triageAnalysts, moderationTeam, moderationReviews, moderationComments, moderationAuditLog, moderationNotifications, type User, type InsertUser, type Program, type InsertProgram, type Submission, type InsertSubmission, type Activity, type InsertActivity, type Notification, type InsertNotification, type Wallet, type InsertWithdrawal, type CompanyWallet, type InsertCompanyWallet, type CompanyTransaction, type InsertCompanyTransaction, companyWallets, companyTransactions, paymentMethods, escrowAccounts, paymentIntents, payouts, commissions, transactionLogs, paymentDisputes, paymentRateLimits, type PaymentMethod, type InsertPaymentMethod, type EscrowAccount, type InsertEscrowAccount, type PaymentIntent, type InsertPaymentIntent, type Payout, type InsertPayout, type Commission, type InsertCommission, type TransactionLog, type PaymentDispute, type InsertPaymentDispute, type PublicMessage, type InsertPublicMessage, type TriageService, type InsertTriageReport, type TriageCommunication, type InsertTriageCommunication, type TriageSubscription, type InsertTriageSubscription, type TriageAnalyst, type InsertModerationTeam, type InsertModerationReview, type InsertModerationComment, type InsertModerationAuditLog, type InsertModerationNotification, cryptoWallets, cryptoPaymentIntents, cryptoPaymentApprovals,
   cryptoWithdrawals, cryptoTransactions, cryptoNetworkSettings, type CryptoWallet, type InsertCryptoWallet, type CryptoPaymentIntent,
-  type InsertCryptoPaymentIntent, type CryptoWithdrawal, type InsertCryptoWithdrawal, type CryptoTransaction,
+  type InsertCryptoPaymentIntent, type CryptoPaymentApproval, type InsertCryptoPaymentApproval, type CryptoWithdrawal, type InsertCryptoWithdrawal, type CryptoTransaction,
   type InsertCryptoTransaction, type CryptoNetworkSettings, type InsertCryptoNetworkSettings } from '@shared/schema';
 import createMemoryStore from "memorystore";
 import session from "express-session";
@@ -2760,5 +2760,123 @@ export const storage = {
     }
     }
     return [];
+  }
+
+  // Crypto Payment Approval Methods
+  ,async createCryptoPaymentApproval(data: InsertCryptoPaymentApproval) {
+    if (db) {
+      try {
+        const [approval] = await db.insert(cryptoPaymentApprovals).values(data).returning();
+        return approval;
+      } catch (error) {
+        console.error('Error creating crypto payment approval:', error);
+        return null;
+      }
+    }
+    return null;
+  }
+
+  ,async getPendingCryptoPaymentApprovals() {
+    if (db) {
+      try {
+        const approvals = await db
+          .select({
+            id: cryptoPaymentApprovals.id,
+            paymentMemo: cryptoPaymentApprovals.paymentMemo,
+            amount: cryptoPaymentApprovals.amount,
+            currency: cryptoPaymentApprovals.currency,
+            status: cryptoPaymentApprovals.status,
+            createdAt: cryptoPaymentApprovals.createdAt,
+            companyName: users.companyName,
+            username: users.username,
+            cryptoPaymentIntentId: cryptoPaymentApprovals.cryptoPaymentIntentId
+          })
+          .from(cryptoPaymentApprovals)
+          .leftJoin(users, eq(cryptoPaymentApprovals.companyId, users.id))
+          .where(eq(cryptoPaymentApprovals.status, 'pending'))
+          .orderBy(desc(cryptoPaymentApprovals.createdAt));
+        return approvals;
+      } catch (error) {
+        console.error('Error getting pending crypto payment approvals:', error);
+        return [];
+      }
+    }
+    return [];
+  }
+
+  ,async approveCryptoPayment(approvalId: number, adminId: number, adminNotes?: string) {
+    if (db) {
+      try {
+        const [approval] = await db
+          .update(cryptoPaymentApprovals)
+          .set({
+            status: 'approved',
+            adminId: adminId,
+            adminNotes: adminNotes,
+            approvedAt: new Date(),
+            updatedAt: new Date()
+          })
+          .where(eq(cryptoPaymentApprovals.id, approvalId))
+          .returning();
+        return approval;
+      } catch (error) {
+        console.error('Error approving crypto payment:', error);
+        return null;
+      }
+    }
+    return null;
+  }
+
+  ,async rejectCryptoPayment(approvalId: number, adminId: number, adminNotes?: string) {
+    if (db) {
+      try {
+        const [approval] = await db
+          .update(cryptoPaymentApprovals)
+          .set({
+            status: 'rejected',
+            adminId: adminId,
+            adminNotes: adminNotes,
+            rejectedAt: new Date(),
+            updatedAt: new Date()
+          })
+          .where(eq(cryptoPaymentApprovals.id, approvalId))
+          .returning();
+        return approval;
+      } catch (error) {
+        console.error('Error rejecting crypto payment:', error);
+        return null;
+      }
+    }
+    return null;
+  }
+
+  ,async getCryptoPaymentApprovalById(approvalId: number) {
+    if (db) {
+      try {
+        const [approval] = await db
+          .select({
+            id: cryptoPaymentApprovals.id,
+            paymentMemo: cryptoPaymentApprovals.paymentMemo,
+            amount: cryptoPaymentApprovals.amount,
+            currency: cryptoPaymentApprovals.currency,
+            status: cryptoPaymentApprovals.status,
+            adminNotes: cryptoPaymentApprovals.adminNotes,
+            createdAt: cryptoPaymentApprovals.createdAt,
+            approvedAt: cryptoPaymentApprovals.approvedAt,
+            rejectedAt: cryptoPaymentApprovals.rejectedAt,
+            companyName: users.companyName,
+            username: users.username,
+            cryptoPaymentIntentId: cryptoPaymentApprovals.cryptoPaymentIntentId
+          })
+          .from(cryptoPaymentApprovals)
+          .leftJoin(users, eq(cryptoPaymentApprovals.companyId, users.id))
+          .where(eq(cryptoPaymentApprovals.id, approvalId));
+        return approval;
+      } catch (error) {
+        console.error('Error getting crypto payment approval:', error);
+        return null;
+      }
+    }
+    return null;
   }
 };

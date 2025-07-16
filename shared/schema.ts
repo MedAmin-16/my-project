@@ -814,6 +814,7 @@ export const cryptoPaymentIntents = pgTable("crypto_payment_intents", {
   providerOrderId: text("provider_order_id").unique(),
   merchantOrderId: text("merchant_order_id").unique(),
   transactionId: text("transaction_id"), // blockchain transaction ID
+  paymentMemo: text("payment_memo"), // company name in memo field
   metadata: jsonb("metadata"), // provider-specific data
   completedAt: timestamp("completed_at"),
   createdAt: timestamp("created_at").defaultNow(),
@@ -890,6 +891,23 @@ export const cryptoNetworkSettings = pgTable("crypto_network_settings", {
   updatedAt: timestamp("updated_at")
 });
 
+// Admin Crypto Payment Approvals - For manual confirmation of crypto payments
+export const cryptoPaymentApprovals = pgTable("crypto_payment_approvals", {
+  id: serial("id").primaryKey(),
+  cryptoPaymentIntentId: integer("crypto_payment_intent_id").notNull().references(() => cryptoPaymentIntents.id),
+  companyId: integer("company_id").notNull().references(() => users.id),
+  paymentMemo: text("payment_memo").notNull(), // company name from memo
+  amount: integer("amount").notNull(), // in cents
+  currency: text("currency").notNull(),
+  status: text("status").default("pending"), // pending, approved, rejected
+  adminId: integer("admin_id").references(() => users.id), // admin who processed
+  adminNotes: text("admin_notes"),
+  approvedAt: timestamp("approved_at"),
+  rejectedAt: timestamp("rejected_at"),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at")
+});
+
 // Insert schemas for crypto tables
 export const insertCryptoWalletSchema = createInsertSchema(cryptoWallets).pick({
   userId: true,
@@ -907,7 +925,17 @@ export const insertCryptoPaymentIntentSchema = createInsertSchema(cryptoPaymentI
   provider: true,
   providerOrderId: true,
   merchantOrderId: true,
+  paymentMemo: true,
   metadata: true
+});
+
+export const insertCryptoPaymentApprovalSchema = createInsertSchema(cryptoPaymentApprovals).pick({
+  cryptoPaymentIntentId: true,
+  companyId: true,
+  paymentMemo: true,
+  amount: true,
+  currency: true,
+  adminNotes: true
 });
 
 export const insertCryptoWithdrawalSchema = createInsertSchema(cryptoWithdrawals).pick({
@@ -963,3 +991,6 @@ export type InsertCryptoTransaction = z.infer<typeof insertCryptoTransactionSche
 
 export type CryptoNetworkSettings = typeof cryptoNetworkSettings.$inferSelect;
 export type InsertCryptoNetworkSettings = z.infer<typeof insertCryptoNetworkSettingsSchema>;
+
+export type CryptoPaymentApproval = typeof cryptoPaymentApprovals.$inferSelect;
+export type InsertCryptoPaymentApproval = z.infer<typeof insertCryptoPaymentApprovalSchema>;

@@ -167,12 +167,21 @@ export class CryptoPaymentService {
           completedAt: new Date()
         });
 
+        // Create crypto payment approval record for admin review
+        await storage.createCryptoPaymentApproval({
+          cryptoPaymentIntentId: paymentIntent.id,
+          companyId: paymentIntent.companyId,
+          paymentMemo: paymentIntent.paymentMemo || 'No memo provided',
+          amount: paymentIntent.amount,
+          currency: paymentIntent.currency
+        });
+
         // Create transaction record for tracking (balance will be updated manually by admin)
         await storage.createCompanyTransaction({
           companyId: paymentIntent.companyId,
           amount: 0, // No automatic balance update
           type: 'crypto_payment_pending',
-          note: `Crypto payment received via Binance Pay: ${transactionId} - Amount: ${(paymentIntent.amount / 100).toFixed(2)} ${paymentIntent.currency} - Pending admin approval`
+          note: `Crypto payment received via Binance Pay: ${transactionId} - Amount: ${(paymentIntent.amount / 100).toFixed(2)} ${paymentIntent.currency} - Memo: ${paymentIntent.paymentMemo || 'No memo'} - Pending admin approval`
         });
 
         // Create crypto transaction record
