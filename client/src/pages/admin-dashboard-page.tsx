@@ -517,34 +517,32 @@ export default function AdminDashboardPage() {
                                         size="sm"
                                         onClick={() => verifyUserMutation.mutate({ userId: company.id, verificationStatus: 'verified' })}
                                         disabled={verifyUserMutation.isPending}
-                                        className="bg-green-500/20 text-green-400 border-green-500 hover:bg-green-500/30 font-mono text-xs"
+                                        className="bg-green-500/20 text-green-400 border border-green-500 hover:bg-green-500/30 font-mono text-xs px-2 py-1"
                                       >
                                         <CheckCircle className="h-3 w-3 mr-1" />
-                                        Approve
+                                        ✅ Approve
                                       </Button>
                                     )}
                                     {company.verificationStatus !== 'rejected' && (
                                       <Button
                                         size="sm"
-                                        variant="destructive"
                                         onClick={() => verifyUserMutation.mutate({ userId: company.id, verificationStatus: 'rejected' })}
                                         disabled={verifyUserMutation.isPending}
-                                        className="bg-red-500/20 text-red-400 border-red-500 hover:bg-red-500/30 font-mono text-xs"
+                                        className="bg-red-500/20 text-red-400 border border-red-500 hover:bg-red-500/30 font-mono text-xs px-2 py-1"
                                       >
                                         <XCircle className="h-3 w-3 mr-1" />
-                                        Reject
+                                        ❌ Reject
                                       </Button>
                                     )}
                                     {company.verificationStatus !== 'pending' && (
                                       <Button
                                         size="sm"
-                                        variant="outline"
                                         onClick={() => verifyUserMutation.mutate({ userId: company.id, verificationStatus: 'pending' })}
                                         disabled={verifyUserMutation.isPending}
-                                        className="bg-yellow-500/20 text-yellow-400 border-yellow-500 hover:bg-yellow-500/30 font-mono text-xs"
+                                        className="bg-yellow-500/20 text-yellow-400 border border-yellow-500 hover:bg-yellow-500/30 font-mono text-xs px-2 py-1"
                                       >
                                         <AlertTriangle className="h-3 w-3 mr-1" />
-                                        Pending
+                                        Reset to Pending
                                       </Button>
                                     )}
                                   </div>

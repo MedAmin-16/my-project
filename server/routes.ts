@@ -1632,7 +1632,10 @@ export function registerRoutes(app: Express): Server {
       const authHeader = req.headers.authorization;
       const token = authHeader?.replace('Bearer ', '');
 
+      console.log('Admin verify-user request:', { userId: req.body.userId, verificationStatus: req.body.verificationStatus });
+
       if (!token || !req.session.adminUser) {
+        console.log('Admin authentication failed');
         return res.status(401).json({ error: "Admin authentication required" });
       }
 
@@ -1652,13 +1655,19 @@ export function registerRoutes(app: Express): Server {
       }
 
       // Create notification for the user
-      await storage.createNotification({
-        userId: userId,
-        type: 'verification_status_update',
-        message: `Your company verification status has been updated to: ${verificationStatus}`,
-        link: '/profile'
-      });
+      try {
+        await storage.createNotification({
+          userId: userId,
+          type: 'verification_status_update',
+          message: `Your company verification status has been updated to: ${verificationStatus}`,
+          link: '/profile'
+        });
+      } catch (notifError) {
+        console.error('Failed to create notification:', notifError);
+        // Continue even if notification fails
+      }
 
+      console.log(`Successfully updated user ${userId} to ${verificationStatus}`);
       res.json({ success: true, message: "User verification status updated successfully", user: updatedUser });
     } catch (error) {
       console.error("Error updating user verification status:", error);

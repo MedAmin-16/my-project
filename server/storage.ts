@@ -2889,6 +2889,8 @@ export const storage = {
           .set({ verificationStatus, updatedAt: new Date() })
           .where(eq(users.id, userId))
           .returning();
+        
+        console.log(`Updated user ${userId} verification status to ${verificationStatus}`);
         return user;
       } catch (error) {
         console.error('Error updating user verification status:', error);
