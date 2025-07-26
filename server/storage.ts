@@ -2889,7 +2889,7 @@ export const storage = {
           .set({ verificationStatus, updatedAt: new Date() })
           .where(eq(users.id, userId))
           .returning();
-        
+
         console.log(`Updated user ${userId} verification status to ${verificationStatus}`);
         return user;
       } catch (error) {
@@ -2923,5 +2923,29 @@ export const storage = {
       }
     }
     return [];
+  }
+  ,async getProgram(id: number){
+    if(db){
+      try {
+        const result = await db.select().from(programs).where(eq(programs.id, id))
+        return result[0] || null
+      } catch (error) {
+        console.log("Error getting program", error)
+        return null
+      }
+    }
+    return memoryStorage.programs.get(id) || null
+  }
+
+  async getAllPrograms() {
+    if(db){
+      try{
+        return db.select().from(programs)
+      }catch(error){
+        console.log("Error getting all programs", error)
+        return []
+      }
+    }
+    return Array.from(memoryStorage.programs.values());
   }
 };

@@ -14,6 +14,17 @@ export function registerRoutes(app: Express): Server {
     res.json({ status: "ok", timestamp: new Date().toISOString() });
   });
 
+  // Get all programs
+  app.get("/api/programs", async (req, res) => {
+    try {
+      const programs = await storage.getAllPrograms();
+      res.json(programs || []);
+    } catch (error) {
+      console.error("Error fetching programs:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
   // Vulnerability grading endpoint
   app.post("/api/grade-vulnerability", (req, res) => {
     try {
