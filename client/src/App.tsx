@@ -106,6 +106,7 @@ function Router() {
       <ProtectedRoute path="/dashboard" component={DashboardComponent} />
       <ProtectedRoute path="/company-dashboard" component={CompanyDashboardPage} />
       <ProtectedRoute path="/triage-dashboard" component={TriageDashboardPage} />
+      <Route path="/programs" component={ProgramsPage} />
       <Route path="/programs/:id" component={ProgramDetailPage} />
       <Route path="/hacktivity" component={HacktivityPage} />
       <Route path="/find-programs" component={FindProgramsPage} />
