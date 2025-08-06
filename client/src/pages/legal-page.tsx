@@ -340,26 +340,16 @@ export default function LegalPage() {
               
               <div>
                 <div className="terminal-card p-6 rounded-lg mb-6">
-                  <h2 className="text-xl font-mono text-matrix mb-4">Business Hours</h2>
+                  <h2 className="text-xl font-mono text-matrix mb-4">Platform Availability</h2>
                   
-                  <div className="space-y-3 text-dim-gray">
-                    <div className="flex justify-between">
-                      <span>Monday - Friday:</span>
-                      <span>9:00 AM - 6:00 PM PST</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span>Saturday:</span>
-                      <span>10:00 AM - 4:00 PM PST</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span>Sunday:</span>
-                      <span>Closed</span>
-                    </div>
+                  <div className="text-center mb-4">
+                    <div className="text-2xl font-mono text-matrix mb-2">24/7</div>
+                    <div className="text-dim-gray">Continuous Operation</div>
                   </div>
                   
-                  <div className="mt-4 text-dim-gray">
-                    <p>Support tickets can be submitted 24/7.</p>
-                    <p className="mt-2">Emergency security issues are responded to outside of business hours.</p>
+                  <div className="mt-4 text-dim-gray text-center">
+                    <p>Our platform operates 24 hours a day, 7 days a week without interruption to ensure continuous service for all users.</p>
+                    <p className="mt-2">Support tickets and security issues are handled around the clock.</p>
                   </div>
                 </div>
                 
