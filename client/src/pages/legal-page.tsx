@@ -251,11 +251,11 @@ export default function LegalPage() {
                       <div className="space-y-3">
                         <div className="flex items-center">
                           <Mail className="h-5 w-5 text-matrix mr-3" />
-                          <span className="text-dim-gray">info@cyberhunt.com</span>
+                          <span className="text-dim-gray">contact@thecyberhunt.com</span>
                         </div>
                         <div className="flex items-center">
                           <Phone className="h-5 w-5 text-matrix mr-3" />
-                          <span className="text-dim-gray">+1 (555) 123-4567</span>
+                          <span className="text-dim-gray">+216 27580730</span>
                         </div>
                       </div>
                     </div>
@@ -281,10 +281,7 @@ export default function LegalPage() {
                       <MapPin className="h-5 w-5 text-electric-blue mr-3 flex-shrink-0 mt-1" />
                       <address className="text-dim-gray not-italic">
                         CyberHunt, Inc.<br />
-                        123 Security Boulevard<br />
-                        Suite 4200<br />
-                        San Francisco, CA 94105<br />
-                        United States
+                        Tunisia
                       </address>
                     </div>
                   </div>
