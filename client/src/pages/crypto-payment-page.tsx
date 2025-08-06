@@ -253,7 +253,7 @@ export default function CryptoPaymentPage() {
                     onError={(e) => {
                       // Fallback if QR code fails to load
                       e.currentTarget.style.display = 'none';
-                      e.currentTarget.nextElementSibling!.style.display = 'block';
+                      (e.currentTarget.nextElementSibling as HTMLElement)!.style.display = 'block';
                     }}
                   />
                   <div className="hidden w-48 h-48 bg-gray-200 flex items-center justify-center text-gray-500 text-sm">
