@@ -28,8 +28,8 @@ interface CompanyTransaction {
   createdAt: string;
 }
 
-const BINANCE_PAY_ID = "928374001";
-const BINANCE_QR_CODE = "https://qr.binance.com/en/qr/dplk/928374001";
+const BINANCE_PAY_ID = "1024923397";
+const BINANCE_QR_CODE = "https://qr.binance.com/en/qr/dplk/1024923397";
 
 export default function CryptoPaymentPage() {
   const { user } = useAuth();
@@ -256,11 +256,16 @@ export default function CryptoPaymentPage() {
                       (e.currentTarget.nextElementSibling as HTMLElement)!.style.display = 'block';
                     }}
                   />
-                  <div className="hidden w-48 h-48 bg-gray-200 flex items-center justify-center text-gray-500 text-sm">
-                    QR Code
+                  <div className="hidden w-48 h-48 bg-gray-200 flex items-center justify-center text-gray-500 text-sm rounded">
+                    <div className="text-center">
+                      <QrCode className="h-12 w-12 mx-auto mb-2" />
+                      <div>Binance Pay QR Code</div>
+                      <div className="text-xs mt-1">ID: {BINANCE_PAY_ID}</div>
+                    </div>
                   </div>
                 </div>
-                <p className="text-xs text-dim-gray mt-2">Scan with Binance app</p>
+                <p className="text-xs text-dim-gray mt-2">Scan with Binance app to pay</p>
+                <p className="text-xs text-matrix mt-1">Pay ID: {BINANCE_PAY_ID}</p>
               </div>
 
               {/* Pay ID */}
