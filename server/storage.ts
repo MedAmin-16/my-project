@@ -90,6 +90,11 @@ export interface IStorage {
     createNotification(notification: InsertNotification): Promise<Notification>;
     markNotificationAsRead(id: number): Promise<Notification | undefined>;
 
+  // Payouts and Earnings
+  getUserPayouts(userId: number): Promise<Payout[]>;
+  getUserSubmissions(userId: number): Promise<Submission[]>;
+  getPaymentMethods(): Promise<PaymentMethod[]>;
+
   // Session storage
   sessionStore: any;
 }
@@ -203,7 +208,7 @@ export const storage: IStorage = {
           .set({ emailVerified: true, updatedAt: new Date() })
           .where(eq(users.id, tokenData.userId))
           .returning();
-        
+
         memoryStorage.verificationTokens.delete(token);
         return user;
       } catch (error) {
@@ -337,7 +342,7 @@ export const storage: IStorage = {
         if (reward !== undefined) {
           updateData.reward = reward;
         }
-        
+
         const [submission] = await db
           .update(submissions)
           .set(updateData)
@@ -435,6 +440,43 @@ export const storage: IStorage = {
       }
     }
     return null;
+  },
+
+  // Payouts and Earnings
+  async getUserPayouts(userId: number) {
+    try {
+      const result = await db.select().from(payouts).where(eq(payouts.userId, userId));
+      return result;
+    } catch (error) {
+      console.error('Error fetching user payouts:', error);
+      return [];
+    }
+  },
+
+  async getUserSubmissions(userId: number) {
+    try {
+      const result = await db.select().from(submissions).where(eq(submissions.userId, userId));
+      return result;
+    } catch (error) {
+      console.error('Error fetching user submissions:', error);
+      return [];
+    }
+  },
+
+  async getPaymentMethods() {
+    try {
+      // Return mock payment methods for now
+      return [
+        { id: 1, name: 'PayPal', type: 'digital_wallet', supportedCurrencies: ['USD', 'EUR'] },
+        { id: 2, name: 'Bitcoin', type: 'crypto', supportedCurrencies: ['BTC'] },
+        { id: 3, name: 'Ethereum', type: 'crypto', supportedCurrencies: ['ETH'] },
+        { id: 4, name: 'Bank Transfer', type: 'bank_transfer', supportedCurrencies: ['USD'] },
+        { id: 5, name: 'USDT (TRC20)', type: 'crypto', supportedCurrencies: ['USDT'] }
+      ];
+    } catch (error) {
+      console.error('Error fetching payment methods:', error);
+      return [];
+    }
   },
 
   // Session storage

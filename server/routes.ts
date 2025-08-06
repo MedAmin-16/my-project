@@ -25,6 +25,82 @@ export function registerRoutes(app: Express): Server {
     }
   });
 
+  // Get payment methods
+  app.get("/api/payment-methods", async (req, res) => {
+    try {
+      const paymentMethods = await storage.getPaymentMethods();
+      res.json(paymentMethods);
+    } catch (error) {
+      console.error("Error fetching payment methods:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  // Get user submissions
+  app.get("/api/submissions", async (req, res) => {
+    try {
+      if (!req.session?.user?.id) {
+        return res.status(401).json({ error: "Authentication required" });
+      }
+
+      const submissions = await storage.getUserSubmissions(req.session.user.id);
+      res.json(submissions);
+    } catch (error) {
+      console.error("Error fetching user submissions:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  // Get user payouts
+  app.get("/api/payouts", async (req, res) => {
+    try {
+      if (!req.session?.user?.id) {
+        return res.status(401).json({ error: "Authentication required" });
+      }
+
+      const payouts = await storage.getUserPayouts(req.session.user.id);
+      res.json(payouts);
+    } catch (error) {
+      console.error("Error fetching user payouts:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  // Request payout
+  app.post("/api/payouts/request", async (req, res) => {
+    try {
+      if (!req.session?.user?.id) {
+        return res.status(401).json({ error: "Authentication required" });
+      }
+
+      const { submissionId, paymentMethodId, paymentDetails } = req.body;
+
+      if (!submissionId || !paymentMethodId || !paymentDetails) {
+        return res.status(400).json({ error: "Missing required fields" });
+      }
+
+      // Create mock payout request
+      const newPayout = {
+        id: Date.now(),
+        userId: req.session.user.id,
+        submissionId,
+        amount: Math.floor(Math.random() * 500000) + 50000, // $500-$5500
+        currency: 'USD',
+        status: 'pending',
+        paymentMethodId,
+        paymentMethodName: 'PayPal', // Mock
+        submissionTitle: `Vulnerability Report #${submissionId}`,
+        createdAt: new Date().toISOString(),
+        completedAt: null
+      };
+
+      res.status(201).json(newPayout);
+    } catch (error) {
+      console.error("Error creating payout request:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
   // Vulnerability grading endpoint
   app.post("/api/grade-vulnerability", (req, res) => {
     try {
@@ -1406,6 +1482,185 @@ export function registerRoutes(app: Express): Server {
       res.json(transactions);
     } catch (error) {
       console.error("Error fetching crypto transactions:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  // Hacker Balance and Earnings Tracking Routes
+  
+  // Get hacker balance overview
+  app.get("/api/hacker/balance", async (req, res) => {
+    try {
+      if (!req.session?.user?.id) {
+        return res.status(401).json({ error: "Authentication required" });
+      }
+
+      const user = await storage.getUser(req.session.user.id);
+      if (!user || user.userType !== 'hacker') {
+        return res.status(403).json({ error: "Hacker access required" });
+      }
+
+      // Get completed payouts (current balance)
+      const completedPayouts = await storage.getUserPayouts(req.session.user.id);
+      const currentBalance = completedPayouts
+        .filter(p => p.status === 'completed')
+        .reduce((sum, p) => sum + p.amount, 0);
+
+      // Get pending payouts
+      const pendingBalance = completedPayouts
+        .filter(p => ['pending', 'processing'].includes(p.status))
+        .reduce((sum, p) => sum + p.amount, 0);
+
+      // Calculate total earnings (including reputation bonus)
+      const totalEarnings = currentBalance + pendingBalance + (user.reputation || 0) * 10;
+
+      const balance = {
+        currentBalance,
+        pendingBalance,
+        totalEarnings,
+        lastUpdated: new Date().toISOString()
+      };
+
+      res.json(balance);
+    } catch (error) {
+      console.error("Error fetching hacker balance:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  // Get hacker earnings history
+  app.get("/api/hacker/earnings-history", async (req, res) => {
+    try {
+      if (!req.session?.user?.id) {
+        return res.status(401).json({ error: "Authentication required" });
+      }
+
+      const user = await storage.getUser(req.session.user.id);
+      if (!user || user.userType !== 'hacker') {
+        return res.status(403).json({ error: "Hacker access required" });
+      }
+
+      const months = parseInt(req.query.months as string) || 6;
+      
+      // Generate earnings history for the last N months
+      const earningsHistory = [];
+      const payouts = await storage.getUserPayouts(req.session.user.id);
+      
+      for (let i = months - 1; i >= 0; i--) {
+        const date = new Date();
+        date.setMonth(date.getMonth() - i);
+        const year = date.getFullYear();
+        const month = date.getMonth();
+        
+        const monthStart = new Date(year, month, 1);
+        const monthEnd = new Date(year, month + 1, 0);
+        
+        const monthlyPayouts = payouts.filter(p => {
+          const payoutDate = new Date(p.completedAt || p.createdAt);
+          return payoutDate >= monthStart && payoutDate <= monthEnd && p.status === 'completed';
+        });
+
+        const monthlyEarnings = monthlyPayouts.reduce((sum, p) => sum + p.amount, 0);
+
+        earningsHistory.push({
+          month: date.toLocaleDateString('en-US', { month: 'short', year: 'numeric' }),
+          earnings: monthlyEarnings,
+          payouts: monthlyPayouts.length,
+          year: year,
+          monthNumber: month + 1
+        });
+      }
+
+      res.json(earningsHistory);
+    } catch (error) {
+      console.error("Error fetching earnings history:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  // Get hacker dashboard statistics
+  app.get("/api/hacker/stats", async (req, res) => {
+    try {
+      if (!req.session?.user?.id) {
+        return res.status(401).json({ error: "Authentication required" });
+      }
+
+      const user = await storage.getUser(req.session.user.id);
+      if (!user || user.userType !== 'hacker') {
+        return res.status(403).json({ error: "Hacker access required" });
+      }
+
+      const payouts = await storage.getUserPayouts(req.session.user.id);
+      const submissions = await storage.getUserSubmissions(req.session.user.id);
+
+      // Calculate various statistics
+      const totalPayouts = payouts.length;
+      const completedPayouts = payouts.filter(p => p.status === 'completed').length;
+      const failedPayouts = payouts.filter(p => p.status === 'failed').length;
+      const successRate = totalPayouts > 0 ? Math.round((completedPayouts / totalPayouts) * 100) : 0;
+
+      const totalSubmissions = submissions.length;
+      const approvedSubmissions = submissions.filter(s => s.status === 'approved').length;
+      const rejectedSubmissions = submissions.filter(s => s.status === 'rejected').length;
+      const submissionSuccessRate = totalSubmissions > 0 ? Math.round((approvedSubmissions / totalSubmissions) * 100) : 0;
+
+      // Average monthly earnings
+      const completedPayoutAmounts = payouts
+        .filter(p => p.status === 'completed')
+        .map(p => p.amount);
+      const avgEarnings = completedPayoutAmounts.length > 0 
+        ? completedPayoutAmounts.reduce((sum, amount) => sum + amount, 0) / completedPayoutAmounts.length 
+        : 0;
+
+      // Best month calculation
+      const earningsHistory = [];
+      for (let i = 11; i >= 0; i--) {
+        const date = new Date();
+        date.setMonth(date.getMonth() - i);
+        const year = date.getFullYear();
+        const month = date.getMonth();
+        
+        const monthStart = new Date(year, month, 1);
+        const monthEnd = new Date(year, month + 1, 0);
+        
+        const monthlyPayouts = payouts.filter(p => {
+          const payoutDate = new Date(p.completedAt || p.createdAt);
+          return payoutDate >= monthStart && payoutDate <= monthEnd && p.status === 'completed';
+        });
+
+        const monthlyEarnings = monthlyPayouts.reduce((sum, p) => sum + p.amount, 0);
+        
+        earningsHistory.push({
+          month: date.toLocaleDateString('en-US', { month: 'short', year: 'numeric' }),
+          earnings: monthlyEarnings,
+          payouts: monthlyPayouts.length
+        });
+      }
+
+      const bestMonth = earningsHistory.reduce((best, current) => 
+        current.earnings > best.earnings ? current : best, 
+        earningsHistory[0] || { month: 'N/A', earnings: 0 }
+      );
+
+      const stats = {
+        totalPayouts,
+        completedPayouts,
+        failedPayouts,
+        payoutSuccessRate: successRate,
+        totalSubmissions,
+        approvedSubmissions,
+        rejectedSubmissions,
+        submissionSuccessRate,
+        averageEarnings: avgEarnings,
+        bestMonth: bestMonth.month,
+        bestMonthEarnings: bestMonth.earnings,
+        currentRank: user.rank || 'Newbie',
+        reputation: user.reputation || 0
+      };
+
+      res.json(stats);
+    } catch (error) {
+      console.error("Error fetching hacker stats:", error);
       res.status(500).json({ error: "Internal server error" });
     }
   });
