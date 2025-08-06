@@ -267,10 +267,6 @@ export default function LegalPage() {
                           <Mail className="h-5 w-5 text-blue-400 mr-3" />
                           <span className="text-dim-gray">support@cyberhunt.com</span>
                         </div>
-                        <div className="flex items-center">
-                          <Phone className="h-5 w-5 text-blue-400 mr-3" />
-                          <span className="text-dim-gray">+1 (555) 987-6543</span>
-                        </div>
                       </div>
                     </div>
                   </div>
