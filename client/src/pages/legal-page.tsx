@@ -236,51 +236,6 @@ export default function LegalPage() {
                 </div>
               </div>
             </div>
-            
-            <div className="terminal-card p-6 rounded-lg">
-              <h2 className="text-xl font-mono text-matrix mb-4">Leadership Team</h2>
-              
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                {[
-                  {
-                    name: "Alexandra Chen",
-                    title: "Chief Executive Officer",
-                    bio: "Former security researcher with over 15 years of experience in cybersecurity leadership."
-                  },
-                  {
-                    name: "Marcus Washington",
-                    title: "Chief Technology Officer",
-                    bio: "Security architect and engineer with extensive experience in building secure systems."
-                  },
-                  {
-                    name: "Sophia Rodriguez",
-                    title: "Chief Security Officer",
-                    bio: "Renowned ethical hacker and security researcher with numerous CVEs to her name."
-                  },
-                  {
-                    name: "David Kim",
-                    title: "VP of Engineering",
-                    bio: "Software engineering leader specializing in secure development practices."
-                  },
-                  {
-                    name: "Priya Patel",
-                    title: "Head of Community",
-                    bio: "Community builder passionate about fostering inclusive security communities."
-                  },
-                  {
-                    name: "James Wilson",
-                    title: "VP of Business Development",
-                    bio: "Expert in connecting organizations with security resources they need."
-                  }
-                ].map((member, index) => (
-                  <div key={index} className="p-4 border border-dark-terminal rounded-lg">
-                    <h3 className="text-lg font-mono text-light-gray mb-1">{member.name}</h3>
-                    <p className="text-xs text-matrix mb-2">{member.title}</p>
-                    <p className="text-sm text-dim-gray">{member.bio}</p>
-                  </div>
-                ))}
-              </div>
-            </div>
           </TabsContent>
           
           {/* Contact & Support Tab */}
