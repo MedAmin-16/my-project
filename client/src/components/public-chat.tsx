@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useRef } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { Send, Trash2, MessageCircle, Megaphone, Clock, Shield, User, Building } from "lucide-react";
@@ -57,19 +56,47 @@ export default function PublicChat() {
     },
   });
 
-  // Auto-scroll to bottom when new messages arrive
+  // Auto scroll to bottom when new messages arrive
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    if (messagesEndRef.current) {
+      messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
+    }
   }, [messages]);
 
-  const handleSendMessage = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!message.trim()) return;
+  // Scroll to bottom after sending a message
+  useEffect(() => {
+    if (!sendMessageMutation.isPending && messagesEndRef.current) {
+      setTimeout(() => {
+        messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+      }, 100);
+    }
+  }, [sendMessageMutation.isPending]);
 
-    sendMessageMutation.mutate({
-      content: message.trim(),
-      messageType
-    });
+  const handleSendMessage = async (e: React.FormEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+
+    if (!message.trim() || sendMessageMutation.isPending) return;
+
+    try {
+      await sendMessageMutation.mutateAsync({
+        content: message.trim(),
+        messageType,
+      });
+    } catch (error) {
+      console.error("Failed to send message:", error);
+    }
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      e.stopPropagation();
+
+      if (message.trim() && !sendMessageMutation.isPending) {
+        handleSendMessage(e as any);
+      }
+    }
   };
 
   const handleDeleteMessage = (messageId: number) => {
@@ -80,7 +107,7 @@ export default function PublicChat() {
     const date = new Date(timestamp);
     const now = new Date();
     const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000);
-    
+
     if (diffInSeconds < 60) return `${diffInSeconds}s ago`;
     if (diffInSeconds < 3600) return `${Math.floor(diffInSeconds / 60)}m ago`;
     if (diffInSeconds < 86400) return `${Math.floor(diffInSeconds / 3600)}h ago`;
@@ -103,7 +130,7 @@ export default function PublicChat() {
         </Badge>
       );
     }
-    
+
     return (
       <Badge className="bg-matrix/20 text-matrix border-matrix/30 text-xs">
         <Shield className="h-3 w-3 mr-1" />
@@ -157,13 +184,13 @@ export default function PublicChat() {
                     </span>
                     {getUserBadge(msg)}
                   </div>
-                  
+
                   <div className="flex items-center space-x-2">
                     <div className="flex items-center text-dim-gray text-xs font-mono">
                       <Clock className="h-3 w-3 mr-1" />
                       {formatTimestamp(msg.createdAt)}
                     </div>
-                    
+
                     {msg.userId === user?.id && (
                       <Button
                         size="icon"
@@ -176,11 +203,11 @@ export default function PublicChat() {
                     )}
                   </div>
                 </div>
-                
+
                 <p className="text-light-gray text-sm font-mono whitespace-pre-wrap">
                   {msg.content}
                 </p>
-                
+
                 {msg.isEdited && (
                   <p className="text-dim-gray text-xs font-mono mt-1 italic">
                     (edited)
@@ -218,11 +245,12 @@ export default function PublicChat() {
               </Button>
             </div>
           )}
-          
+
           <div className="flex space-x-2">
             <Textarea
               value={message}
               onChange={(e) => setMessage(e.target.value)}
+              onKeyDown={handleKeyDown}
               placeholder={
                 messageType === "announcement" 
                   ? "Announce something to the community..." 
@@ -243,7 +271,7 @@ export default function PublicChat() {
               )}
             </Button>
           </div>
-          
+
           <div className="flex justify-between text-xs text-dim-gray font-mono">
             <span>{message.length}/1000 characters</span>
             {messageType === "announcement" && (

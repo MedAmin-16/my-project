@@ -95,6 +95,20 @@ export interface IStorage {
   getUserSubmissions(userId: number): Promise<Submission[]>;
   getPaymentMethods(): Promise<PaymentMethod[]>;
 
+  // Public Chat Methods
+  getPublicMessages(limit?: number, offset?: number): Promise<PublicMessage[]>;
+  createPublicMessage(messageData: { content: string, messageType: string, userId: number }): Promise<PublicMessage>;
+  deletePublicMessage(messageId: number, userId: number): Promise<boolean>;
+
+  // Crypto Network Methods
+  getCryptoNetworkSettings(): Promise<CryptoNetworkSettings[]>;
+
+  // Crypto Wallet Methods
+  getCryptoWalletsByUser(userId: number): Promise<CryptoWallet[]>;
+
+  // Crypto Withdrawal Methods
+  getCryptoWithdrawalsByUser(userId: number): Promise<CryptoWithdrawal[]>;
+
   // Session storage
   sessionStore: any;
 }
@@ -479,6 +493,362 @@ export const storage: IStorage = {
     }
   },
 
+  // Public Chat Methods
+  async getPublicMessages(limit: number = 50, offset: number = 0) {
+    if (db) {
+      try {
+        const result = await db.select().from(publicMessages)
+          .orderBy(asc(publicMessages.createdAt))
+          .limit(limit)
+          .offset(offset);
+
+        const messagesWithUsers = await Promise.all(result.map(async (msg) => {
+          const user = await this.getUser(msg.userId);
+          return {
+            ...msg,
+            username: user?.username || 'Unknown',
+            userType: user?.userType || 'hacker',
+            companyName: user?.companyName || null,
+            rank: user?.rank || 'Newbie'
+          };
+        }));
+        return messagesWithUsers;
+      } catch (error) {
+        console.error('Error getting public messages:', error);
+        return [];
+      }
+    }
+
+    if (!memoryStorage.publicMessages) {
+      memoryStorage.publicMessages = [];
+    }
+
+    const messages = memoryStorage.publicMessages
+      .slice(-limit - offset, memoryStorage.publicMessages.length - offset)
+      .map(msg => {
+        const user = Array.from(memoryStorage.users.values()).find(u => u.id === msg.userId);
+        return {
+          ...msg,
+          username: user?.username || 'Unknown',
+          userType: user?.userType || 'hacker',
+          companyName: user?.companyName || null,
+          rank: user?.rank || 'Newbie'
+        };
+      });
+
+    return messages;
+  },
+
+  async createPublicMessage(messageData: {
+    content: string;
+    messageType: string;
+    userId: number;
+  }) {
+    if (db) {
+      try {
+        const result = await db.insert(publicMessages).values({
+          ...messageData,
+          createdAt: new Date(),
+          isEdited: false,
+          editedAt: null,
+        }).returning();
+        const newMessage = result[0];
+        const user = await this.getUser(messageData.userId);
+        return {
+          ...newMessage,
+          username: user?.username || 'Unknown',
+          userType: user?.userType || 'hacker',
+          companyName: user?.companyName || null,
+          rank: user?.rank || 'Newbie'
+        };
+      } catch (error) {
+        console.error('Error creating public message:', error);
+        throw error;
+      }
+    }
+
+    if (!memoryStorage.publicMessages) {
+      memoryStorage.publicMessages = [];
+    }
+
+    const id = Date.now(); // Mock ID generation
+    const newMessage: PublicMessage = {
+      id,
+      content: messageData.content,
+      messageType: messageData.messageType,
+      isEdited: false,
+      editedAt: null,
+      createdAt: new Date().toISOString(),
+      userId: messageData.userId
+    };
+
+    memoryStorage.publicMessages.push(newMessage);
+
+    const user = Array.from(memoryStorage.users.values()).find(u => u.id === messageData.userId);
+    return {
+      ...newMessage,
+      username: user?.username || 'Unknown',
+      userType: user?.userType || 'hacker',
+      companyName: user?.companyName || null,
+      rank: user?.rank || 'Newbie'
+    };
+  },
+
+  async deletePublicMessage(messageId: number, userId: number) {
+    if (db) {
+      try {
+        const message = await db.select().from(publicMessages).where(eq(publicMessages.id, messageId));
+        if (!message[0]) {
+          return false;
+        }
+
+        const user = await this.getUser(userId);
+        if (message[0].userId !== userId && user?.userType !== 'admin') {
+          return false;
+        }
+
+        await db.delete(publicMessages).where(eq(publicMessages.id, messageId));
+        return true;
+      } catch (error) {
+        console.error('Error deleting public message:', error);
+        return false;
+      }
+    }
+
+    if (!memoryStorage.publicMessages) {
+      return false;
+    }
+
+    const messageIndex = memoryStorage.publicMessages.findIndex(m => m.id === messageId);
+    if (messageIndex === -1) {
+      return false;
+    }
+
+    const message = memoryStorage.publicMessages[messageIndex];
+
+    const user = Array.from(memoryStorage.users.values()).find(u => u.id === userId);
+    if (message.userId !== userId && user?.userType !== 'admin') {
+      return false;
+    }
+
+    memoryStorage.publicMessages.splice(messageIndex, 1);
+    return true;
+  },
+
+  // Crypto Network Methods
+  async getCryptoNetworkSettings(): Promise<CryptoNetworkSettings[]> {
+    if (db) {
+      try {
+        return await db.select().from(cryptoNetworkSettings);
+      } catch (error) {
+        console.error('Error getting crypto network settings:', error);
+        return [];
+      }
+    }
+    if (!memoryStorage.cryptoNetworks) {
+      memoryStorage.cryptoNetworks = [];
+    }
+    return memoryStorage.cryptoNetworks;
+  },
+
+  // Crypto Wallet Methods
+  async getCryptoWalletsByUser(userId: number): Promise<CryptoWallet[]> {
+    if (db) {
+      try {
+        return await db.select().from(cryptoWallets).where(eq(cryptoWallets.userId, userId));
+      } catch (error) {
+        console.error('Error getting crypto wallets by user:', error);
+        return [];
+      }
+    }
+    if (!memoryStorage.cryptoWallets) {
+      memoryStorage.cryptoWallets = [];
+    }
+    return memoryStorage.cryptoWallets.filter(w => w.userId === userId);
+  },
+
+  // Crypto Withdrawal Methods
+  async getCryptoWithdrawalsByUser(userId: number): Promise<CryptoWithdrawal[]> {
+    if (db) {
+      try {
+        return await db.select().from(cryptoWithdrawals).where(eq(cryptoWithdrawals.userId, userId));
+      } catch (error) {
+        console.error('Error getting crypto withdrawals by user:', error);
+        return [];
+      }
+    }
+    if (!memoryStorage.cryptoWithdrawals) {
+      memoryStorage.cryptoWithdrawals = [];
+    }
+    return memoryStorage.cryptoWithdrawals.filter(w => w.userId === userId);
+  },
+
   // Session storage
   sessionStore: new MemoryStore({})
 };
+
+interface PublicMessage {
+  id: number;
+  content: string;
+  messageType: string;
+  isEdited: boolean;
+  editedAt: string | null;
+  createdAt: string;
+  userId: number;
+}
+
+interface CryptoNetworkSettings {
+  id: number;
+  name: string;
+  symbol: string;
+  network: string;
+}
+
+interface CryptoWallet {
+  id: number;
+  userId: number;
+  address: string;
+  network: string;
+  symbol: string;
+}
+
+interface CryptoWithdrawal {
+  id: number;
+  userId: number;
+  address: string;
+  network: string;
+  symbol: string;
+  amount: number;
+  status: string;
+  createdAt: string;
+}
+
+interface ModerationTeamMember {
+  id: number;
+  userId: number;
+  teamRole: string;
+}
+
+interface ModerationReview {
+  id: number;
+  submissionId: number;
+  reviewerId: number;
+  status: string;
+  comment: string;
+  createdAt: string;
+}
+
+interface ModerationComment {
+  id: number;
+  reviewId: number;
+  commenterId: number;
+  comment: string;
+  createdAt: string;
+}
+
+interface ModerationAuditLog {
+  id: number;
+  action: string;
+  userId: number;
+  targetType: string;
+  targetId: number;
+  timestamp: string;
+}
+
+interface ModerationNotification {
+  id: number;
+  userId: number;
+  message: string;
+  isRead: boolean;
+  createdAt: string;
+}
+
+// Mock definitions for types used in the interface
+interface Program {
+  id: number;
+  name: string;
+  description: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+interface Submission {
+  id: number;
+  programId: number;
+  userId: number;
+  content: string;
+  status: string;
+  reward?: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+interface Activity {
+  id: number;
+  userId: number;
+  type: string;
+  message: string;
+  details?: string;
+  relatedId?: number;
+  createdAt: string;
+}
+
+interface Notification {
+  id: number;
+  userId: number;
+  message: string;
+  isRead: boolean;
+  createdAt: string;
+}
+
+interface Payout {
+  id: number;
+  userId: number;
+  amount: number;
+  status: string;
+  createdAt: string;
+}
+
+interface PaymentMethod {
+  id: number;
+  name: string;
+  type: string;
+  supportedCurrencies: string[];
+}
+
+interface TriageService {
+  id: number;
+  name: string;
+  description: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+interface TriageReport {
+  id: number;
+  serviceId: number;
+  userId: number;
+  reportData: any;
+  createdAt: string;
+}
+
+interface TriageCommunication {
+  id: number;
+  reportId: number;
+  userId: number;
+  message: string;
+  createdAt: string;
+}
+
+interface TriageSubscription {
+  id: number;
+  userId: number;
+  serviceId: number;
+  subscribedAt: string;
+}
+
+interface TriageAnalyst {
+  id: number;
+  userId: number;
+  specialization: string;
+}
