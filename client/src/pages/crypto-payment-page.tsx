@@ -8,6 +8,8 @@ import { useAuth } from '../hooks/use-auth';
 import { useToast } from '../hooks/use-toast';
 import { MatrixBackground } from '../components/matrix-background';
 import { Navbar } from '../components/layout/navbar';
+import { TwoFactorVerification } from '../components/two-factor-verification';
+import { SecurityNotice } from '../components/security-notice';
 
 interface CompanyWallet {
   id: number;
@@ -35,6 +37,8 @@ export default function CryptoPaymentPage() {
   const [companyWallet, setCompanyWallet] = useState<CompanyWallet | null>(null);
   const [transactions, setTransactions] = useState<CompanyTransaction[]>([]);
   const [loading, setLoading] = useState(true);
+  const [show2FA, setShow2FA] = useState(false);
+  const [pendingDeposit, setPendingDeposit] = useState<{ amount: number; currency: string } | null>(null);
 
   useEffect(() => {
     if (user?.userType === 'company') {
@@ -98,6 +102,77 @@ export default function CryptoPaymentPage() {
     });
   };
 
+  const verify2FA = async (code: string): Promise<boolean> => {
+    try {
+      const response = await fetch('/api/auth/verify-2fa', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ 
+          code, 
+          operation: 'crypto_deposit',
+          amount: pendingDeposit?.amount 
+        })
+      });
+
+      if (response.ok) {
+        // Proceed with the actual deposit after 2FA verification
+        await processCryptoDeposit();
+        return true;
+      }
+      return false;
+    } catch (error) {
+      console.error('2FA verification failed:', error);
+      return false;
+    }
+  };
+
+  const processCryptoDeposit = async () => {
+    if (!pendingDeposit) return;
+
+    try {
+      const response = await fetch('/api/crypto/payment-intent', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({
+          amount: Math.round(pendingDeposit.amount * 100),
+          currency: pendingDeposit.currency,
+          purpose: 'wallet_topup'
+        })
+      });
+
+      if (response.ok) {
+        toast({
+          title: "Deposit Request Created",
+          description: `Your deposit request for ${pendingDeposit.amount} ${pendingDeposit.currency} has been submitted for processing.`,
+        });
+        fetchWalletData();
+        fetchTransactions();
+      } else {
+        const error = await response.json();
+        toast({
+          title: "Error",
+          description: error.error || "Failed to process deposit",
+          variant: "destructive"
+        });
+      }
+    } catch (error) {
+      toast({
+        title: "Network Error",
+        description: "Failed to process deposit. Please try again.",
+        variant: "destructive"
+      });
+    } finally {
+      setPendingDeposit(null);
+    }
+  };
+
+  const handleCryptoDeposit = (amount: number, currency: string = 'USDT') => {
+    setPendingDeposit({ amount, currency });
+    setShow2FA(true);
+  };
+
   if (user?.userType !== 'company') {
     return (
       <div className="min-h-screen bg-deep-black relative">
@@ -123,6 +198,8 @@ export default function CryptoPaymentPage() {
           <h1 className="text-3xl font-mono font-bold text-matrix mb-2">Company Wallet</h1>
           <p className="text-dim-gray">Fund your bounty program with cryptocurrency</p>
         </div>
+
+        <SecurityNotice />
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           {/* Wallet Balance */}
@@ -364,6 +441,18 @@ export default function CryptoPaymentPage() {
           </CardContent>
         </Card>
       </main>
+
+      <TwoFactorVerification
+        isOpen={show2FA}
+        onClose={() => {
+          setShow2FA(false);
+          setPendingDeposit(null);
+        }}
+        onVerify={verify2FA}
+        operation="crypto deposit"
+        amount={pendingDeposit?.amount}
+        currency={pendingDeposit?.currency}
+      />
     </div>
   );
 }

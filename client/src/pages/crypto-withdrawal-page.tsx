@@ -11,6 +11,8 @@ import { Wallet, Plus, Clock, CheckCircle, XCircle, AlertTriangle, Copy } from '
 import { useAuth } from '../hooks/use-auth';
 import { MatrixBackground } from '../components/matrix-background';
 import { Navbar } from '../components/layout/navbar';
+import { TwoFactorVerification } from '../components/two-factor-verification';
+import { SecurityNotice } from '../components/security-notice';
 
 interface CryptoWallet {
   id: number;
@@ -49,6 +51,13 @@ export default function CryptoWithdrawalPage() {
   const [loading, setLoading] = useState(false);
   const [showWalletDialog, setShowWalletDialog] = useState(false);
   const [showWithdrawalDialog, setShowWithdrawalDialog] = useState(false);
+  const [show2FA, setShow2FA] = useState(false);
+  const [pendingWithdrawal, setPendingWithdrawal] = useState<{
+    amount: number;
+    currency: string;
+    walletAddress: string;
+    network: string;
+  } | null>(null);
 
   // Wallet form state
   const [walletType, setWalletType] = useState('');
@@ -151,25 +160,63 @@ export default function CryptoWithdrawalPage() {
       return;
     }
 
+    // Set up 2FA verification before processing withdrawal
+    setPendingWithdrawal({
+      amount,
+      currency: withdrawalCurrency,
+      walletAddress: selectedWallet.walletAddress,
+      network: selectedWallet.network
+    });
+    setShowWithdrawalDialog(false);
+    setShow2FA(true);
+  };
+
+  const verify2FA = async (code: string): Promise<boolean> => {
+    try {
+      const response = await fetch('/api/auth/verify-2fa', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ 
+          code, 
+          operation: 'crypto_withdrawal',
+          amount: pendingWithdrawal?.amount 
+        })
+      });
+
+      if (response.ok) {
+        // Proceed with the actual withdrawal after 2FA verification
+        await processWithdrawal();
+        return true;
+      }
+      return false;
+    } catch (error) {
+      console.error('2FA verification failed:', error);
+      return false;
+    }
+  };
+
+  const processWithdrawal = async () => {
+    if (!pendingWithdrawal) return;
+
     setLoading(true);
     try {
       const response = await fetch('/api/crypto/withdrawals', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          amount: Math.round(amount * 100), // Convert to cents
-          currency: withdrawalCurrency,
-          walletAddress: selectedWallet.walletAddress,
-          network: selectedWallet.network
+          amount: Math.round(pendingWithdrawal.amount * 100), // Convert to cents
+          currency: pendingWithdrawal.currency,
+          walletAddress: pendingWithdrawal.walletAddress,
+          network: pendingWithdrawal.network
         })
       });
 
       if (response.ok) {
         await fetchWithdrawals();
-        setShowWithdrawalDialog(false);
         setWithdrawalAmount('');
         setSelectedWallet(null);
-        alert('Withdrawal request submitted successfully!');
+        alert('Withdrawal request submitted successfully and is under review!');
       } else {
         const error = await response.json();
         alert(error.error || 'Failed to create withdrawal');
@@ -179,6 +226,7 @@ export default function CryptoWithdrawalPage() {
       alert('Network error occurred');
     } finally {
       setLoading(false);
+      setPendingWithdrawal(null);
     }
   };
 
@@ -241,6 +289,8 @@ export default function CryptoWithdrawalPage() {
             </p>
           </div>
         </div>
+
+        <SecurityNotice />
 
         <Tabs defaultValue="withdrawal" className="space-y-6">
           <TabsList className="terminal-tabs">
@@ -612,6 +662,18 @@ export default function CryptoWithdrawalPage() {
           )}
         </DialogContent>
       </Dialog>
+
+      <TwoFactorVerification
+        isOpen={show2FA}
+        onClose={() => {
+          setShow2FA(false);
+          setPendingWithdrawal(null);
+        }}
+        onVerify={verify2FA}
+        operation="crypto withdrawal"
+        amount={pendingWithdrawal?.amount}
+        currency={pendingWithdrawal?.currency}
+      />
     </div>
   );
 }

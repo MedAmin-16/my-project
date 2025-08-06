@@ -761,9 +761,12 @@ export default function CompanyDashboardPage() {
                     <div className="flex items-center justify-between p-3 bg-dark-terminal rounded">
                       <div>
                         <p className="font-medium">Two-Factor Authentication</p>
-                        <p className="text-sm text-dim-gray">Add an extra layer of security to your account</p>
+                        <p className="text-sm text-dim-gray">Required for all financial operations (deposits, withdrawals)</p>
                       </div>
-                      <Switch />
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs text-green-400">ENFORCED</span>
+                        <Switch checked disabled />
+                      </div>
                     </div>
                     <div className="flex items-center justify-between p-3 bg-dark-terminal rounded">
                       <div>

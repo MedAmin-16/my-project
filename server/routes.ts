@@ -1008,6 +1008,110 @@ export function registerRoutes(app: Express): Server {
     }
   });
 
+  // Two-Factor Authentication Routes
+  app.post("/api/auth/send-2fa-code", async (req, res) => {
+    try {
+      if (!req.session?.user?.id) {
+        return res.status(401).json({ error: "Authentication required" });
+      }
+
+      const { method, operation, amount } = req.body;
+      const user = await storage.getUser(req.session.user.id);
+      
+      if (!user) {
+        return res.status(404).json({ error: "User not found" });
+      }
+
+      // Generate 6-digit code
+      const code = Math.floor(100000 + Math.random() * 900000).toString();
+      
+      // Store code in session with expiration (5 minutes)
+      req.session.twoFactorCode = {
+        code,
+        operation,
+        amount,
+        expiresAt: Date.now() + 5 * 60 * 1000,
+        userId: user.id
+      };
+
+      // In production, send actual SMS/email
+      // For demo, we'll log the code
+      console.log(`2FA Code for ${user.email}: ${code} (Operation: ${operation})`);
+
+      // Simulate sending code
+      if (method === 'email') {
+        // Send email with code
+        console.log(`Sending 2FA code via email to ${user.email}: ${code}`);
+      } else if (method === 'sms') {
+        // Send SMS with code
+        console.log(`Sending 2FA code via SMS: ${code}`);
+      }
+
+      // Create audit log for 2FA request
+      await storage.createActivity({
+        userId: user.id,
+        type: '2fa_requested',
+        message: `2FA code requested for ${operation}`,
+        details: `Method: ${method}, Amount: ${amount || 'N/A'}`,
+        relatedId: user.id
+      });
+
+      res.json({ success: true, message: "Verification code sent" });
+    } catch (error) {
+      console.error("Error sending 2FA code:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  app.post("/api/auth/verify-2fa", async (req, res) => {
+    try {
+      if (!req.session?.user?.id) {
+        return res.status(401).json({ error: "Authentication required" });
+      }
+
+      const { code, operation, amount } = req.body;
+      const storedData = req.session.twoFactorCode;
+
+      if (!storedData || !code) {
+        return res.status(400).json({ error: "Invalid verification attempt" });
+      }
+
+      // Check if code has expired
+      if (Date.now() > storedData.expiresAt) {
+        delete req.session.twoFactorCode;
+        return res.status(400).json({ error: "Verification code expired" });
+      }
+
+      // Verify code and operation match
+      if (storedData.code !== code || storedData.operation !== operation || storedData.userId !== req.session.user.id) {
+        // Rate limiting for failed attempts
+        const canAttempt = await storage.checkRateLimit(req.session.user.id, '', '2fa_verify', 5, 60);
+        if (!canAttempt) {
+          return res.status(429).json({ error: "Too many failed attempts. Please try again later." });
+        }
+
+        return res.status(400).json({ error: "Invalid verification code" });
+      }
+
+      // Clear the used code
+      delete req.session.twoFactorCode;
+
+      // Create audit log for successful 2FA
+      await storage.createActivity({
+        userId: req.session.user.id,
+        type: '2fa_verified',
+        message: `2FA verification successful for ${operation}`,
+        details: `Amount: ${amount || 'N/A'}`,
+        relatedId: req.session.user.id
+      });
+
+      res.json({ success: true, message: "Verification successful" });
+    } catch (error) {
+      console.error("Error verifying 2FA code:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
   // Admin Authentication Routes
   app.post("/api/admin/login", async (req, res) => {
     try {
